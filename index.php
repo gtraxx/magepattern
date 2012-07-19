@@ -53,7 +53,7 @@ foreach  ($db->fetchAll($sql,array($id)) as $row) {
     $color.= $row['color'];
 }
 print $color.'<br />';
-print filesystem_path::basePath();
+print filter_path::basePath();
 //prunt truyc;
 //$truc = new autoloader();
 /*$truc->registerPrefixFallback(__DIR__.'/truc');

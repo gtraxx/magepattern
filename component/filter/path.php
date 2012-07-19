@@ -6,17 +6,17 @@
  * Time: 23:19
  *
  */
-class filesystem_path{
+class filter_path{
     /**
      * @static
      * @param array $tabsearch
      * @param array $tabreplace
      * @return mixed|string
      * @example :
-     filesystem_path::basePath(
-        array('component','filesystem'),
-        array('','')
-     );
+         filesystem_path::basePath(
+            array('component','filesystem'),
+            array('','')
+         );
      */
     public static function basePath($tabsearch=array('component','filesystem'),$tabreplace=array('','')){
         try{
@@ -35,9 +35,6 @@ class filesystem_path{
             }else{
                 $replace = array('','');
             }
-            //print_r($search);
-
-            //dirname(realpath( __FILE__ ))
             $pathreplace = str_replace($search, $replace, __DIR__);
             if(strrpos($pathreplace,DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR)){
                 $path = substr($pathreplace, -1);

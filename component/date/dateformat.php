@@ -136,8 +136,8 @@ class date_dateformat extends DateTime{
      * @throws Exception
      * @return \DateTime|string DateTime
      * @example :
-     * $dateformat = new date_dateformat();
-     * $dateformat->modify('+1 day',"Y-m-d H:i:s");
+        $dateformat = new date_dateformat();
+        $dateformat->modify('+1 day',"Y-m-d H:i:s");
      */
     public function modify($modify,$format='Y-m-d',$time=null){
         if($modify != null){
@@ -208,6 +208,19 @@ class date_dateformat extends DateTime{
      * @param $time1
      * @param $time2
      * @return string
+     * @example :
+        $date = new date_dateformat();
+        $datestart = $date->dateDefine('2012-01-01');
+        $interval = $date->setInterval('2012-01-01','D');
+        $dateend = $date->add(
+        array('interval'=>$interval,'type'=>'object'),
+            'Y-m-d',
+            '2012-01-30'
+        );
+        print $date->getStateDiff($dateend,$datestart);
+        Return expired
+     *
+     *
      */
     public function getStateDiff($time1,$time2){
         $interval = $this->dateDiff($time1,$time2,$return_f = '%R%a');

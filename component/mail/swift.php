@@ -1,35 +1,4 @@
 <?php
-# -- BEGIN LICENSE BLOCK ----------------------------------
-#
-# This file is part of Magix CMS.
-# Magix CMS, a CMS optimized for SEO
-# Copyright (C) 2010 - 2011  Gerits Aurelien <aurelien@magix-cms.com>
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# -- END LICENSE BLOCK -----------------------------------
-/**
- * MAGIX CMS
- * @category   Model 
- * @package    magixglobal
- * @copyright  MAGIX CMS Copyright (c) 2011 Gerits Aurelien, 
- * http://www.magix-cms.com, http://www.magix-cjquery.com
- * @license    Dual licensed under the MIT or GPL Version 3 licenses.
- * @version    1.0
- * @author Gérits Aurélien <aurelien@magix-cms.com> | <gerits.aurelien@gmail.com>
- * @name mail
- *
- */
 class mail_swift{
 	/**
 	 * 
@@ -49,12 +18,14 @@ class mail_swift{
 				'setUsername'	=>	'',
 				'setPassword'	=>	''
 			);
-	/**
-	 * 
-	 * Constructor
-	 * @param string $type
-	 * @param array $options
-	 */
+
+    /**
+     *
+     * Constructor
+     * @param string $type
+     * @param null $Options
+     * @internal param array $options
+     */
 	public function __construct($type,$Options=null){
 		$this->_mailer = Swift_Mailer::newInstance(self::transportConfig($type,$Options));
 	}
@@ -66,11 +37,15 @@ class mail_swift{
 	private function getOptions() {
 		return $this->_transport_options;
 	}
+
     /**
      * INI transport
      * @param string $type
-     * @param string $host
-     * @param integer $port
+     * @param $Options
+     * @throws
+     * @internal param string $host
+     * @internal param int $port
+     * @return \Swift_MailTransport|\Swift_SmtpTransport
      * @access public
      * @static
      */
@@ -100,17 +75,20 @@ class mail_swift{
     	}
     	return $config;
     }
-   /**
-    * Le contenu du message (email,sujet,contenu,...)
-    * @param void $sw_message
-    * @param string $subject
-    * @param string $from
-    * @param string $recipient
-    * @param string $bodyhtml
-    * @param string $bodytxt
-    * @access public
-    * @static
-    */
+
+    /**
+     * Le contenu du message (email,sujet,contenu,...)
+     * @param string $subject
+     * @param array|string $from
+     * @param array|string $recipient
+     * @param string $bodyhtml
+     * @param bool $setReadReceiptTo
+     * @internal param void $sw_message
+     * @internal param string $bodytxt
+     * @return \Swift_Mime_Message
+     * @access public
+     * @static
+     */
 	public function body_mail($subject,$from=array(),$recipient=array(),$bodyhtml,$setReadReceiptTo=false){
 		$sw_message = Swift_Message::newInstance();
 		$sw_message->getHeaders()->get('Content-Type')->setValue('text/html');
@@ -126,44 +104,49 @@ class mail_swift{
 		}
 		return $sw_message;
     }
-	/**
-    * Plugin decorator 
-    * @param void $mailer
-    * @param string replacement
-    */
+
+    /**
+     * Plugin decorator
+     * @param string replacement
+     * @internal param void $mailer
+     */
     public function plugin_decorator($replacements){
     	$decorator = new Swift_Plugins_DecoratorPlugin($replacements);
 		$this->_mailer->registerPlugin($decorator);
     }
+
     /**
-    * Plugin antiflood 
-    * @param void $mailer
-    * @param string $threshold
-    * @param $sleep
-    */
+     * Plugin antiflood
+     * @param string $threshold
+     * @param $sleep
+     * @internal param void $mailer
+     */
 	public function plugin_antiflood($threshold, $sleep){
     	//Use AntiFlood to re-connect after 100 emails specify a time in seconds to pause for (30 secs)
 		$antiflood = new Swift_Plugins_AntiFloodPlugin($threshold, $sleep);
 		$this->_mailer->registerPlugin($antiflood);
     }
+
     /**
-    * Plugin throttler 
-    * @param void $mailer
-    * @param $rate
-    * @param $mode
-    */
+     * Plugin throttler
+     * @param $rate
+     * @param $mode
+     * @internal param void $mailer
+     */
 	public function plugin_throttler($rate,$mode){
     	//Use AntiFlood to re-connect after 100 emails specify a time in seconds to pause for (30 secs)
 		$throttler = new Swift_Plugins_ThrottlerPlugin($rate,$mode);
 		//Rate limit to 10MB per-minute OR Rate limit to 100 emails per-minute
 		$this->_mailer->registerPlugin($throttler);
     }
+
     /**
      * fusion des plugins anti flood et throttler pour un envoi de masse
-     * @param void $mailer
      * @param integer $threshold
      * @param integer $sleep
      * @param string $throttlermode
+     * @throws Exception
+     * @internal param void $mailer
      */
     public function plugins_massive_mailer($threshold = 100, $sleep = 10,$throttlermode = 'bytes'){
     	try {
@@ -195,12 +178,15 @@ class mail_swift{
 			magixglobal_model_system::magixlog('An error has occured :',$e);
 		}
     }
- 	/**
+
+    /**
      * Envoi du message avec la méthode batch send
-     * @param void $mailer
      * @param string $message
-     * @param void $failed
-     * @param string $logger
+     * @param bool $failures
+     * @param bool $log
+     * @internal param void $mailer
+     * @internal param void $failed
+     * @internal param string $logger
      */
     public function batch_send_mail($message,$failures=false,$log=false){
     	if(!$this->_mailer->send($message)){

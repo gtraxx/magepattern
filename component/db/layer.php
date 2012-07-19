@@ -37,7 +37,7 @@ class db_layer{
     );
 
     /**
-     *
+     *  Construct
      */
     public function __construct(){
         try{
@@ -101,17 +101,17 @@ class db_layer{
         }else{
             $optionDB = self::$option;
         }
-        if(isset($optionDB['mode'])){
+        if(array_key_exists('mode', $optionDB)){
             $setConfig['mode'] = $optionDB['mode'];
         }else{
             $setConfig['mode'] = self::$option['mode'];
         }
-        if(isset($optionDB['closeCursor'])){
+        if(array_key_exists('closeCursor', $optionDB)){
             $setConfig['closeCursor'] = $optionDB['closeCursor'];
         }else{
             $setConfig['closeCursor'] = self::$option['closeCursor'];
         }
-        if(isset($optionDB['debugParams'])){
+        if(array_key_exists('debugParams', $optionDB)){
             $setConfig['debugParams'] = $optionDB['debugParams'];
         }else{
             $setConfig['debugParams'] = self::$option['debugParams'];
@@ -147,8 +147,19 @@ class db_layer{
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
+
+    /**
+     * Retourne un tableau contenant toutes les lignes du jeu d'enregistrements
+     * @param $sql
+     * @param bool $execute
+     * @param bool $setOption
+     * @return mixed
+     */
     public function fetchAll($sql,$execute=false,$setOption=false){
         try{
+            /**
+             * Charge la configuration
+             */
             $setConfig = $this->setConfig($setOption);
             $prepare = $this->prepare($sql);
             $prepare->setFetchMode($this->setMode($setConfig['mode']));
