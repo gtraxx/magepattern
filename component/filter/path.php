@@ -18,7 +18,7 @@ class filter_path{
             array('','')
          );
      */
-    public static function basePath($tabsearch=array('component','filesystem'),$tabreplace=array('','')){
+    public static function basePath($tabsearch=array('component','filter'),$tabreplace=array('','')){
         try{
             if($tabsearch != false){
                 if(is_array($tabsearch)){
@@ -43,7 +43,7 @@ class filter_path{
             }
             return $path;
         }catch(Exception $e) {
-            $logger = new debug_logger(MP_TMP_DIR);//__DIR__.'/test'
+            $logger = new debug_logger(MP_TMP_DIR);
             $logger->log('php', 'error', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }

@@ -43,6 +43,7 @@ class db_adapter_mysql extends db_adapter_connector {
         // If a character set has been specified, we'll execute a query against
         // the database to set the correct character set. By default, this is
         // set to UTF-8 which should be fine for most scenarios.
+
         if (isset($config['charset']))
         {
             $connection->prepare("SET NAMES '{$config['charset']}'")->execute();
