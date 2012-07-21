@@ -78,11 +78,12 @@ class filter_htmlentities{
 
         return html_entity_decode($str,ENT_QUOTES,'UTF-8');
     }
+
     /**
      * function encode entities HTML
      *
      * @param string $str
-     * @param void $keep_special
+     * @param bool|void $keep_special
      * @return string
      */
     public static function encodeEntities($str,$keep_special=false){
@@ -129,24 +130,28 @@ class filter_htmlentities{
         $str = str_replace('"','\"',$str);
         return $str;
     }
+
     /**
      * Remove host in URL
      *
      * Removes host part in URL
      *
-     * @param string	$str		URL to transform
-     * @return	string
+     * @param $url
+     * @internal param string $str URL to transform
+     * @return    string
      */
     public static function stripHostURL($url)
     {
         return preg_replace('|^[a-z]{3,}://.*?(/.*$)|','$1',$url);
     }
+
     /**
      *
      * @get the full url of page
      *
+     * @param bool $file
+     * @param bool $absolute
      * @return string
-     *
      */
     public static function getUrl($file=false,$absolute=true){
         /*** check for https ***/

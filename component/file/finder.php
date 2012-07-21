@@ -11,6 +11,7 @@ class file_finder{
      * scans the directory and returns all files
      * @param string $directory
      * @param string exclude
+     * @return array|null
      */
     public function scanDir($directory,$exclude=''){
         try{
@@ -23,17 +24,16 @@ class file_finder{
                 }
             }
             return $file;
-        }catch(Exception $e) {
-            $log = magixcjquery_error_log::getLog();
-            $log->logfile = M_TMP_DIR;
-            $log->write('An error has occured', $e->getMessage(), $e->getLine());
-            die("Failed scanDir");
+        }catch (Exception $e){
+            $logger = new debug_logger(MP_TMP_DIR);
+            $logger->log('error', 'php', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
     /**
      * scan folders recursive and returns all folders
      * @param string $directory
      * @param string exclude
+     * @return array|string
      */
     public function scanRecursiveDir($directory,$exclude=''){
         try{
@@ -46,19 +46,19 @@ class file_finder{
                 }
             }
             return $file;
-        }catch(Exception $e) {
-            $log = magixcjquery_error_log::getLog();
-            $log->logfile = M_TMP_DIR;
-            $log->write('An error has occured', $e->getMessage(), $e->getLine());
-            die("Failed scan folders recursive");
+        }catch (Exception $e){
+            $logger = new debug_logger(MP_TMP_DIR);
+            $logger->log('error', 'php', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
     /**
      * scans the folder and returns all folders and files
      * @param string $directory
+     * @return string
      */
     public function scanRecursiveDirectoryFile($directory){
         $objects = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory), RecursiveIteratorIterator::SELF_FIRST);
+        $dir = '';
         foreach($objects as $name => $object){
             $dir[] .= $object->getFilename();
         }
@@ -70,28 +70,11 @@ class file_finder{
         //$directories->append (new RecursiveIteratorIterator (new RecursiveDirectoryIterator ('/autre_repertoire/')));
         $itFiles = new ExtensionFilterIteratorDecorator($directories);
         $itFiles->setExtension ('.phtml');
+        $t = '';
         foreach ( $itFiles as $Item )  {
             //applique le traitement à $Item
             return $t[] = $Item;
         }
-    }
-    /**
-     * erase Recursive file in multi dir
-     * @param string $directory
-     */
-    public function removeRecursiveFile($directory,$debug=false){
-        $objects = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory), RecursiveIteratorIterator::SELF_FIRST);
-        $dir = null;
-        foreach($objects as $name => $object){
-            if($object->isDir($name)) continue;
-            if($debug == true){
-                $dir[] .=  $name;
-                magixcjquery_debug_magixfire::magixFireInfo($dir);
-            }else{
-                $dir[] .=  @unlink($name);
-            }
-        }
-        return $dir;
     }
 
     /**
@@ -104,21 +87,9 @@ class file_finder{
             $dir = new sizeDirectory($directory);
             foreach($dir as $size) $foldersize += $size;
             return $foldersize.' bytes';
-        }catch (Exception $e) {
-            if (M_LOG == 'log') {
-                if (M_TMP_DIR != null) {
-                    $log = magixcjquery_error_log::getLog();
-                    $log->logfile = $_SERVER['DOCUMENT_ROOT'].M_TMP_DIR;
-                    $log->write('An error has occured', $e->getMessage(), $e->getLine());
-                    exit("Error has sizeDirectory, view log file");
-                }else{
-                    die('error path tmp dir');
-                }
-            }elseif(M_LOG == 'debug'){
-                print $e->getMessage(). $e->getLine()."<br />";
-            }else{
-                exit("Error has sizeDirectory, debug with log");
-            }
+        }catch (Exception $e){
+            $logger = new debug_logger(MP_TMP_DIR);
+            $logger->log('error', 'php', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
     /**
@@ -180,21 +151,9 @@ class file_finder{
                 $filter[] .= $file;
             }
             return $filter;
-        }catch (Exception $e) {
-            if (M_LOG == 'log') {
-                if (M_TMP_DIR != null) {
-                    $log = magixcjquery_error_log::getLog();
-                    $log->logfile = $_SERVER['DOCUMENT_ROOT'].M_TMP_DIR;
-                    $log->write('An error has occured', $e->getMessage(), $e->getLine());
-                    exit("Error has filterFiles, view log file");
-                }else{
-                    die('error path tmp dir');
-                }
-            }elseif(M_LOG == 'debug'){
-                print $e->getMessage(). $e->getLine()."<br />";
-            }else{
-                exit("Error has filterFiles, debug with log");
-            }
+        }catch (Exception $e){
+            $logger = new debug_logger(MP_TMP_DIR);
+            $logger->log('error', 'php', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
 }

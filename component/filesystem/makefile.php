@@ -247,6 +247,27 @@ class filesystem_makefile{
     }
 
     /**
+     * erase Recursive file in multi dir
+     * @param string $directory
+     * @param bool $debug
+     * @return null|string
+     */
+    public function removeRecursiveFile($directory,$debug=false){
+        $objects = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory), RecursiveIteratorIterator::SELF_FIRST);
+        $dir = null;
+        foreach($objects as $name => $object){
+            if($object->isDir($name)) continue;
+            if($debug == true){
+                $dir[] .=  $name;
+                //magixcjquery_debug_magixfire::magixFireInfo($dir);
+            }else{
+                $dir[] .=  @unlink($name);
+            }
+        }
+        return $dir;
+    }
+
+    /**
      * writing values in constants
      * @param string $name
      * @param void $val
