@@ -130,6 +130,12 @@ class filesystem_makefile{
      *
      * @throws Exception
      * @copyright symfony 2
+     * @example :
+     * $makefile = new filesystem_makefile();
+     * $makefile->copy(
+         $root."/truc/montest.txt",
+         $root."/machin/montest.txt"
+        );
      */
     public function copy($originFile, $targetFile, $override = false)
     {

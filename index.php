@@ -45,7 +45,7 @@ foreach  ($db->fetchAll($sql) as $row) {
 print $color.'<br />';
 
 $select =  $db->fetch('SELECT id, color,name FROM fruit');
-print $select['name'];
+print $select['name'].'<br />';
 /*$id=1;
 $db = new db_layer();
 $sql =  'SELECT id, color
@@ -57,6 +57,11 @@ foreach  ($db->fetchAll($sql,array($id)) as $row) {
 print $color.'<br />';*/
 $root =  filter_path::basePath();
 $makefile = new filesystem_makefile();
+$string = 'monmailmonadresse';
+$input = new form_inputfilter();
+if($input->isNumeric($string)){
+    print $string;
+}
 /*$sql = 'INSERT INTO fruit (name,color) VALUE(:name,:color)';
 $db->insert(
     $sql,array(':name'=>'couleur verte avec évaluation',':color'=>'vert')
