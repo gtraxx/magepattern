@@ -35,24 +35,6 @@ abstract class db_adapter_connector {
      * @var string
      */
     protected static $pass = MP_DBPASSWORD;
-    /**
-     * @access protected
-     * Load DB INFO HOST AND NAME
-     *
-     * @return string
-     */
-    /**
-     * The PDO connection options.
-     *
-     * @var array
-     */
-    protected $options = array(
-        PDO::ATTR_CASE => PDO::CASE_LOWER,
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
-        PDO::ATTR_STRINGIFY_FETCHES => false,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    );
 
     /**
      * Establish a PDO database connection.

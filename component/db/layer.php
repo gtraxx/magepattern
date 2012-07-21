@@ -30,7 +30,7 @@ class db_layer{
     /**
      * @var array
      */
-    protected static $option = array(
+    protected static $setOption = array(
         'mode'=>'assoc',
         'closeCursor'=>true,
         'debugParams'=>false
@@ -85,7 +85,10 @@ class db_layer{
         switch(self::driver()){
             case 'mysql':
                 $adapter = new db_adapter_mysql();
-            break;
+                break;
+            case 'pgsql':
+                $adapter = new db_adapter_postgres();
+                break;
         }
         return $adapter->connect($this->config);
     }
@@ -122,22 +125,22 @@ class db_layer{
                 $optionDB = $option;
             }
         }else{
-            $optionDB = self::$option;
+            $optionDB = self::$setOption;
         }
         if(array_key_exists('mode', $optionDB)){
             $setConfig['mode'] = $optionDB['mode'];
         }else{
-            $setConfig['mode'] = self::$option['mode'];
+            $setConfig['mode'] = self::$setOption['mode'];
         }
         if(array_key_exists('closeCursor', $optionDB)){
             $setConfig['closeCursor'] = $optionDB['closeCursor'];
         }else{
-            $setConfig['closeCursor'] = self::$option['closeCursor'];
+            $setConfig['closeCursor'] = self::$setOption['closeCursor'];
         }
         if(array_key_exists('debugParams', $optionDB)){
             $setConfig['debugParams'] = $optionDB['debugParams'];
         }else{
-            $setConfig['debugParams'] = self::$option['debugParams'];
+            $setConfig['debugParams'] = self::$setOption['debugParams'];
         }
         return $setConfig;
     }

@@ -6,8 +6,7 @@
  * Time: 23:19
  *
  */
-class db_adapter_mysql extends db_adapter_connector {
-
+class db_adapter_postgres extends db_adapter_connector {
     /**
      * The PDO connection options.
      *
@@ -18,8 +17,8 @@ class db_adapter_mysql extends db_adapter_connector {
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
         PDO::ATTR_STRINGIFY_FETCHES => false,
-        PDO::ATTR_EMULATE_PREPARES => false,
     );
+
     /**
      * Establish a PDO database connection.
      *
@@ -47,22 +46,15 @@ class db_adapter_mysql extends db_adapter_connector {
         /**
          * dsn
          */
-        $dsn = "mysql:host={$host};dbname={$database}";
 
-        // The developer has the freedom of specifying a port for the MySQL database
-        // or the default port (3306) will be used to make the connection by PDO.
-        // The Unix socket may also be specified if necessary.
+        $dsn = "pgsql:host={$host};dbname={$database}";
+
+        // The developer has the freedom of specifying a port for the PostgresSQL
+        // database or the default port (5432) will be used by PDO to create the
+        // connection to the database for the developer.
         if (isset($config['port']))
         {
             $dsn .= ";port={$config['port']}";
-        }
-
-        // The UNIX socket option allows the developer to indicate that the MySQL
-        // instance must be connected to via a given socket. We'll just append
-        // it to the DSN connection string if it is present.
-        if (isset($config['unix_socket']))
-        {
-            $dsn .= ";unix_socket={$config['unix_socket']}";
         }
 
         $connection = new PDO($dsn, $username, $password, $this->options($config));
@@ -70,7 +62,6 @@ class db_adapter_mysql extends db_adapter_connector {
         // If a character set has been specified, we'll execute a query against
         // the database to set the correct character set. By default, this is
         // set to UTF-8 which should be fine for most scenarios.
-
         if (isset($config['charset']))
         {
             $connection->prepare("SET NAMES '{$config['charset']}'")->execute();
@@ -78,5 +69,4 @@ class db_adapter_mysql extends db_adapter_connector {
 
         return $connection;
     }
-
 }
