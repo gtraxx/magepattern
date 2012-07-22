@@ -130,6 +130,10 @@ class debug_logger {
         }
 
         $this->write($logfile, $row);
+        $firephp = new debug_firephp();
+        if($firephp instanceof debug_firephp){
+            $firephp->error($row);
+        }
     }
 
     /**

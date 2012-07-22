@@ -11,7 +11,7 @@ class http_session{
      * @access private
      * Démarre une nouvelle session
      */
-    public function session_start($session_name='mp_default_s'){
+    public function start($session_name='mp_default_s'){
         if(isset($session_name)){
             $name = $session_name;
         }
@@ -27,13 +27,28 @@ class http_session{
     }
 
     /**
+     * Création d'un token
+     * @param $tokename
+     * @return array
+     */
+    public function token($tokename){
+        if (empty($_SESSION[$tokename])){
+            return $_SESSION[$tokename] = filter_rsa::tokenID();
+        }else{
+            if (isset($_SESSION[$tokename])){
+                return $_SESSION[$tokename];
+            }
+        }
+    }
+
+    /**
      *
      * initialise les variables de session
      * @param array() $session
      * @throws Exception
      * @internal param bool $debug
      */
-    private function ini_session_var($session){
+    private function iniSessionVar($session){
         if(is_array($session)){
             foreach($session as $row => $val){
                 $_SESSION[$row] = $val;
@@ -51,15 +66,16 @@ class http_session{
      * @internal param array $session
      * @internal param bool $debug
      */
-    public function session_run($session_tabs,$setOption=false){
+    public function run($session_tabs,$setOption=false){
         try {
             $setOption;
-            $this->ini_session_var($session_tabs);
+            $this->iniSessionVar($session_tabs);
         }catch(Exception $e) {
             $logger = new debug_logger(MP_TMP_DIR);
             $logger->log('php', 'error', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
+
     /**
      *
     $session = new http_session();
@@ -78,16 +94,16 @@ class http_session{
      * @access public
      * Affiche le debug pour les sessions
      */
-    /*public function debug(){
+    public function debug(){
         if (M_FIREPHP) {
-            $firebug = new magixcjquery_debug_magixfire();
-            $firebug->magixFireGroup('Magix Session');
+            $firebug = new debug_firephp();
+            $firebug->group('Magix Session');
             //$firebug->magixFireLog($_SESSION);
-            $firebug->magixFireDump('session run',$_SESSION);
-            $firebug->magixFireGroupEnd();
+            $firebug->dump('session run',$_SESSION);
+            $firebug->groupEnd();
         }else{
             var_dump($_SESSION);
         }
-    }*/
+    }
 }
 ?>

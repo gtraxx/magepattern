@@ -23,6 +23,8 @@ class filter_path{
             if($tabsearch != false){
                 if(is_array($tabsearch)){
                     $search = array_merge($tabsearch,array(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR));
+                }else{
+                    throw new Exception(__METHOD__.' params "tabsearch" is not array');
                 }
             }else{
                 $search = array_merge(explode(DIRECTORY_SEPARATOR,__DIR__),array(DIRECTORY_SEPARATOR));
@@ -31,6 +33,8 @@ class filter_path{
             if($tabreplace != false){
                 if(is_array($tabreplace)){
                     $replace = $tabreplace;
+                }else{
+                    throw new Exception(__METHOD__.' params "tabreplace" is not array');
                 }
             }else{
                 $replace = array('','');

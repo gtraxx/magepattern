@@ -7,17 +7,6 @@
  *
  */
 require dirname(__FILE__).'/_autoload.php';
-if(http_request::isGet('machin')){
-    $date = new date_dateformat();
-    $datestart = $date->dateDefine('2012-01-01');
-    $interval = $date->setInterval('2012-01-01','D');
-    $dateend = $date->add(
-        array('interval'=>$interval,'type'=>'object'),
-        'Y-m-d',
-        '2012-01-30'
-    );
-    print $date->getStateDiff($dateend,$datestart);
-}
 // Database driver (mysql, pgsql)
 define('MP_DBDRIVER','mysql');
 
@@ -33,10 +22,37 @@ define('MP_DBPASSWORD','root');
 // Database name
 define('MP_DBNAME','test');
 
+// DEBUG (debug,log or false)
+define('M_LOG','debug');
+
 // Path for error log
 define('MP_TMP_DIR','/Applications/MAMP/htdocs/magepattern/test');
 
-$color = '';
+// FirePHP (false or true)
+define('MP_FIREPHP',true);
+
+if(defined('MP_LOG')){
+    if(MP_LOG == 'debug'){
+        $dis_errors = 1;
+    }elseif(MP_LOG == 'log'){
+        $dis_errors = 1;
+    }else{
+        $dis_errors = 0;
+    }
+    ini_set('display_errors', $dis_errors);
+}
+if(http_request::isGet('machin')){
+    $date = new date_dateformat();
+    $datestart = $date->dateDefine('2012-01-01');
+    $interval = $date->setInterval('2012-01-01','D');
+    $dateend = $date->add(
+        array('interval'=>$interval,'type'=>'object'),
+        'Y-m-d',
+        '2012-01-30'
+    );
+    print $date->getStateDiff($dateend,$datestart);
+}
+/*$color = '';
 $db = new db_layer();
 $sql =  'SELECT id, color FROM fruit';
 foreach  ($db->fetchAll($sql) as $row) {
@@ -55,13 +71,22 @@ foreach  ($db->fetchAll($sql,array($id)) as $row) {
     $color.= $row['color'];
 }
 print $color.'<br />';*/
-$root =  filter_path::basePath();
-$makefile = new filesystem_makefile();
+/*
 $string = 'monmailmonadresse';
 $input = new form_inputfilter();
 if($input->isNumeric($string)){
     print $string;
 }
+$hashstring =  'monpassword';
+print filter_rsa::hashEncode('md5',$hashstring).'<br/>';
+print filter_rsa::hashEncode('md5_base64',$hashstring).'<br/>';
+print filter_rsa::hashEncode('sha1',$hashstring).'<br/>';
+print filter_rsa::tokenID();*/
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=utf-8');
+}
+/*$firephp = new debug_firephp();
+$firephp->log('test');*/
 /*$sql = 'INSERT INTO fruit (name,color) VALUE(:name,:color)';
 $db->insert(
     $sql,array(':name'=>'couleur verte avec évaluation',':color'=>'vert')
@@ -70,7 +95,11 @@ $db->insert(
 $db->transaction(array($sql));*/
 //$makefile->mkdir(array($root."/baz"));
 //$makefile->remove(array($root."/truc",$root."/machin"));
-/*$makefile->rename(array(
+$root =  filter_path::basePath();
+$form = new form_input();
+print $form->field('test',30,30,'','maclass');
+/*$makefile = new filesystem_makefile();
+$makefile->rename(array(
     $root."/super"=>$root."/truc"
 ));*/
 //$makefile->copy($root."/truc/montest.txt",$root."/machin/montest.txt");
@@ -81,3 +110,4 @@ print_r($truc->getPrefixFallbacks());
 $truc->register();*/
 /*$test = new test();
 $test->mafonction();*/
+?>
