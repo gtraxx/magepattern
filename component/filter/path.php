@@ -11,12 +11,13 @@ class filter_path{
      * @static
      * @param array $tabsearch
      * @param array $tabreplace
+     * @throws Exception
      * @return mixed|string
      * @example :
-         filesystem_path::basePath(
-            array('component','filesystem'),
-            array('','')
-         );
+        filesystem_path::basePath(
+        array('component','filesystem'),
+        array('','')
+        );
      */
     public static function basePath($tabsearch=array('component','filter'),$tabreplace=array('','')){
         try{

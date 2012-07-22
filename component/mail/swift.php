@@ -174,9 +174,10 @@ class mail_swift{
 					$this->plugin_throttler($rate, $mode);
 	    		}
 	    	}
-    	}catch (Exception $e){
-			magixglobal_model_system::magixlog('An error has occured :',$e);
-		}
+    	}catch(Exception $e) {
+            $logger = new debug_logger(MP_TMP_DIR);
+            $logger->log('php', 'error', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+        }
     }
 
     /**
@@ -190,12 +191,14 @@ class mail_swift{
      */
     public function batch_send_mail($message,$failures=false,$log=false){
     	if(!$this->_mailer->send($message)){
-    		magixcjquery_debug_magixfire::magixFireDump("Failures: ", $failures);
+            debug_firephp::dump("Failures: ", $failures);
     	}
     	if($log){
 	    	$echologger = new Swift_Plugins_Loggers_EchoLogger();
 			$this->_mailer->registerPlugin(new Swift_Plugins_LoggerPlugin($echologger));
-	    	magixcjquery_debug_magixfire::magixFireDump("Failures: ",$echologger->dump());
+	    	debug_firephp::dump("Failures: ",$echologger->dump());
+            $logger = new debug_logger(MP_TMP_DIR);
+            $logger->log('mail', 'Failures', 'Failures : '.$echologger->dump(), debug_logger::LOG_VOID);
     	}
     }
 }

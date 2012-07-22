@@ -97,7 +97,8 @@ $db->transaction(array($sql));*/
 //$makefile->remove(array($root."/truc",$root."/machin"));
 $root =  filter_path::basePath();
 $form = new form_input();
-print $form->field('test',30,30,'','maclass');
+print $form->field('myfield',30,30,'','myclass')."\n";
+print $form->textArea('myfield',20,30,'Default text','myclass')."\n";
 /*$makefile = new filesystem_makefile();
 $makefile->rename(array(
     $root."/super"=>$root."/truc"
