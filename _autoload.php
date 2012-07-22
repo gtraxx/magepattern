@@ -2,8 +2,12 @@
 # -- BEGIN LICENSE BLOCK ----------------------------------
 #
 # This file is part of Mage Pattern.
-# The toolkit PHP developer developed for SC BOX
+# The toolkit PHP for developer, integrated in SC BOX
 # Copyright (C) 2012  Gerits Aurelien <aurelien@magix-dev.be> - <aurelien@sc-box.com>
+#
+# OFFICIAL TEAM MAGE PATTERN:
+#
+#   * Gerits Aurelien (Author - Developer) <aurelien@sc-box.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +29,14 @@
 # this list of conditions and the following disclaimer in the documentation
 # and/or other materials provided with the distribution.
 #
+# DISCLAIMER
+
+# Do not edit or add to this file if you wish to upgrade Mage Pattern to newer
+# versions in the future. If you wish to customize Mage Pattern for your
+# needs please refer to http://www.sc-box.com for more information.
+#
 # -- END LICENSE BLOCK -----------------------------------
+
 final class magepattern_bootstrap{
     /**
      * @var bool
