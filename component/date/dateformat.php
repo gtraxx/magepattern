@@ -78,10 +78,32 @@ class date_dateformat extends DateTime{
      * @return bool
      * @static
      */
-	static public function isValid( $y = null, $m = null, $d = null ){
+	public static function isValid( $y = null, $m = null, $d = null ){
 		if ( $y === null || $m === null || $d === null ) return false ;
 		return checkdate( $m, $d, $y ) ;
 	}
+    /**
+     * W3C date Format
+     * @param $str
+     * @return void
+     */
+    public static function isW3CValid($str) {
+        $stamp = strtotime( $str );
+        if (!is_numeric($stamp))
+        {
+            return false;
+        }
+        $month = date( 'm', $stamp );
+        $day   = date( 'd', $stamp );
+        $year  = date( 'Y', $stamp );
+
+        if (checkdate($month, $day, $year))
+        {
+            return $str;
+        }
+
+        return false;
+    }
 	/**
 	 * 
 	 * @param string $format

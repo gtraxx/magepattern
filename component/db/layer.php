@@ -75,6 +75,15 @@ class db_layer{
     );
 
     /**
+     * @var bool
+     */
+    protected $inTransaction = false;
+    /**
+     *
+     * @var boolean
+     */
+    protected $isPrepared = false;
+    /**
      *  Construct
      */
     public function __construct($config = false){
@@ -110,6 +119,7 @@ class db_layer{
     }
 
     /**
+     * Retourne le driver courant
      * @return string
      */
     private function driver(){
@@ -117,6 +127,7 @@ class db_layer{
     }
 
     /**
+     * Charge la class correspondant au driver sélectionné
      * @return PDO
      */
     private function connection(){
@@ -205,11 +216,24 @@ class db_layer{
      */
     public function prepare($sql){
         try{
+            if ($this->isPrepared) {
+                throw new Exception('This statement has been prepared already');
+            }
             return self::connection()->prepare($sql);
+            $this->isPrepared = true;
+
         }catch (PDOException $e){
             $logger = new debug_logger(MP_TMP_DIR);//__DIR__.'/test'
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPrepared()
+    {
+        return $this->isPrepared;
     }
 
     /**
@@ -386,6 +410,7 @@ class db_layer{
      */
     public function beginTransaction(){
         self::connection()->beginTransaction();
+        $this->inTransaction = true;
     }
     /**
      * instance exec
@@ -401,6 +426,7 @@ class db_layer{
      */
     public function commit(){
         self::connection()->commit();
+        $this->inTransaction = false;
     }
     /**
      * instance rollback
@@ -408,7 +434,16 @@ class db_layer{
      */
     public function rollback(){
         self::connection()->rollBack();
+        if (!$this->inTransaction) {
+            throw new Exception('Must call beginTransaction() before you can rollback');
+        }
     }
+
+    /**
+     * Effetcuer une Transaction
+     * @param $sql
+     * @throws Exception
+     */
     public function transaction($sql){
         try{
             $this->beginTransaction();
@@ -425,6 +460,114 @@ class db_layer{
             $logger = new debug_logger(MP_TMP_DIR);
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
+    }
+
+    /**
+     * instance fetchColumn
+     * @param $sql
+     * @param $column
+     * @param bool $setOption
+     * @return mixed
+     */
+    public function fetchColumn($sql,$column,$setOption=false){
+        try{
+            /**
+             * Charge la configuration
+             */
+            $setConfig = $this->setConfig($setOption);
+            $prepare = $this->prepare($sql);
+            $prepare->execute();
+            $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+            $result = $prepare->fetchColumn($column);
+            $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+            return $result;
+        }catch (PDOException $e){
+            $logger = new debug_logger(MP_TMP_DIR);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+        }
+    }
+
+    /**
+     * Retourne le nombre de colonnes dans le jeu de résultats
+     * @param $sql
+     * @param bool $setOption
+     * @return mixed
+     */
+    public function columnCount($sql,$setOption=false){
+        try{
+            /**
+             * Charge la configuration
+             */
+            $setConfig = $this->setConfig($setOption);
+            $prepare = $this->prepare($sql);
+            $prepare->execute();
+            $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+            $result = $prepare->columnCount();
+            //$setConfig['closeCursor'] ? $prepare->closeCursor():'';
+            return $result;
+        }catch (PDOException $e){
+            $logger = new debug_logger(MP_TMP_DIR);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+        }
+    }
+
+    /**
+     * Retourne le nombre de lignes affectées par la dernière requête DELETE, INSERT ou UPDATE exécutée par l'objet
+     * @param $sql
+     * @param bool $setOption
+     * @return mixed
+     */
+    public function rowCount($sql,$setOption=false){
+        try{
+            /**
+             * Charge la configuration
+             */
+            $setConfig = $this->setConfig($setOption);
+            $prepare = $this->prepare($sql);
+            $prepare->execute();
+            $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+            $result = $prepare->rowCount();
+            //$setConfig['closeCursor'] ? $prepare->closeCursor():'';
+            return $result;
+        }catch (PDOException $e){
+            $logger = new debug_logger(MP_TMP_DIR);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+        }
+    }
+    /**
+     * Instance getColumnMeta
+     * @param integer $column
+     */
+    public function getColumnMeta($column){
+        return self::connection()->getColumnMeta($column);
+    }
+    /**
+     * Return an array of available PDO drivers
+     * @return array(void)
+     */
+    public function availableDrivers(){
+        return self::connection()->getAvailableDrivers();
+    }
+    /**
+     * Returns the ID of the last inserted row or sequence value
+     */
+    public function lastInsertId(){
+        return self::connection()->lastInsertId();
+    }
+    /**
+     * Quotes a string for use in a query.
+     * @param string $string
+     * @return string
+     */
+    public function quote($string){
+        return self::connection()->quote($string);
+    }
+    /**
+     * Advances to the next rowset in a multi-rowset statement handle
+     * @return void
+     */
+    public function nextRowset(){
+        return self::connection()->nextRowset();
     }
 }
 ?>

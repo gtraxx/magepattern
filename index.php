@@ -52,25 +52,6 @@ if(http_request::isGet('machin')){
     );
     print $date->getStateDiff($dateend,$datestart);
 }
-/*$color = '';
-$db = new db_layer();
-$sql =  'SELECT id, color FROM fruit';
-foreach  ($db->fetchAll($sql) as $row) {
-    $color.= $row['color'].'<br />';
-}
-print $color.'<br />';
-
-$select =  $db->fetch('SELECT id, color,name FROM fruit');
-print $select['name'].'<br />';
-/*$id=1;
-$db = new db_layer();
-$sql =  'SELECT id, color
-        FROM fruit
-        WHERE id = ?';
-foreach  ($db->fetchAll($sql,array($id)) as $row) {
-    $color.= $row['color'];
-}
-print $color.'<br />';*/
 /*
 $string = 'monmailmonadresse';
 $input = new form_inputfilter();
@@ -95,10 +76,31 @@ $db->insert(
 $db->transaction(array($sql));*/
 //$makefile->mkdir(array($root."/baz"));
 //$makefile->remove(array($root."/truc",$root."/machin"));
-$root =  filter_path::basePath();
+/*$root =  filter_path::basePath();
 $form = new form_input();
 print $form->field('myfield',30,30,'','myclass')."\n";
 print $form->textArea('myfield',20,30,'Default text','myclass')."\n";
+*/
+$color = '';
+$db = new db_layer();
+$sql =  'SELECT id, color FROM fruit';
+foreach  ($db->fetchAll($sql) as $row) {
+    $color.= $row['color'].'<br />';
+}
+print $color.'<br />';
+
+/*$select =  $db->fetch('SELECT id, color,name FROM fruit');
+print $select['name'].'<br />';*/
+/*$id=1;
+$db = new db_layer();
+$sql =  'SELECT id, color
+        FROM fruit
+        WHERE id = ?';
+foreach  ($db->fetchAll($sql,array($id)) as $row) {
+    $color.= $row['color'];
+}
+print $color.'<br />';*/
+/*
 /*$makefile = new filesystem_makefile();
 $makefile->rename(array(
     $root."/super"=>$root."/truc"
