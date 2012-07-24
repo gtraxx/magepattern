@@ -81,14 +81,26 @@ $form = new form_input();
 print $form->field('myfield',30,30,'','myclass')."\n";
 print $form->textArea('myfield',20,30,'Default text','myclass')."\n";
 */
-$color = '';
+
 $db = new db_layer();
 $sql =  'SELECT id, color FROM fruit';
-foreach  ($db->fetchAll($sql) as $row) {
+/*foreach  ($db->fetchAll($sql) as $row) {
     $color.= $row['color'].'<br />';
 }
-print $color.'<br />';
-
+print $color.'<br />';*/
+$fetch = $db->fetchAll($sql);
+$option = '';
+foreach($fetch as $value){
+    $id[] = $value['id'];
+    $color[] = $value['color'];
+}
+$selectcolor = array_combine($id,$color);
+/*$firephp = new debug_firephp();
+$firephp->log($conbine);*/
+$form = new form_input();
+print $form->select(array('monselect','myselect1'),$selectcolor,array('class'=>'montest'));
+print $form->checkbox('macheckbox','montest');
+print $form->radio(array('radio','radio1'),'montest',array('class'=>'montest'));
 /*$select =  $db->fetch('SELECT id, color,name FROM fruit');
 print $select['name'].'<br />';*/
 /*$id=1;

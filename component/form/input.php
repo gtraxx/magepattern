@@ -38,6 +38,69 @@
 # -- END LICENSE BLOCK -----------------------------------
 
 class form_input{
+    private static $getInput;
+    /**
+     * @var array
+     */
+    protected static $arrInputConfig = array(
+        'class'     =>  '',
+        'default'   =>  '',
+        'tabindex'  =>  '',
+        'disabled'  =>  false,
+        'readonly'  =>  false,
+        'size'      =>  '',
+        'max'       =>  ''
+    );
+    private function setInputConfig($arrInputConfig = false){
+        if($arrInputConfig){
+            if(is_array($arrInputConfig)){
+                $setInput = $arrInputConfig;
+            }else{
+                $setInput = self::$arrInputConfig;
+            }
+        }else{
+            $setInput = self::$arrInputConfig;
+        }
+
+        if(is_array($setInput)){
+            if(array_key_exists('class', $setInput)){
+                self::$getInput['class'] = $setInput['class'];
+            }else{
+                self::$getInput['default'] = '';
+            }
+            if(array_key_exists('default', $setInput)){
+                self::$getInput['default'] = $setInput['default'];
+            }else{
+                self::$getInput['default'] = '';
+            }
+            if(array_key_exists('tabindex', $setInput)){
+                self::$getInput['tabindex'] = $setInput['tabindex'];
+            }else{
+                self::$getInput['tabindex'] = '';
+            }
+            if(array_key_exists('disabled', $setInput)){
+                self::$getInput['disabled'] = $setInput['disabled'];
+            }else{
+                self::$getInput['disabled'] = false;
+            }
+            if(array_key_exists('readonly', $setInput)){
+                self::$getInput['readonly'] = $setInput['readonly'];
+            }else{
+                self::$getInput['readonly'] = false;
+            }
+            if(array_key_exists('size', $setInput)){
+                self::$getInput['size'] = $setInput['size'];
+            }else{
+                self::$getInput['size'] = '';
+            }
+            if(array_key_exists('max', $setInput)){
+                self::$getInput['max'] = $setInput['max'];
+            }else{
+                self::$getInput['max'] = '';
+            }
+            return self::$getInput;
+        }
+    }
     /**
      *
      * @param unknown_type $nid
@@ -51,6 +114,77 @@ class form_input{
             $id = !empty($nid[1]) ? $nid[1] : null;
         } else {
             $name = $id = $nid;
+        }
+    }
+
+    /**
+     * Select Field
+     *
+     * Return HTML CODE for SELECT MENU
+     * @static
+     * @param string|array    $nid            Element ID and name
+     * @param array $arrayOption
+     * @param string $class
+     * @param string $default
+     * @throws Exception
+     * @internal param null $cvalue
+     * @return string
+     *
+     * @example :
+     * #### BASE #####
+     *
+     $form->select(
+         'myselect',
+         array(1=>'opt1',2=>'opt2'),
+         'maclass'
+     );
+     * ##### WITH Database #######
+        $fetch = $db->fetchAll($sql); //ASSOCIATIVE DATA
+        $option = '';
+        foreach($fetch as $value){
+            $id[] = $value['id'];
+            $color[] = $value['color'];
+        }
+        $selectcolor = array_combine($id,$color);
+        $form->select(
+         'monselect',
+         $selectcolor,
+         'maclass'
+        );
+     *
+     * Return Source :
+        <select name="myselect" id="myselect" class="myclass">
+        <option value="1">couleur verte</option>
+        <option value="2">couleur rouge</option>
+       </select>
+     *
+     */
+    public static function select($nid, $arrayOption,$arrInput=false){
+
+        self::getNameAndId($nid,$name,$id);
+        $getInput = self::setInputConfig($arrInput);
+        if(is_array($arrayOption)){
+            $res = '<select name="'.$name.'" ';
+            $res .= $id ? 'id="'.$id.'"' : '';
+            $res .= $getInput['class'] ? ' class="'.$getInput['class'].'"' : '';
+            $res .= '>'."\n";
+            foreach ($arrayOption as $key => $value){
+                $selected = null;
+                if(isset($getInput['default']) AND $getInput['default'] != ''){
+                    if(array_key_exists($getInput['default'], $arrayOption)){
+                        $selected = ($getInput['default'] == $key) ? ' selected="selected"': null;
+                    }
+                }
+                $res .= '<option'.$selected.' value="'.$key.'">';
+                $res .= $value;
+                $res .= '</option>'."\n";
+            }
+            $res .= '</select>'."\n";
+
+            return $res;
+
+        }else{
+            throw new Exception(sprintf('%s is not array in '.__METHOD__, $arrayOption));
         }
     }
 
@@ -75,20 +209,20 @@ class form_input{
          print $form->field('myfield',30,30,'','myclass');
          return <input type="text" size="30" name="myfield" id="myfield" maxlength="30" class="myclass"  />
      */
-    public static function field($nid, $size, $max, $default='',$class=true, $tabindex='',$disabled=false,$readonly=false)
+    public static function field($nid, $arrInput=false)
     {
         self::getNameAndId($nid,$name,$id);
-
-        $res = '<input type="text" size="'.$size.'" name="'.$name.'" ';
+        $getInput = self::setInputConfig($arrInput);
+        $res = '<input type="text" size="'.$getInput['size'].'" name="'.$name.'" ';
 
         $res .= $id ? 'id="'.$id.'" ' : '';
-        $res .= $max ? 'maxlength="'.$max.'" ' : '';
-        $res .= $default || $default === '0' ? 'value="'.$default.'" ' : '';
-        $res .= $class ? 'class="'.$class.'" ' : '';
-        $res .= $tabindex ? 'tabindex="'.$tabindex.'" ' : '';
-        $res .= $disabled ? 'disabled="disabled" ' : '';
-        $res .= $readonly ? 'readonly="readonly" ' : '';
-        $res .= ' />';
+        $res .= $getInput['max'] ? 'maxlength="'.$getInput['max'].'" ' : '';
+        $res .= $getInput['default'] || $getInput['default'] === '0' ? 'value="'.$getInput['default'].'" ' : '';
+        $res .= $getInput['class'] ? 'class="'.$getInput['class'].'" ' : '';
+        $res .= $getInput['tabindex'] ? 'tabindex="'.$getInput['tabindex'].'" ' : '';
+        $res .= $getInput['disabled'] ? 'disabled="disabled" ' : '';
+        $res .= $getInput['readonly'] ? 'readonly="readonly" ' : '';
+        $res .= ' />'."\n";
         return $res;
     }
 
@@ -125,7 +259,7 @@ class form_input{
         $res .= $disabled ? 'disabled="disabled" ' : '';
         $res .= '>';
         $res .= $default;
-        $res .= '</textarea>';
+        $res .= '</textarea>'."\n";
 
         return $res;
     }
@@ -161,7 +295,96 @@ class form_input{
         $res .= $disabled ? 'disabled="disabled" ' : '';
         $res .= $extra_html;
 
-        $res .= ' />';
+        $res .= ' />'."\n";
+
+        return $res;
+    }
+
+    /**
+     * Radio button
+     *
+     * Returns HTML code for a radio button. $nid could be a string or an array of
+     * name and ID.
+     *
+     * @param string|array    $nid            Element ID and name
+     * @param string        $value        Element value
+     * @param bool|string $checked True if checked
+     * @param string        $class        Element class name
+     * @param string        $tabindex        Element tabindex
+     * @param boolean        $disabled        True if disabled
+     * @param string        $extra_html    Extra HTML attributes
+     *
+     * @return string
+     */
+    public static function radio($nid, $value, $arrInput=false, $checked=false, $extra_html='')
+    {
+        self::getNameAndId($nid,$name,$id);
+        $getInput = self::setInputConfig($arrInput);
+        $res = '<input type="radio" name="'.$name.'" value="'.$value.'" ';
+
+        $res .= $id ? 'id="'.$id.'" ' : '';
+        $res .= $checked ? 'checked="checked" ' : '';
+        $res .= $getInput['class'] ? 'class="'.$getInput['class'].'" ' : '';
+        $res .= $getInput['tabindex'] ? 'tabindex="'.$getInput['tabindex'].'" ' : '';
+        $res .= $getInput['disabled'] ? 'disabled="disabled" ' : '';
+        $res .= $extra_html;
+
+        $res .= '/>'."\n";
+
+        return $res;
+    }
+
+    /**
+     * Checkbox
+     *
+     * Returns HTML code for a checkbox. $nid could be a string or an array of
+     * name and ID.
+     *
+     * @param string|array    $nid            Element ID and name
+     * @param string        $value        Element value
+     * @param bool|string $checked True if checked
+     * @param string        $class        Element class name
+     * @param string        $tabindex        Element tabindex
+     * @param boolean        $disabled        True if disabled
+     * @param string        $extra_html    Extra HTML attributes
+     *
+     * @return string
+     */
+    public static function checkbox($nid, $value, $checked='', $class='', $tabindex='',$disabled=false, $extra_html='')
+    {
+        self::getNameAndId($nid,$name,$id);
+
+        $res = '<input type="checkbox" name="'.$name.'" value="'.$value.'" ';
+
+        $res .= $id ? 'id="'.$id.'" ' : '';
+        $res .= $checked ? 'checked="checked" ' : '';
+        $res .= $class ? 'class="'.$class.'" ' : '';
+        $res .= $tabindex ? 'tabindex="'.$tabindex.'" ' : '';
+        $res .= $disabled ? 'disabled="disabled" ' : '';
+        $res .= $extra_html;
+
+        $res .= ' />'."\n";
+
+        return $res;
+    }
+    /**
+     * Hidden field
+     *
+     * Returns HTML code for an hidden field. $nid could be a string or an array of
+     * name and ID.
+     *
+     * @param string|array	$nid			Element ID and name
+     * @param string		$value		Element value
+     *
+     * @return string
+     */
+    public static function hidden($nid,$value)
+    {
+        self::getNameAndId($nid,$name,$id);
+
+        $res = '<input type="hidden" name="'.$name.'" value="'.$value.'" ';
+        $res .= $id ? 'id="'.$id.'"' : '';
+        $res .= ' />'."\n";
 
         return $res;
     }

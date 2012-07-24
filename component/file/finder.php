@@ -171,14 +171,17 @@ class file_finder{
         /*** if no match is found ***/
         return false;
     }
+
     /**
      * filterFiles => filter files with extension
      * $t = new magixcjquery_files_makefiles();
      * var_dump($t->filterFiles('mydir',array('gif','png','jpe?g')));
      * or
      * var_dump($t->filterFiles('mydir','php'));
-     * @param $dir
+     * @param $directory
      * @param $extension
+     * @internal param $dir
+     * @return string
      */
     public function filterFiles($directory,$extension){
         try {
