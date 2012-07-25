@@ -65,51 +65,56 @@ class http_curl{
      * @return bool
      */
     public function copyRemoteFile($url, $directory, $status = null, $debug = false){
-        if (self::curl_exist()) {
-            //INIT curl
-            $ch = curl_init ($url);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
-            //curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, 1);
-            //curl_setopt($ch, CURLOPT_NOBODY,true);
-            // The maximum number of seconds to allow cURL functions to execute.
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT,60);
-            curl_setopt($ch, CURLOPT_TIMEOUT,30);
-            // Tell curl to stop when it encounters an error
-            curl_setopt($ch, CURLOPT_FAILONERROR, 1);
-            $data = curl_exec($ch);
-            if(!curl_errno($ch)){
-                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            }else{
-                return false;
-            }
-            curl_close ($ch);
-            if($debug){
-                $firephp = new debug_firephp();
-                $firephp->log($httpCode);
-            }
-            if($data != false){
-                if($status === null){
-                    if($httpCode < 400){
+        try{
+            if (self::curl_exist()) {
+                //INIT curl
+                $ch = curl_init ($url);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
+                //curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, 1);
+                //curl_setopt($ch, CURLOPT_NOBODY,true);
+                // The maximum number of seconds to allow cURL functions to execute.
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT,60);
+                curl_setopt($ch, CURLOPT_TIMEOUT,30);
+                // Tell curl to stop when it encounters an error
+                curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+                $data = curl_exec($ch);
+                if(!curl_errno($ch)){
+                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                }else{
+                    return false;
+                }
+                curl_close ($ch);
+                if($debug){
+                    $firephp = new debug_firephp();
+                    $firephp->log($httpCode);
+                }
+                if($data != false){
+                    if($status === null){
+                        if($httpCode < 400){
+                            if(!file_exists($directory)){
+                                $fp = fopen($directory,'wb');
+                                fwrite($fp, $data);
+                                fclose($fp);
+                            }
+                            //clearstatcache();
+                        }else{
+                            return false;
+                        }
+                    }elseif($status == $httpCode){
                         if(!file_exists($directory)){
                             $fp = fopen($directory,'wb');
                             fwrite($fp, $data);
                             fclose($fp);
                         }
                         //clearstatcache();
-                    }else{
-                        return false;
                     }
-                }elseif($status == $httpCode){
-                    if(!file_exists($directory)){
-                        $fp = fopen($directory,'wb');
-                        fwrite($fp, $data);
-                        fclose($fp);
-                    }
-                    //clearstatcache();
                 }
             }
+        }catch (Exception $e){
+            $logger = new debug_logger(MP_TMP_DIR);
+            $logger->log('error', 'php', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
 
