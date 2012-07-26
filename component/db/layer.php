@@ -114,7 +114,7 @@ class db_layer{
             self::connection()->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 
@@ -205,7 +205,7 @@ class db_layer{
             return self::connection()->query($query);
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);//__DIR__.'/test'
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
     /**
@@ -224,7 +224,7 @@ class db_layer{
 
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);//__DIR__.'/test'
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 
@@ -269,15 +269,20 @@ class db_layer{
              */
             $setConfig = $this->setConfig($setOption);
             $prepare = $this->prepare($sql);
-            $prepare->setFetchMode($this->setMode($setConfig['mode']));
-            $execute ? $prepare->execute($execute) : $prepare->execute();
-            $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
-            $result = $prepare->fetchAll();
-            $setConfig['closeCursor'] ? $prepare->closeCursor():'';
-            return $result;
+            if(is_object($prepare)){
+                $prepare->setFetchMode($this->setMode($setConfig['mode']));
+                $execute ? $prepare->execute($execute) : $prepare->execute();
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $result = $prepare->fetchAll();
+                $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+                return $result;
+            }else{
+                throw new Exception('fetchAll Error with SQL prepare');
+            }
+
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);//__DIR__.'/test'
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 
@@ -299,15 +304,19 @@ class db_layer{
              */
             $setConfig = $this->setConfig($setOption);
             $prepare = $this->prepare($sql);
-            $prepare->setFetchMode($this->setMode($setConfig['mode']));
-            $execute ? $prepare->execute($execute) : $prepare->execute();
-            $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
-            $result = $prepare->fetch();
-            $setConfig['closeCursor'] ? $prepare->closeCursor():'';
-            return $result;
+            if(is_object($prepare)){
+                $prepare->setFetchMode($this->setMode($setConfig['mode']));
+                $execute ? $prepare->execute($execute) : $prepare->execute();
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $result = $prepare->fetch();
+                $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+                return $result;
+            }else{
+                throw new Exception('fetch Error with SQL prepare');
+            }
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);//__DIR__.'/test'
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 
@@ -325,14 +334,18 @@ class db_layer{
              */
             $setConfig = $this->setConfig($setOption);
             $prepare = $this->prepare($sql);
-            $execute ? $prepare->execute($execute) : $prepare->execute();
-            $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
-            $result = $prepare->fetchObject();
-            $setConfig['closeCursor'] ? $prepare->closeCursor():'';
-            return $result;
+            if(is_object($prepare)){
+                $execute ? $prepare->execute($execute) : $prepare->execute();
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $result = $prepare->fetchObject();
+                $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+                return $result;
+            }else{
+                throw new Exception('fetchObject Error with SQL prepare');
+            }
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);//__DIR__.'/test'
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 
@@ -349,12 +362,16 @@ class db_layer{
              */
             $setConfig = $this->setConfig($setOption);
             $prepare = $this->prepare($sql);
-            $prepare->execute($execute);
-            $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
-            $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+            if(is_object($prepare)){
+                $prepare->execute($execute);
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+            }else{
+                throw new Exception('insert Error with SQL prepare');
+            }
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);//__DIR__.'/test'
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 
@@ -371,12 +388,16 @@ class db_layer{
              */
             $setConfig = $this->setConfig($setOption);
             $prepare = $this->prepare($sql);
-            $prepare->execute($execute);
-            $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
-            $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+            if(is_object($prepare)){
+                $prepare->execute($execute);
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+            }else{
+                throw new Exception('update Error with SQL prepare');
+            }
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 
@@ -393,12 +414,16 @@ class db_layer{
              */
             $setConfig = $this->setConfig($setOption);
             $prepare = $this->prepare($sql);
-            $prepare->execute($execute);
-            $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
-            $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+            if(is_object($prepare)){
+                $prepare->execute($execute);
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+            }else{
+                throw new Exception('delete Error with SQL prepare');
+            }
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 
@@ -458,7 +483,7 @@ class db_layer{
         }catch(Exception $e){
             $this->rollback();
             $logger = new debug_logger(MP_LOG_DIR);
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 
@@ -483,7 +508,7 @@ class db_layer{
             return $result;
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 
@@ -507,7 +532,7 @@ class db_layer{
             return $result;
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 
@@ -531,7 +556,7 @@ class db_layer{
             return $result;
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);
-            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
     /**
