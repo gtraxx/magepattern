@@ -113,7 +113,7 @@ class http_curl{
                 }
             }
         }catch (Exception $e){
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('error', 'php', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -155,7 +155,7 @@ class http_curl{
                 return false;
             }
         }catch (Exception $e){
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('error', 'php', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }

@@ -63,7 +63,7 @@ class file_finder{
             }
             return $file;
         }catch (Exception $e){
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('error', 'php', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -85,7 +85,7 @@ class file_finder{
             }
             return $file;
         }catch (Exception $e){
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('error', 'php', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -126,7 +126,7 @@ class file_finder{
             foreach($dir as $size) $foldersize += $size;
             return $foldersize.' bytes';
         }catch (Exception $e){
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('error', 'php', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -193,7 +193,7 @@ class file_finder{
             }
             return $filter;
         }catch (Exception $e){
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('error', 'php', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }

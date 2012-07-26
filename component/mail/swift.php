@@ -213,7 +213,7 @@ class mail_swift{
 	    		}
 	    	}
     	}catch(Exception $e) {
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('php', 'error', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -235,7 +235,7 @@ class mail_swift{
 	    	$echologger = new Swift_Plugins_Loggers_EchoLogger();
 			$this->_mailer->registerPlugin(new Swift_Plugins_LoggerPlugin($echologger));
 	    	debug_firephp::dump("Failures: ",$echologger->dump());
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('mail', 'Failures', 'Failures : '.$echologger->dump(), debug_logger::LOG_VOID);
     	}
     }

@@ -51,6 +51,12 @@ class form_input{
         'size'      =>  '',
         'max'       =>  ''
     );
+
+    /**
+     * Chargement de la configuration des champs
+     * @param bool $arrInputConfig
+     * @return mixed
+     */
     private function setInputConfig($arrInputConfig = false){
         if($arrInputConfig){
             if(is_array($arrInputConfig)){
@@ -101,11 +107,12 @@ class form_input{
             return self::$getInput;
         }
     }
+
     /**
      *
-     * @param unknown_type $nid
-     * @param unknown_type $name
-     * @param unknown_type $id
+     * @param string|array    $nid $nid
+     * @param string $name
+     * @param string $id
      */
     private static function getNameAndId($nid,&$name,&$id)
     {
@@ -124,67 +131,71 @@ class form_input{
      * @static
      * @param string|array    $nid            Element ID and name
      * @param array $arrayOption
-     * @param string $class
-     * @param string $default
+     * @param bool $arrInput
      * @throws Exception
+     * @internal param string $class
+     * @internal param string $default
      * @internal param null $cvalue
      * @return string
      *
      * @example :
      * #### BASE #####
      *
-     $form->select(
-         'myselect',
-         array(1=>'opt1',2=>'opt2'),
-         'maclass'
-     );
+    $form->select(
+        'myselect',
+        array(1=>'opt1',2=>'opt2'),
+        'maclass'
+    );
      * ##### WITH Database #######
-        $fetch = $db->fetchAll($sql); //ASSOCIATIVE DATA
-        $option = '';
-        foreach($fetch as $value){
-            $id[] = $value['id'];
-            $color[] = $value['color'];
-        }
-        $selectcolor = array_combine($id,$color);
-        $form->select(
-         'monselect',
-         $selectcolor,
-         'maclass'
-        );
+    $fetch = $db->fetchAll($sql); //ASSOCIATIVE DATA
+    $option = '';
+    foreach($fetch as $value){
+        $id[] = $value['id'];
+        $color[] = $value['color'];
+    }
+    $selectcolor = array_combine($id,$color);
+    $form->select(
+        'monselect',
+        $selectcolor,
+        'maclass'
+    );
      *
      * Return Source :
-        <select name="myselect" id="myselect" class="myclass">
-        <option value="1">couleur verte</option>
-        <option value="2">couleur rouge</option>
-       </select>
-     *
+    <select name="myselect" id="myselect" class="myclass">
+    <option value="1">couleur verte</option>
+    <option value="2">couleur rouge</option>
+    </select>
      */
     public static function select($nid, $arrayOption,$arrInput=false){
-
-        self::getNameAndId($nid,$name,$id);
-        $getInput = self::setInputConfig($arrInput);
-        if(is_array($arrayOption)){
-            $res = '<select name="'.$name.'" ';
-            $res .= $id ? 'id="'.$id.'"' : '';
-            $res .= $getInput['class'] ? ' class="'.$getInput['class'].'"' : '';
-            $res .= '>'."\n";
-            foreach ($arrayOption as $key => $value){
-                $selected = null;
-                if(isset($getInput['default']) AND $getInput['default'] != ''){
-                    if(array_key_exists($getInput['default'], $arrayOption)){
-                        $selected = ($getInput['default'] == $key) ? ' selected="selected"': null;
+        try{
+            self::getNameAndId($nid,$name,$id);
+            $getInput = self::setInputConfig($arrInput);
+            if(is_array($arrayOption)){
+                $res = '<select name="'.$name.'" ';
+                $res .= $id ? 'id="'.$id.'"' : '';
+                $res .= $getInput['class'] ? ' class="'.$getInput['class'].'"' : '';
+                $res .= '>'."\n";
+                foreach ($arrayOption as $key => $value){
+                    $selected = null;
+                    if(isset($getInput['default']) AND $getInput['default'] != ''){
+                        if(array_key_exists($getInput['default'], $arrayOption)){
+                            $selected = ($getInput['default'] == $key) ? ' selected="selected"': null;
+                        }
                     }
+                    $res .= '<option'.$selected.' value="'.$key.'">';
+                    $res .= $value;
+                    $res .= '</option>'."\n";
                 }
-                $res .= '<option'.$selected.' value="'.$key.'">';
-                $res .= $value;
-                $res .= '</option>'."\n";
+                $res .= '</select>'."\n";
+
+                return $res;
+
+            }else{
+                throw new Exception(sprintf('%s is not array in '.__METHOD__, $arrayOption));
             }
-            $res .= '</select>'."\n";
-
-            return $res;
-
-        }else{
-            throw new Exception(sprintf('%s is not array in '.__METHOD__, $arrayOption));
+        }catch(Exception $e) {
+            $logger = new debug_logger(MP_LOG_DIR);
+            $logger->log('php', 'error', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 
@@ -195,19 +206,20 @@ class form_input{
      * name and ID.
      *
      * @param string|array    $nid            Element ID and name
-     * @param integer        $size        Element size
-     * @param integer        $max            Element maxlength
-     * @param string        $default        Element value
-     * @param bool|string $class Element class name
-     * @param string        $tabindex        Element tabindex
-     * @param boolean        $disabled        True if disabled
+     * @param bool $arrInput
+     * @internal param int $size Element size
+     * @internal param int $max Element maxlength
+     * @internal param string $default Element value
+     * @internal param bool|string $class Element class name
+     * @internal param string $tabindex Element tabindex
+     * @internal param bool $disabled True if disabled
      *
-     * @param bool $readonly
+     * @internal param bool $readonly
      * @return string
      * @example :
-         $form = new form_input();
-         print $form->field('myfield',30,30,'','myclass');
-         return <input type="text" size="30" name="myfield" id="myfield" maxlength="30" class="myclass"  />
+        $form = new form_input();
+        print $form->field('myfield',30,30,'','myclass');
+        return <input type="text" size="30" name="myfield" id="myfield" maxlength="30" class="myclass"  />
      */
     public static function field($nid, $arrInput=false)
     {
@@ -308,12 +320,13 @@ class form_input{
      *
      * @param string|array    $nid            Element ID and name
      * @param string        $value        Element value
+     * @param bool $arrInput
      * @param bool|string $checked True if checked
-     * @param string        $class        Element class name
-     * @param string        $tabindex        Element tabindex
-     * @param boolean        $disabled        True if disabled
-     * @param string        $extra_html    Extra HTML attributes
+     * @param string  $extra_html    Extra HTML attributes
      *
+     * @internal param string $class Element class name
+     * @internal param string $tabindex Element tabindex
+     * @internal param bool $disabled True if disabled
      * @return string
      */
     public static function radio($nid, $value, $arrInput=false, $checked=false, $extra_html='')

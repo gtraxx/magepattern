@@ -86,7 +86,7 @@ class filter_path{
             }
             return $path;
         }catch(Exception $e) {
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('php', 'error', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }

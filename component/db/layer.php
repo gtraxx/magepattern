@@ -113,7 +113,7 @@ class db_layer{
             }
             self::connection()->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }catch (PDOException $e){
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -204,7 +204,7 @@ class db_layer{
         try{
             return self::connection()->query($query);
         }catch (PDOException $e){
-            $logger = new debug_logger(MP_TMP_DIR);//__DIR__.'/test'
+            $logger = new debug_logger(MP_LOG_DIR);//__DIR__.'/test'
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -223,7 +223,7 @@ class db_layer{
             $this->isPrepared = true;
 
         }catch (PDOException $e){
-            $logger = new debug_logger(MP_TMP_DIR);//__DIR__.'/test'
+            $logger = new debug_logger(MP_LOG_DIR);//__DIR__.'/test'
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -276,7 +276,7 @@ class db_layer{
             $setConfig['closeCursor'] ? $prepare->closeCursor():'';
             return $result;
         }catch (PDOException $e){
-            $logger = new debug_logger(MP_TMP_DIR);//__DIR__.'/test'
+            $logger = new debug_logger(MP_LOG_DIR);//__DIR__.'/test'
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -306,7 +306,7 @@ class db_layer{
             $setConfig['closeCursor'] ? $prepare->closeCursor():'';
             return $result;
         }catch (PDOException $e){
-            $logger = new debug_logger(MP_TMP_DIR);//__DIR__.'/test'
+            $logger = new debug_logger(MP_LOG_DIR);//__DIR__.'/test'
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -331,7 +331,7 @@ class db_layer{
             $setConfig['closeCursor'] ? $prepare->closeCursor():'';
             return $result;
         }catch (PDOException $e){
-            $logger = new debug_logger(MP_TMP_DIR);//__DIR__.'/test'
+            $logger = new debug_logger(MP_LOG_DIR);//__DIR__.'/test'
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -353,7 +353,7 @@ class db_layer{
             $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
             $setConfig['closeCursor'] ? $prepare->closeCursor():'';
         }catch (PDOException $e){
-            $logger = new debug_logger(MP_TMP_DIR);//__DIR__.'/test'
+            $logger = new debug_logger(MP_LOG_DIR);//__DIR__.'/test'
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -375,7 +375,7 @@ class db_layer{
             $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
             $setConfig['closeCursor'] ? $prepare->closeCursor():'';
         }catch (PDOException $e){
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -397,7 +397,7 @@ class db_layer{
             $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
             $setConfig['closeCursor'] ? $prepare->closeCursor():'';
         }catch (PDOException $e){
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -457,7 +457,7 @@ class db_layer{
             }
         }catch(Exception $e){
             $this->rollback();
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -482,7 +482,7 @@ class db_layer{
             $setConfig['closeCursor'] ? $prepare->closeCursor():'';
             return $result;
         }catch (PDOException $e){
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -506,7 +506,7 @@ class db_layer{
             //$setConfig['closeCursor'] ? $prepare->closeCursor():'';
             return $result;
         }catch (PDOException $e){
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }
@@ -530,7 +530,7 @@ class db_layer{
             //$setConfig['closeCursor'] ? $prepare->closeCursor():'';
             return $result;
         }catch (PDOException $e){
-            $logger = new debug_logger(MP_TMP_DIR);
+            $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
         }
     }

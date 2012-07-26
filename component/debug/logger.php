@@ -45,11 +45,16 @@
  *
  */
 class debug_logger {
-
+    /**
+     * @var string
+     */
     private $pathlog; # Dossier où sont enregistrés les fichiers logs (ex: /Applications/MAMP/www/monsite/logs)
+    /**
+     * @var bool
+     */
     private $ready; # Le logger est prêt quand le dossier de dépôt des logs existe
 
-    # Granularité (pour l'archivage des logs)
+    # Archivage (pour l'archivage des logs)
     const LOG_VOID  = 'VOID';  # Aucun archivage
     const LOG_MONTH = 'MONTH'; # Archivage mensuel
     const LOG_YEAR  = 'YEAR';  # Archivage annuel
@@ -61,11 +66,14 @@ class debug_logger {
      * @param string $path Chemin vers le dossier de dépôt
      **/
     public function __construct($path){
+        /**
+         * Start log
+         */
         $this->ready = false;
 
         # Si le dépôt n'éxiste pas
         if( !is_dir($path) ){
-            trigger_error("<code>$path</code> n'existe pas", E_USER_WARNING);
+            trigger_error("<code>$path</code> not exist", E_USER_WARNING);
             return false;
         }
 
@@ -76,17 +84,17 @@ class debug_logger {
     }
 
     /**
-     * Retourne le chemin vers un fichier de log déterminé à partir des paramètres $type, $name et $granularity.
+     * Retourne le chemin vers un fichier de log déterminé à partir des paramètres $type, $name et $archive.
      * (ex: /Applications/MAMP/www/monsite/logs/erreurs/201202/201202_erreur_connexion.log)
-     * Elle créé le chemin si il n'éxiste pas.
+     * Elle crée le chemin s'il n'existe pas.
      *
      * @param string $type Dossier dans lequel sera enregistré le fichier de log
      * @param string $name Nom du fichier de log
-     * @param string $granularity Granularité : LOG_VOID, LOG_MONTH ou LOG_YEAR
+     * @param string $archive Archivage : LOG_VOID, LOG_MONTH ou LOG_YEAR
      * @return string Chemin vers le fichier de log
      **/
-    public function path($type, $name, $granularity = self::LOG_YEAR){
-        # On vérifie que le logger est prêt (et donc que le dossier de dépôt existe
+    private function path($type, $name, $archive = self::LOG_YEAR){
+        # On vérifie que le logger est prêt (et donc que le dossier de dépôt existe)
         if( !$this->ready ){
             trigger_error("Logger is not ready", E_USER_WARNING);
             return false;
@@ -97,39 +105,40 @@ class debug_logger {
             trigger_error("Paramètres incorrects", E_USER_WARNING);
             return false;
         }
-
+        $makefile = new filesystem_makefile();
         # Création dossier du type (ex: /Applications/MAMP/www/monsite/logs/erreurs/)
         if( empty($type) ){
             $type_path = $this->pathlog.'/';
         } else {
             $type_path = $this->pathlog.'/'.$type.'/';
             if( !is_dir($type_path) ){
-                mkdir($type_path);
+                $makefile->mkdir(array($type_path));
             }
         }
-
-        # Création du dossier granularity (ex: /Applications/MAMP/www/monsite/logs/erreurs/201202/)
-        if( $granularity == self::LOG_VOID ){
+        $date = new date_dateformat();
+        # Création du dossier archive (ex: /Applications/MAMP/www/monsite/logs/erreurs/201202/)
+        if( $archive == self::LOG_VOID ){
             $logfile = $type_path.$name.'.log';
         }
-        elseif( $granularity == self::LOG_MONTH ){
-            $current_month    = date('Ym');
-            $type_path_month    = $type_path.$current_month;
+        elseif( $archive == self::LOG_MONTH ){
+            $current_year     = $date->dateDefine('Y');
+            $current_month    = $date->dateDefine('m');
+            $type_path_month  = $type_path.$current_year;
             if( !is_dir($type_path_month) ){
-                mkdir($type_path_month);
+                $makefile->mkdir(array($type_path_month));
             }
-            $logfile = $type_path_month.'/'.$current_month.'_'.$name.'.log';
+            $logfile = $type_path_month.'/'.$current_year.$current_month.'_'.$name.'.log';
         }
-        elseif( $granularity == self::LOG_YEAR ){
-            $current_year    = date('Y');
-            $type_path_year    = $type_path.$current_year;
+        elseif( $archive == self::LOG_YEAR ){
+            $current_year    = $date->dateDefine('Y');
+            $type_path_year  = $type_path.$current_year;
             if( !is_dir($type_path_year) ){
-                mkdir($type_path_year);
+                $makefile->mkdir(array($type_path_year));
             }
             $logfile = $type_path_year.'/'.$current_year.'_'.$name.'.log';
         }
         else{
-            trigger_error("Granularité '$granularity' non prise en charge", E_USER_WARNING);
+            trigger_error("LOG Error '$archive'", E_USER_WARNING);
             return false;
         }
 
@@ -137,25 +146,51 @@ class debug_logger {
     }
 
     /**
-     * Enregistre $row dans le fichier log déterminé à partir des paramètres $type, $name et $granularity
+     * Écrit (append) $row dans $logfile
+     *
+     * @param string $logfile Chemin vers le fichier de log
+     * @param string $row Chaîne de caractères à ajouter au fichier
+     *
+     * @return bool
+     */
+    private function write($logfile, $row){
+        if( !$this->ready ){return false;}
+
+        if( empty($logfile) ){
+            trigger_error("<code>$logfile</code> is empty", E_USER_WARNING);
+            return false;
+        }
+
+        $fichier = fopen($logfile,'a+');
+        fputs($fichier, $row);
+        fclose($fichier);
+    }
+
+    /**
+     * Enregistre $row dans le fichier log déterminé à partir des paramètres $type, $name et $archive
      *
      * @param string $type Dossier dans lequel sera enregistré le fichier de log
      * @param string $name Nom du fichier de log
      * @param string $row Texte à ajouter au fichier de log
-     * @param string $granularity Granularité : LOG_VOID, LOG_MONTH ou LOG_YEAR
-     **/
-    public function log($type, $name, $row, $granularity = self::LOG_YEAR){
+     * @param string $archive Archive : LOG_VOID, LOG_MONTH ou LOG_YEAR
+     *
+     * @return bool
+     */
+    public function log($type, $name, $row, $archive = self::LOG_YEAR){
+        /**
+         * Instance dateformat
+         */
         $date = new date_dateformat();
         # Contrôle des arguments
         if( !isset($type) || empty($name) || empty($row) ){
-            trigger_error("Paramètres incorrects", E_USER_WARNING);
+            trigger_error("Params is not defined", E_USER_WARNING);
             return false;
         }
 
-        $logfile = $this->path($type, $name, $granularity);
+        $logfile = $this->path($type, $name, $archive);
 
         if( $logfile === false ){
-            trigger_error("Impossible d'enregistrer le log", E_USER_WARNING);
+            trigger_error("Unable to save the log", E_USER_WARNING);
             return false;
         }
 
@@ -168,30 +203,12 @@ class debug_logger {
         }
 
         $this->write($logfile, $row);
+
+        # Firephp
         $firephp = new debug_firephp();
         if($firephp instanceof debug_firephp){
             $firephp->error($row);
         }
     }
-
-    /**
-     * Écrit (append) $row dans $logfile
-     *
-     * @param string $logfile Chemin vers le fichier de log
-     * @param string $row Chaîne de caractères à ajouter au fichier
-     **/
-    private function write($logfile, $row){
-        if( !$this->ready ){return false;}
-
-        if( empty($logfile) ){
-            trigger_error("<code>$logfile</code> est vide", E_USER_WARNING);
-            return false;
-        }
-
-        $fichier = fopen($logfile,'a+');
-        fputs($fichier, $row);
-        fclose($fichier);
-    }
-
 }
 ?>
