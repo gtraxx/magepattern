@@ -47,47 +47,62 @@
 class filter_path{
     /**
      * @static
-     * @param array $tabsearch
-     * @param array $tabreplace
+     * @param array|bool $tabsearch
      * @throws Exception
+     * @internal param array $tabreplace
      * @return mixed|string
      * @example :
         filesystem_path::basePath(
-        array('component','filesystem'),
-        array('','')
+            array('component','filesystem')
         );
      */
-    public static function basePath($tabsearch=array('component','filter'),$tabreplace=array('','')){
+    public static function basePath($tabsearch=false){
         try{
+            $default_path = array('component','filter');
             if($tabsearch != false){
                 if(is_array($tabsearch)){
-                    $search = array_merge($tabsearch,array(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR));
+                    $search = array_merge($tabsearch,$default_path,array(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR));
                 }else{
                     throw new Exception(__METHOD__.' params "tabsearch" is not array');
                 }
             }else{
-                $search = array_merge(explode(DIRECTORY_SEPARATOR,__DIR__),array(DIRECTORY_SEPARATOR));
+                //$search = array_merge(explode(DIRECTORY_SEPARATOR,__DIR__),array(DIRECTORY_SEPARATOR));
+                $search = array_merge($default_path,array(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR));
             }
-
-            if($tabreplace != false){
+            /*if($tabreplace != false){
                 if(is_array($tabreplace)){
-                    $replace = $tabreplace;
+                    $replace = array_merge($tabreplace,array('',''));
+
                 }else{
                     throw new Exception(__METHOD__.' params "tabreplace" is not array');
                 }
             }else{
-                $replace = array('','');
-            }
-            $pathreplace = str_replace($search, $replace, __DIR__);
-            if(strrpos($pathreplace,DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR)){
-                $path = substr($pathreplace, -1);
+                $replace = array_fill(0,count($search),'');
+            }*/
+            if(count($search) > 0){
+                $replace = array_fill(0,count($search),'');
             }else{
-                $path = $pathreplace;
+                throw new Exception('Error replace : internal params is null');
             }
+
+            $pathreplace = str_replace($search, $replace, __DIR__);
+
+            if(strrpos($pathreplace,DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR)){
+                $pathclean = substr($pathreplace, -1);
+            }else{
+                $pathclean = $pathreplace;
+            }
+
+            if(strrpos($pathclean,DIRECTORY_SEPARATOR, strlen($pathclean) -1)){
+                $path = $pathclean;//$path = substr($pathclean,0, -1);
+            }else{
+                $path = $pathclean.DIRECTORY_SEPARATOR;
+            }
+
             return $path;
         }catch(Exception $e) {
             $logger = new debug_logger(MP_LOG_DIR);
-            $logger->log('php', 'error', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);
+            $logger->log('php', 'error', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
 }

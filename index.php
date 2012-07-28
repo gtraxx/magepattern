@@ -101,7 +101,7 @@ $form = new form_input();
 print $form->select(array('monselect','myselect1'),$selectcolor,array('class'=>'montest'));
 print $form->checkbox('macheckbox','montest');
 print $form->radio(array('radio','radio1'),'montest',array('class'=>'montest'));
-//print filter_path::basePath(array('magepattern','component','filter'),array('','',''));
+print filter_path::basePath();
 /*$select =  $db->fetch('SELECT id, color,name FROM fruit');
 print $select['name'].'<br />';*/
 /*$id=1;
