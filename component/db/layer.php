@@ -492,6 +492,7 @@ class db_layer{
      * @param $sql
      * @param $column
      * @param bool $setOption
+     * @throws Exception
      * @return mixed
      */
     public function fetchColumn($sql,$column,$setOption=false){
@@ -501,11 +502,15 @@ class db_layer{
              */
             $setConfig = $this->setConfig($setOption);
             $prepare = $this->prepare($sql);
-            $prepare->execute();
-            $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
-            $result = $prepare->fetchColumn($column);
-            $setConfig['closeCursor'] ? $prepare->closeCursor():'';
-            return $result;
+            if(is_object($prepare)){
+                $prepare->execute();
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $result = $prepare->fetchColumn($column);
+                $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+                return $result;
+            }else{
+                throw new Exception('fetchColumn Error with SQL prepare');
+            }
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
@@ -516,6 +521,7 @@ class db_layer{
      * Retourne le nombre de colonnes dans le jeu de résultats
      * @param $sql
      * @param bool $setOption
+     * @throws Exception
      * @return mixed
      */
     public function columnCount($sql,$setOption=false){
@@ -525,11 +531,15 @@ class db_layer{
              */
             $setConfig = $this->setConfig($setOption);
             $prepare = $this->prepare($sql);
-            $prepare->execute();
-            $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
-            $result = $prepare->columnCount();
-            //$setConfig['closeCursor'] ? $prepare->closeCursor():'';
-            return $result;
+            if(is_object($prepare)){
+                $prepare->execute();
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $result = $prepare->columnCount();
+                //$setConfig['closeCursor'] ? $prepare->closeCursor():'';
+                return $result;
+            }else{
+                throw new Exception('ColumnCount Error with SQL prepare');
+            }
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
@@ -540,6 +550,7 @@ class db_layer{
      * Retourne le nombre de lignes affectées par la dernière requête DELETE, INSERT ou UPDATE exécutée par l'objet
      * @param $sql
      * @param bool $setOption
+     * @throws Exception
      * @return mixed
      */
     public function rowCount($sql,$setOption=false){
@@ -549,11 +560,15 @@ class db_layer{
              */
             $setConfig = $this->setConfig($setOption);
             $prepare = $this->prepare($sql);
-            $prepare->execute();
-            $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
-            $result = $prepare->rowCount();
-            //$setConfig['closeCursor'] ? $prepare->closeCursor():'';
-            return $result;
+            if(is_object($prepare)){
+                $prepare->execute();
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $result = $prepare->rowCount();
+                //$setConfig['closeCursor'] ? $prepare->closeCursor():'';
+                return $result;
+            }else{
+                throw new Exception('rowCount Error with SQL prepare');
+            }
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);

@@ -46,6 +46,25 @@
  */
 class http_session{
     /**
+     * @return string
+     */
+    protected function _regenerate(){
+        // Regenerate the session id
+        session_regenerate_id();
+
+        return session_id();
+    }
+
+    /**
+     * @return bool
+     */
+    protected function _write(){
+        // Write and close the session
+        session_write_close();
+
+        return TRUE;
+    }
+    /**
      * @access private
      * Démarre une nouvelle session
      */
@@ -58,10 +77,22 @@ class http_session{
         /* Add any other data that is consistent */
         $fingerprint = md5($string);
         //Fermeture de la première session, ses données sont sauvegardées.
-        session_write_close();
+        if (!isset($_SESSION)) {
+            session_cache_limiter('nocache');
+        }
+        $this->_write();
         session_name($name);
         ini_set('session.hash_function',1);
         session_start();
+    }
+    public function delete(){
+        session_unset();
+        $_SESSION = array();
+        session_destroy();
+        session_start();
+    }
+    public function clear(){
+        session_destroy();
     }
 
     /**

@@ -1,0 +1,76 @@
+# -- BEGIN LICENSE BLOCK ----------------------------------
+#
+# This file is part of Mage Pattern.
+# The toolkit PHP for developer, integrated in SC BOX
+# Copyright (C) 2012  Gerits Aurelien <aurelien@magix-dev.be> - <aurelien@sc-box.com>
+#
+# OFFICIAL TEAM MAGE PATTERN:
+#
+#   * Gerits Aurelien (Author - Developer) <aurelien@sc-box.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Redistributions of source code must retain the above copyright notice,
+# this list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# DISCLAIMER
+
+# Do not edit or add to this file if you wish to upgrade Mage Pattern to newer
+# versions in the future. If you wish to customize Mage Pattern for your
+# needs please refer to http://www.sc-box.com for more information.
+#
+# -- END LICENSE BLOCK -----------------------------------
+
+Version 0.1
+
+* Remplacement des constante de l'autoload de librairie par des variables non public
+* Fix bug basePath (Remplacement des slashs)
+* Suppression du paramètre pour les caractères de remplacement (Système de détection automatique)
+* Remplacement de la définition des logs DB Simple avec un archivage par mois
+* Ajout d'une condition pour tester si la requête est correct et crée l'objet de préparation SQL
+* Séparation des fichiers log par année + nommage avec année+mois+nom.log
+* Remplacement de la constante MP_TMP_DIR => MP_LOG_DIR
+* Ajout de la classe ftp dans le dossier file
+* Ajout de condition pour le chargement de curl dans la classe http_curl
+* Suppression de swiftmailer 4.1.8
+* Ajout de swiftmailer 4.2.1
+* Ajout de la classe curl dans http
+* Ajout de la définition par tableau des paramètres pour les champs de formulaires
+* Ajout du système de construction de menu select HTML
+* Ajout de commentaire dans la classe finder (file)
+* Ajout de la class sitemap + asbtraction sitemap dans le dossier XML
+* Ajout du copyright complet dans chaque fichier
+* Ajout du copyright dans le fichier autoload (avant application dans les autres)
+* Ajout du champ hidden dans la construction de formulaire
+* Ajout de la class rsa dans les filtres
+* Ajout de la class input dans form (construction de formulaire)
+* Ajout de firephp dans les exceptions si activé via les logs
+* Ajout de la class inputfilter pour les tests de validation de données
+* Ajout de la prise en charge de postgresql dans le connector de base de données
+* Ajout de la prise en charge de sqlite dans le connector de base de données
+* Suppression du dossier truc
+* Ajout de fonctione venant de symphony 2 pour le traitement des fichiers (makefile)
+* Ajout de la fonction fetch, insert, update, delete, transaction (layer)
+* Ajout du support UTF-8 dans PDO
+* Ajout de la class bbcode dans form
+* Ajout de commentaire + exemple dans la class dateformat
+* Ajout de la class basename,htmlentities dans filter
+* Déplacement de la class path (filesystem) dans filter
+* Ajout de la class session dans http
+* Ignore certaine librairie pour le développement
+* Ajout de magepattern avec l'autoload, les classes et les librairies annexes

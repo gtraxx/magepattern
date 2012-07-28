@@ -89,19 +89,22 @@ $sql =  'SELECT id, color FROM fruit';
 }
 print $color.'<br />';*/
 $fetch = $db->fetchAll($sql);
-$option = '';
+$test = new collections_splTools();
+print_r(collections_ArrayTools::iteratorToArray($fetch));
+/*$option = '';
 foreach($fetch as $value){
     $id[] = $value['id'];
     $color[] = $value['color'];
-}
-$selectcolor = array_combine($id,$color);
+}*/
+//$selectcolor = array_combine($id,$color);
 /*$firephp = new debug_firephp();
 $firephp->log($conbine);*/
-$form = new form_input();
+/*$form = new form_input();
 print $form->select(array('monselect','myselect1'),$selectcolor,array('class'=>'montest'));
 print $form->checkbox('macheckbox','montest');
 print $form->radio(array('radio','radio1'),'montest',array('class'=>'montest'));
-print filter_path::basePath();
+print filter_path::basePath();*/
+
 /*$select =  $db->fetch('SELECT id, color,name FROM fruit');
 print $select['name'].'<br />';*/
 /*$id=1;
