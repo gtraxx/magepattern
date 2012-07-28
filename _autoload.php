@@ -37,6 +37,9 @@
 #
 # -- END LICENSE BLOCK -----------------------------------
 
+/**
+ * Autoload pour la librairie
+ */
 final class magepattern_bootstrap{
     /**
      * @var bool
@@ -69,24 +72,24 @@ final class magepattern_bootstrap{
     /**
      * Constante Path swiftmailer lib
      */
-    const PATH_SWIFTMAILER = '/package/Swift-4.2.1/lib/swift_required.php';
+    private static $path_swiftmailer = '/package/Swift-4.2.1/lib/swift_required.php';
     /**
      * Constante Path Autoloader magepattern
      */
-    const PATH_AUTOLOADER = '/loader/autoloader.php';
+    private static $path_autoloader = '/loader/autoloader.php';
     /**
      * Constante Path Firephp
      */
-    const PATH_FIREPHP = '/package/firephp-1.0/FirePHP/Init.php';
+    private static $path_firephp = '/package/firephp-1.0/FirePHP/Init.php';
     /**
      * @access private
      * @return array
      */
     private function arrayLibFiles(){
         return array(
-            'autoloader' => __DIR__.self::PATH_AUTOLOADER,
-            'firephp'    => __DIR__.self::PATH_FIREPHP,
-            'swift'      => __DIR__.self::PATH_SWIFTMAILER
+            'autoloader' => __DIR__.self::$path_autoloader,
+            'firephp'    => __DIR__.self::$path_firephp,
+            'swift'      => __DIR__.self::$path_swiftmailer
         );
     }
     /**
