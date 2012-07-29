@@ -45,9 +45,90 @@
  *
  */
 class filter_htmlEntities{
+
+    /**
+     * function trim string function
+     *
+     * @param string $str
+     * @return string
+     */
+    public static function trim($str){
+        return trim($str);
+    }
+
+    /**
+     *
+     * Remove markup
+     *
+     * Removes every tags, comments, cdata from string
+     *
+     * @param string	$str		String to clean
+     * @return	string
+     */
+    public static function clean($str)
+    {
+        $str = strip_tags($str);
+        return $str;
+    }
+
+    /**
+     * HTML escape
+     *
+     * Replaces HTML special characters by entities.
+     *
+     * @param string $str	String to escape
+     * @return	string
+     */
+    public static function escapeHTML($str)
+    {
+        return htmlspecialchars($str,ENT_COMPAT,'UTF-8');
+    }
+
+    /**
+     * HTML Extreme escape
+     *
+     * Replaces HTML characters by entities.
+     *
+     * @param string $str	String to escape
+     * @return	string
+     */
+    public static function escapeExtremeHTML($str)
+    {
+        return htmlentities($str,ENT_COMPAT,'UTF-8');
+    }
+
+    /**
+     * decode Extreme htmlentities
+     *
+     * @param string $str
+     * @return string
+     */
+    public static function decodeExtremeHTML($str){
+        return html_entity_decode($str,ENT_COMPAT,'UTF-8');
+    }
+
+    /**
+     * function pour supprimer les antislash
+     *
+     * @param string $string
+     * @return string
+     */
+    public static function cleanQuote($string){
+        return stripcslashes($string);
+    }
+
+    /**
+     * funtion intval —  Retourne la valeur numérique entière équivalente d'une variable
+     * @param $int
+     * @return Get the integer value of a variable
+     */
+    public static function intval($int){
+        return intval($int);
+    }
+
     /**
      * replace baskslash separator
-     * function unixSeparator
+     * function unix_separator
      * @return string
      */
     public static function unix_separator(){
@@ -58,9 +139,10 @@ class filter_htmlEntities{
         }
         return $str;
     }
+
     /**
      * replace slash separator
-     * windowsSeparator
+     * win_separator
      * @return string
      */
     public static function win_separator(){
@@ -71,6 +153,7 @@ class filter_htmlEntities{
         }
         return $str;
     }
+
     /**
      * convert text in ASCII
      *
@@ -80,6 +163,7 @@ class filter_htmlEntities{
     public static function convertASCII($str){
         return ord($str);
     }
+
     /**
      * decode text in ASCII
      *
@@ -144,6 +228,7 @@ class filter_htmlEntities{
         //return filter_var($str, FILTER_SANITIZE_SPECIAL_CHARS,FILTER_FLAG_ENCODE_HIGH);
         //return htmlspecialchars($str,ENT_QUOTES, 'UTF-8');
     }
+
     /**
      * URL escape
      *
@@ -155,6 +240,7 @@ class filter_htmlEntities{
     public static function escapeURL($str){
         return str_replace('&','&amp;',$str);
     }
+
     /**
      * Javascript escape
      *
@@ -169,6 +255,7 @@ class filter_htmlEntities{
         $str = str_replace('"','\"',$str);
         return $str;
     }
+
     /**
      *
      * @Utf8_decode
@@ -258,6 +345,7 @@ class filter_htmlEntities{
 
         return str_replace($accented, $replace, $string);
     }
+
     /**
      * Renvoi une chaine en majuscule en tenant compte de l'encodage
      *
@@ -278,6 +366,7 @@ class filter_htmlEntities{
         }
         return $str;
     }
+
     /**
      * Renvoi une chaine en minuscule en tenant compte de l'encodage
      *
