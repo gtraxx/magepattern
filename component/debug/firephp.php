@@ -168,7 +168,7 @@ class debug_firephp{
 	 * 
 	 */
   	public static function configErrorHandler(){
-  		if (M_FIREPHP){
+  		if (MP_FIREPHP){
   			// converts errors into exceptions
   			self::Instance()->registerErrorHandler($throwErrorExceptions=true);
   			// makes FirePHP handle exceptions and sends it to FirePHP

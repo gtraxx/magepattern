@@ -135,10 +135,14 @@ class http_session{
      * @internal param array $session
      * @internal param bool $debug
      */
-    public function run($session_tabs,$setOption=false){
+    public function run($session_tabs=false,$setOption=false){
         try {
-            $setOption;
-            $this->iniSessionVar($session_tabs);
+            if($setOption != false){
+                $setOption;
+            }
+            if($session_tabs != false){
+                $this->iniSessionVar($session_tabs);
+            }
         }catch(Exception $e) {
             $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('php', 'error', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_VOID);

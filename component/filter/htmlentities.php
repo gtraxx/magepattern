@@ -50,7 +50,7 @@ class filter_htmlentities{
      * function unixSeparator
      * @return string
      */
-    public static function unixSeparator(){
+    public static function unix_separator(){
         if (DIRECTORY_SEPARATOR == '\\') {
             $str = str_replace('\\','/',DIRECTORY_SEPARATOR);
         }else{
@@ -63,7 +63,7 @@ class filter_htmlentities{
      * windowsSeparator
      * @return string
      */
-    public static function windowsSeparator(){
+    public static function win_separator(){
         if (DIRECTORY_SEPARATOR == '/') {
             $str = str_replace('/','\\',DIRECTORY_SEPARATOR);
         }else{
@@ -89,14 +89,15 @@ class filter_htmlentities{
     public static function decodeASCII($str){
         return chr($str);
     }
+
     /**
      * Decode HTML entities
      *
      * Returns a string with all entities decoded.
      *
-     * @param string	$str			String to protect
-     * @param string	$keep_special	Keep special characters: &gt; &lt; &amp;
-     * @return	string
+     * @param string    $str  String to protect
+     * @param bool|string $keep_special Keep special characters: &gt; &lt; &amp;
+     * @return    string
      */
     public static function decodeEntities($str,$keep_special=false)
     {
@@ -168,48 +169,133 @@ class filter_htmlentities{
         $str = str_replace('"','\"',$str);
         return $str;
     }
-
     /**
-     * Remove host in URL
      *
-     * Removes host part in URL
+     * @Utf8_decode
      *
-     * @param $url
-     * @internal param string $str URL to transform
-     * @return    string
+     * @Replace accented chars with latin
+     *
+     * @param string $string The string to convert
+     *
+     * @return string The corrected string
+     *
      */
-    public static function stripHostURL($url)
-    {
-        return preg_replace('|^[a-z]{3,}://.*?(/.*$)|','$1',$url);
-    }
+    public static function decode_utf8($string){
 
+        $accented = array(
+            'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ă', 'Ą',
+            'Ç', 'Ć', 'Č', 'Œ',
+            'Ď', 'Đ',
+            'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ă', 'ą',
+            'ç', 'ć', 'č', 'œ',
+            'ď', 'đ',
+            'È', 'É', 'Ê', 'Ë', 'Ę', 'Ě',
+            'Ğ',
+            'Ì', 'Í', 'Î', 'Ï', 'İ',
+            'Ĺ', 'Ľ', 'Ł',
+            'è', 'é', 'ê', 'ë', 'ę', 'ě',
+            'ğ',
+            'ì', 'í', 'î', 'ï', 'ı',
+            'ĺ', 'ľ', 'ł',
+            'Ñ', 'Ń', 'Ň',
+            'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ő',
+            'Ŕ', 'Ř',
+            'Ś', 'Ş', 'Š',
+            'ñ', 'ń', 'ň',
+            'ò', 'ó', 'ô', 'ö', 'ø', 'ő',
+            'ŕ', 'ř',
+            'ś', 'ş', 'š',
+            'Ţ', 'Ť',
+            'Ù', 'Ú', 'Û', 'Ų', 'Ü', 'Ů', 'Ű',
+            'Ý', 'ß',
+            'Ź', 'Ż', 'Ž',
+            'ţ', 'ť',
+            'ù', 'ú', 'û', 'ų', 'ü', 'ů', 'ű',
+            'ý', 'ÿ',
+            'ź', 'ż', 'ž',
+            'А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р',
+            'а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'р',
+            'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ъ', 'Ы', 'Ь', 'Э', 'Ю', 'Я',
+            'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я'
+        );
+
+        $replace = array(
+            'A', 'A', 'A', 'A', 'A', 'A', 'AE', 'A', 'A',
+            'C', 'C', 'C', 'CE',
+            'D', 'D',
+            'a', 'a', 'a', 'a', 'a', 'a', 'ae', 'a', 'a',
+            'c', 'c', 'c', 'ce',
+            'd', 'd',
+            'E', 'E', 'E', 'E', 'E', 'E',
+            'G',
+            'I', 'I', 'I', 'I', 'I',
+            'L', 'L', 'L',
+            'e', 'e', 'e', 'e', 'e', 'e',
+            'g',
+            'i', 'i', 'i', 'i', 'i',
+            'l', 'l', 'l',
+            'N', 'N', 'N',
+            'O', 'O', 'O', 'O', 'O', 'O', 'O',
+            'R', 'R',
+            'S', 'S', 'S',
+            'n', 'n', 'n',
+            'o', 'o', 'o', 'o', 'o', 'o',
+            'r', 'r',
+            's', 's', 's',
+            'T', 'T',
+            'U', 'U', 'U', 'U', 'U', 'U', 'U',
+            'Y', 'Y',
+            'Z', 'Z', 'Z',
+            't', 't',
+            'u', 'u', 'u', 'u', 'u', 'u', 'u',
+            'y', 'y',
+            'z', 'z', 'z',
+            'A', 'B', 'B', 'r', 'A', 'E', 'E', 'X', '3', 'N', 'N', 'K', 'N', 'M', 'H', 'O', 'N', 'P',
+            'a', 'b', 'b', 'r', 'a', 'e', 'e', 'x', '3', 'n', 'n', 'k', 'n', 'm', 'h', 'o', 'p',
+            'C', 'T', 'Y', 'O', 'X', 'U', 'u', 'W', 'W', 'b', 'b', 'b', 'E', 'O', 'R',
+            'c', 't', 'y', 'o', 'x', 'u', 'u', 'w', 'w', 'b', 'b', 'b', 'e', 'o', 'r'
+        );
+
+        return str_replace($accented, $replace, $string);
+    }
     /**
+     * Renvoi une chaine en majuscule en tenant compte de l'encodage
      *
-     * @get the full url of page
-     *
-     * @param bool $file
-     * @param bool $absolute
+     * @param string $str
      * @return string
      */
-    public static function getUrl($file=false,$absolute=true){
-        /*** check for https ***/
-        $protocol = isset($_SERVER['HTTPS']) == 'on' ? 'https' : 'http';
-        if($file){
-            $source = '://';
-            $source .= $_SERVER['HTTP_HOST'];
-            $source .= $_SERVER['REQUEST_URI'];
-        }else{
-            $source = '://';
-            $source .= $_SERVER['HTTP_HOST'];
-        }
-        if ($absolute){
-            /*** return the full address ***/
-            $path = $protocol.$source;
-        }else{
-            $path = '';
-        }
+    public static function strtoupper($str){
 
-        return $path;
+        if (function_exists("mb_strtoupper")) {
+            if (mb_detect_encoding($str,"utf-8") == "utf-8") {
+                $str = mb_strtoupper($str,'utf-8');
+            }
+            elseif(mb_detect_encoding($str, "ISO-8859-1")){
+                $str = mb_strtoupper($str, "ISO-8859-1");
+            }
+        }else{
+            $str = strtoupper($str);
+        }
+        return $str;
+    }
+    /**
+     * Renvoi une chaine en minuscule en tenant compte de l'encodage
+     *
+     * @param string $str
+     * @return string
+     */
+    public static function strtolower($str){
+
+        if (function_exists("mb_strtolower")) {
+            if (mb_detect_encoding($str,"UTF-8") == "UTF-8") {
+                $str = mb_strtolower($str,'UTF-8');
+            }elseif(mb_detect_encoding($str, "ISO-8859-1")){
+                $str = mb_strtolower($str,'ISO-8859-1');
+            }
+        }else{
+            $str = strtolower($str);
+        }
+        return $str;
     }
 }
 ?>
