@@ -86,6 +86,15 @@ class http_url{
 
         return $path;
     }
+
+    /**
+     * Converti une chaine en URL valide
+     * @static
+     * @param string $str
+     * @param array $option
+     * @return mixed|string
+     * @throws Exception
+     */
     public static function clean($str,$option = array('dot'=>false,'ampersand'=>'strict','cspec'=>'','rspec'=>'')){
         /**Clean accent*/
         $Caracs = array("¥" => "Y", "µ" => "u", "À" => "A", "Á" => "A",
@@ -133,7 +142,7 @@ class http_url{
             }
         }
         /* stripcslashes backslash */
-        $str = magixcjquery_filter_var::cleanQuote($str);
+        $str = filter_htmlEntities::cleanQuote($str);
         $tbl_o = array("@'@i",'@[[:blank:]]@i','[\?]','[\#]','[\@]','[\,]','[\!]','[\:]','[\(]','[\)]');
         $tbl_r = array ('-','-',"","","","","","","","");
         $cSpec = '';
