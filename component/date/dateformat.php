@@ -64,9 +64,9 @@ class date_dateformat extends DateTime{
             }else{
                 throw new Exception('not instantiate the class: DateTime');
             }
-        }catch (Exception $e) {
-            $logger = new debug_logger($_SERVER["DOCUMENT_ROOT"].'/test');//__DIR__.'/test'
-            $logger->log($e->getCode(), 'php', 'An error has occured :'.$e->getMessage(), debug_logger::LOG_VOID);
+        }catch(Exception $e) {
+            $logger = new debug_logger(MP_LOG_DIR);
+            $logger->log('php', 'error', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
         }
     }
     /**
