@@ -40,88 +40,75 @@
  * Created by SC BOX.
  * User: aureliengerits
  * Date: 29/07/12
- * Time: 19:31
+ * Time: 23:44
  *
  */
-class filter_escapeHtml{
+class filter_string{
     /**
-     * function trim string function
+     * Renvoi une chaine en majuscule en tenant compte de l'encodage
      *
      * @param string $str
      * @return string
      */
-    public static function trim($str){
-        return trim($str);
-    }
+    public static function strtoupper($str){
 
-    /**
-     *
-     * Remove markup
-     *
-     * Removes every tags, comments, cdata from string
-     *
-     * @param string	$str		String to clean
-     * @return	string
-     */
-    public static function clean($str)
-    {
-        $str = strip_tags($str);
+        if (function_exists("mb_strtoupper")) {
+            if (mb_detect_encoding($str,"utf-8") == "utf-8") {
+                $str = mb_strtoupper($str,'utf-8');
+            }
+            elseif(mb_detect_encoding($str, "ISO-8859-1")){
+                $str = mb_strtoupper($str, "ISO-8859-1");
+            }
+        }else{
+            $str = strtoupper($str);
+        }
         return $str;
     }
 
     /**
-     * HTML escape
-     *
-     * Replaces HTML special characters by entities.
-     *
-     * @param string $str	String to escape
-     * @return	string
-     */
-    public static function escapeHTML($str)
-    {
-        return htmlspecialchars($str,ENT_COMPAT,'UTF-8');
-    }
-
-    /**
-     * HTML Extreme escape
-     *
-     * Replaces HTML characters by entities.
-     *
-     * @param string $str	String to escape
-     * @return	string
-     */
-    public static function escapeExtremeHTML($str)
-    {
-        return htmlentities($str,ENT_COMPAT,'UTF-8');
-    }
-
-    /**
-     * decode Extreme htmlentities
+     * Renvoi une chaine en minuscule en tenant compte de l'encodage
      *
      * @param string $str
      * @return string
      */
-    public static function decodeExtremeHTML($str){
-        return html_entity_decode($str,ENT_COMPAT,'UTF-8');
-    }
+    public static function strtolower($str){
 
+        if (function_exists("mb_strtolower")) {
+            if (mb_detect_encoding($str,"UTF-8") == "UTF-8") {
+                $str = mb_strtolower($str,'UTF-8');
+            }elseif(mb_detect_encoding($str, "ISO-8859-1")){
+                $str = mb_strtolower($str,'ISO-8859-1');
+            }
+        }else{
+            $str = strtolower($str);
+        }
+        return $str;
+    }
     /**
-     * function pour supprimer les antislash
+     * Convert first letters string in Uppercase
      *
-     * @param string $string
+     * @param $str
      * @return string
      */
-    public static function cleanQuote($string){
-        return stripcslashes($string);
+    public static function ucFirst($str){
+        $str = self::strtoupper(substr($str,0,1)).substr($str,1);
+        return $str;
     }
-
     /**
-     * funtion intval —  Retourne la valeur numérique entière équivalente d'une variable
-     * @param $int
-     * @return Get the integer value of a variable
+     * truncate string with clean delimiter
+     * Tronque une chaîne de caractères sans couper au milieu d'un mot
+     * @param $string
+     * @param $lg_max (length max)
+     * @param $delimiter (delimiter ...)
+     * @return string
      */
-    public static function intval($int){
-        return intval($int);
+    public static function truncate($string,$lg_max,$delimiter){
+        if(form_inputfilter::isMaxString($string,$lg_max)){
+            $string = substr($string, 0, $lg_max);
+            $last_space = strrpos($string, " ");
+            $string = substr($string, 0, $last_space).$delimiter;
+        }
+        return $string;
     }
 }
 ?>
