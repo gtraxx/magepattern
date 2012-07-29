@@ -103,7 +103,7 @@ class filter_string{
      * @return string
      */
     public static function truncate($string,$lg_max,$delimiter){
-        if(form_inputfilter::isMaxString($string,$lg_max)){
+        if(form_inputFilter::isMaxString($string,$lg_max)){
             $string = substr($string, 0, $lg_max);
             $last_space = strrpos($string, " ");
             $string = substr($string, 0, $last_space).$delimiter;

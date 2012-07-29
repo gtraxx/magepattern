@@ -78,7 +78,7 @@ abstract class xml_factory_sitemap{
      * @throws Exception
      */
     protected function validElement($loc=null,$lastmod=null,$changefreq=null,$priority=null){
-        if(form_inputfilter::isURL($loc) == false) {
+        if(form_inputFilter::isURL($loc) == false) {
             throw new Exception('Loc is invalid format');
         }
         if($lastmod && !date_dateformat::isW3CValid($lastmod)) {
@@ -87,7 +87,7 @@ abstract class xml_factory_sitemap{
         if($changefreq && !in_array($changefreq, $this->changeFreqControl)) {
             throw new Exception('Invalid format for changefreq');
         }
-        if($priority && (!form_inputfilter::isNumeric($priority) || $priority < 0 || $priority > 1)) {
+        if($priority && (!form_inputFilter::isNumeric($priority) || $priority < 0 || $priority > 1)) {
             throw new Exception('Invalid format for priority 0.0 > 1.0');
         }
         elseif($priority) {

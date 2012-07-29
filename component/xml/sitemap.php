@@ -199,13 +199,13 @@ class xml_sitemap extends xml_factory_sitemap{
             switch($setConfig['type']){
                 case 'parent':
                     $this->xmlWriter()->startElement('sitemap');// [2] Second Node
-                    $this->xmlWriter()->writeElement('loc',form_inputfilter::isURL($loc));
+                    $this->xmlWriter()->writeElement('loc',form_inputFilter::isURL($loc));
                     $this->xmlWriter()->writeElement('lastmod',date_dateformat::isW3CValid($lastmod));
                     $this->xmlWriter()->endElement();
                     break;
                 case 'child':
                     $this->xmlWriter()->startElement('url');// [2] Second Node
-                    $this->xmlWriter()->writeElement('loc',form_inputfilter::isURL($loc));
+                    $this->xmlWriter()->writeElement('loc',form_inputFilter::isURL($loc));
                     $this->xmlWriter()->writeElement('lastmod',date_dateformat::isW3CValid($lastmod));
                     $this->xmlWriter()->writeElement('changefreq',$changefreq);
                     $this->xmlWriter()->writeElement('priority',$priority);
@@ -213,14 +213,14 @@ class xml_sitemap extends xml_factory_sitemap{
                     break;
                 case 'image':
                     $this->xmlWriter()->startElement('url');// [2] Second Node
-                    $this->xmlWriter()->writeElement('loc',form_inputfilter::isURL($loc));
+                    $this->xmlWriter()->writeElement('loc',form_inputFilter::isURL($loc));
                     if(array_key_exists($setConfig,'image')){
                         if($setConfig['image'] != '' AND $setConfig['image'] != false AND is_array($setConfig['image'])){
                             if(is_array($setConfig['image']['forimage'])){
                                 foreach($setConfig['image']['forimage'] as $img){
                                     if($setConfig['image']['imageloc'] != NULL){
                                         $this->xmlWriter()->startElement('image:image');// [2] Second Node
-                                        $this->xmlWriter()->writeElement('image:loc',form_inputfilter::isURL($setConfig['image']['url'].$setConfig['image']['imageloc']));
+                                        $this->xmlWriter()->writeElement('image:loc',form_inputFilter::isURL($setConfig['image']['url'].$setConfig['image']['imageloc']));
                                         $this->xmlWriter()->endElement();
                                     }
                                 }

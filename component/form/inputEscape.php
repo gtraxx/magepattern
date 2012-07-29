@@ -113,7 +113,7 @@ class form_inputEscape{
      *
      */
     public static function alphaNumeric($str){
-        return filter_escapeHtml::trim(form_inputfilter::isAlphaNumeric($str));
+        return filter_escapeHtml::trim(form_inputFilter::isAlphaNumeric($str));
     }
     /**
      * Combine function trimText and isPostNumeric for input
@@ -121,7 +121,7 @@ class form_inputEscape{
      *
      */
     public static function numeric($str){
-        return filter_escapeHtml::trim(form_inputfilter::isNumeric($str));
+        return filter_escapeHtml::trim(form_inputFilter::isNumeric($str));
     }
     /**
      * Special function for clean array
