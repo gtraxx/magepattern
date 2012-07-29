@@ -177,16 +177,16 @@ class form_inputFilter{
      *
      * Join function for get Alpha string
      *
-     * @see filter_htmlEntities::trim
-     * @see filter_htmlEntities::isAlpha
-     * @see filter_htmlEntities::isMaxString
+     * @see filter_escapeHtml::trim
+     * @see filter_escapeHtml::isAlpha
+     * @see filter_escapeHtml::isMaxString
      *
      * @param string $str
      * @param intéger $lg_max
      * @return bool|string
      */
     public static function isAlphaMax($str,$lg_max){
-        $string = self::isAlpha(filter_htmlEntities::trim($str));
+        $string = self::isAlpha(filter_escapeHtml::trim($str));
         $string .= self::isMaxString($str,$lg_max);
         return $string;
     }
@@ -194,16 +194,16 @@ class form_inputFilter{
     /**
      * Join function for get Alpha Numéric string
      *
-     * @see filter_htmlEntities::trim
-     * @see filter_htmlEntities::isAlphaNumeric
-     * @see filter_htmlEntities::isMaxString
+     * @see filter_escapeHtml::trim
+     * @see filter_escapeHtml::isAlphaNumeric
+     * @see filter_escapeHtml::isMaxString
      *
      * @param string $str
      * @param intéger $lg_max
      * @return bool|string
      */
     public static function isAlphaNumericMax($str,$lg_max){
-        $string = self::isAlphaNumeric(filter_htmlEntities::trim($str));
+        $string = self::isAlphaNumeric(filter_escapeHtml::trim($str));
         $string .= self::isMaxString($str,$lg_max);
         return $string;
     }
@@ -212,16 +212,16 @@ class form_inputFilter{
      * Join function for get Intéger
      *
      *
-     * @see filter_htmlEntities::trim
-     * @see filter_htmlEntities::isNumeric
-     * @see filter_htmlEntities::isMaxString
+     * @see filter_escapeHtml::trim
+     * @see filter_escapeHtml::isNumeric
+     * @see filter_escapeHtml::isMaxString
      *
      * @param string $str
      * @param intéger $lg_max
      * @return bool|string
      */
     public static function isNumericClean($str,$lg_max){
-        $string = self::isNumeric(filter_htmlEntities::trim($str));
+        $string = self::isNumeric(filter_escapeHtml::trim($str));
         $string .= self::isMaxString($str,$lg_max);
         return $string;
     }
