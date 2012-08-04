@@ -275,6 +275,9 @@ class collections_ArrayTools{
         "ZM"=>"Zambia",
         "ZW"=>"Zimbabwe"
     );
+    /**
+     * @var array $default_language
+     */
     private static $default_language = array(
         "ar"=>"Arabic",
         "az"=>"Azerbaijani",
@@ -402,29 +405,20 @@ class collections_ArrayTools{
 
     /**
      * @access public
-     * @static
      * Retourne le tableau des pays par défaut
+     * @return array
      */
-    public function default_country(){
+    public function defaultCountry(){
         return self::$default_country;
     }
 
     /**
-     * Retourne le tableau des pays avec les nouvelles valeurs
-     * @param array $new_arr
+     * @access public
+     * Retourne le tableau des langues par défaut
      * @return array
      */
-    public function country_array($new_arr=NULL){
-        if($new_arr!= NULL){
-            if(is_array($new_arr)){
-                $orig_arr = self::default_country();
-                return self::replaceArray($orig_arr,$new_arr);
-            }else{
-                return self::default_country();
-            }
-        }else{
-            return self::default_country();
-        }
+    public function defaultLanguage(){
+        return self::$default_language;
     }
 }
 ?>

@@ -63,7 +63,7 @@ class helpers_headLink extends link_rel{
     private static function getInstance(){
     	if (!isset(self::$instance)){
     		if(is_null(self::$instance)){
-				self::$instance = new magixcjquery_view_helper_headLink();
+				self::$instance = new helpers_headLink();
 			}
       	}
 		return self::$instance;
@@ -91,7 +91,7 @@ class helpers_headLink extends link_rel{
 	}
 	/**
 	 * 
-	 * magixcjquery_view_helper_headLink::linkStyleSheet()
+	 * helpers_headLink::linkStyleSheet()
 	 * <link rel="stylesheet" type="text/css" href="http://mydomaine.com/styles.css" media="screen" />
 	 * 
 	 * @param string $href
@@ -104,7 +104,7 @@ class helpers_headLink extends link_rel{
 	}
 	/**
 	 * 
-	 * magixcjquery_view_helper_headLink::linkRss()
+	 * helpers_headLink::linkRss()
 	 * <link rel="alternate" type="application/rss+xml" href="http://mydomaine.com/rss.xml" />
 	 * 
 	 * @param string $href

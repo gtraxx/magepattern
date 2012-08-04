@@ -109,6 +109,7 @@ class helpers_headMeta{
 	 * @var void
 	 */
 	const utf8 = 'utf8';
+    
 	/**
      * instance singleton
      * @access public
@@ -127,7 +128,8 @@ class helpers_headMeta{
 	 * 
 	 * @param string $httpequiv
 	 * @param string $content
-	 * @access protected
+     * @return string
+     * @access protected
 	 */
 	protected function http_equiv($httpequiv,$content){
 		if(self::getInstance()){
@@ -140,7 +142,8 @@ class helpers_headMeta{
 	 * 
 	 * @param string $name
 	 * @param string $content
-	 * @access protected
+     * @return string
+     * @access protected
 	 * 
 	 */
 	protected function name($name,$content){
@@ -148,13 +151,13 @@ class helpers_headMeta{
 			return '<meta name="'.$name.'" content="'.$content.'" />';//.PHP_EOL;
 		}
 	}
-	/**
-	 * Config charset string
-	 * @param void $charset
-	 * 
-	 * @return (string)
-	 * 
-	 */
+
+    /**
+     * Config charset string
+     * @param void $charset
+     *
+     * @return string (string)
+     */
 	private function charset($charset){
 		if(self::getInstance()){
 			switch($charset){
@@ -167,27 +170,27 @@ class helpers_headMeta{
 			return $chrs;
 		}
 	}
-	/**
-	 * Add content for css function
-	 * @param string $css
-	 * 
-	 * @access protected
-	 * @return (string)
-	 * 
-	 */
+
+    /**
+     * Add content for css function
+     * @param string $css
+     *
+     * @access protected
+     * @return string (string)
+     */
 	private function css($css){
 		if(self::getInstance()){
 			if($css == self::css)
 				return 'text/css';
 		}
 	}
-	/**
-	 * Define delay for revisit-after
-	 * @param string $delay
-	 * 
-	 * @return (string)
-	 * 
-	 */
+
+    /**
+     * Define delay for revisit-after
+     * @param string $delay
+     *
+     * @return string (string)
+     */
 	private function delayRevisit($delay){
 		if(self::getInstance()){
 			switch($delay){
@@ -203,10 +206,13 @@ class helpers_headMeta{
 			}
 		}
 	}
-	/**
-	 * Function control intéger params
-	 * @param intéger $int
-	 */
+
+    /**
+     * Function control intéger params
+     * @param intéger $int
+     * @throws Exception
+     * @return \intéger
+     */
 	private function numRevisit($int){
 		if(self::getInstance()){
 			if(is_numeric($int)){
@@ -215,17 +221,19 @@ class helpers_headMeta{
 			throw new Exception('Error argument "int" is not numeric');
 		}
 	}
-	/**
-	 * Add meta http-equiv Content-Type
-	 * @param string $content
-	 * @param string $charset
-	 * 
-	 * @access public
-	 * @example 
-	 * magixcjquery_view_helper_headMeta::contentType('html','utf8');
-	 * <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	 * @return string
-	 */
+
+    /**
+     * Add meta http-equiv Content-Type
+     * @param string $content
+     * @param string $charset
+     *
+     * @throws Exception
+     * @access public
+     * @example
+     * helpers_headMeta::contentType('html','utf8');
+     * <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+     * @return string
+     */
 	public static function contentType($content=null,$charset){
 		if(!null == $content){
 			switch($content){
@@ -237,16 +245,18 @@ class helpers_headMeta{
 		}
 		throw new Exception('Missing argument content in Content-Type!!');
 	}
-	/**
-	 * Add meta http-equiv Content-Type-Style
-	 * @param string $style
-	 * 
-	 * @access public
-	 * @example 
-	 * magixcjquery_view_helper_headMeta::contentStyleType('css');
-	 * <meta http-equiv="Content-Style-Type" content="text/css" />
-	 * @return string
-	 */
+
+    /**
+     * Add meta http-equiv Content-Type-Style
+     * @param string $style
+     *
+     * @throws Exception
+     * @access public
+     * @example
+     * helpers_headMeta::contentStyleType('css');
+     * <meta http-equiv="Content-Style-Type" content="text/css" />
+     * @return string
+     */
 	public static function contentStyleType($style=null){
 		if(!null == $style){
 			switch($style){
@@ -258,19 +268,21 @@ class helpers_headMeta{
 		}
 		throw new Exception('Missing argument style in Content-Style-Type!!');
 	}
+
 	/**
 	 * Add meta http-equiv Content-Language
 	 * @param string $content
 	 * 
 	 * @access public
 	 * @example 
-	 * magixcjquery_view_helper_headMeta::contentLanguage('fr,en,nl');
+	 * helpers_headMeta::contentLanguage('fr,en,nl');
 	 * <meta http-equiv="Content-Language" content="fr,en,nl" />
 	 * @return string
 	 */
 	public static function contentLanguage($content){
 		return self::getInstance()->http_equiv('Content-Language',$content);
 	}
+
 	/**
 	 * Add meta name revisit-after
 	 * @param intéger $int
@@ -278,7 +290,7 @@ class helpers_headMeta{
 	 * 
 	 * @access public
 	 * @example 
-	 * magixcjquery_view_helper_headMeta::revisitAfter(3,'days');
+	 * helpers_headMeta::revisitAfter(3,'days');
 	 * <meta name="revisit-after" content="3 days" />
 
 	 * @return string
@@ -286,52 +298,56 @@ class helpers_headMeta{
 	public static function revisitAfter($int,$delay){
 		return self::getInstance()->name('revisit-after',self::getInstance()->numRevisit($int).' '.self::getInstance()->delayRevisit($delay));
 	}
+
 	/**
 	 * Add meta name robots
 	 * @param string $content
 	 * 
 	 * @access public
 	 * @example 
-	 * magixcjquery_view_helper_headMeta::robots('index, follow, all');
+	 * helpers_headMeta::robots('index, follow, all');
 	 * <meta name="robots" content="index, follow, all" />
 	 * @return string
 	 */
 	public static function robots($content){
 		return self::getInstance()->name('robots',$content);
 	}
+
 	/**
 	 * Add meta name googleSiteVerification
 	 * @param string $content
 	 * 
 	 * @access public
 	 * @example 
-	 * magixcjquery_view_helper_headMeta::googleSiteVerification('+nxGUDJ4QpAZ5l9Bsjdi102tLVC21AIh5d1Nl23908vVuFHs34=');
+	 * helpers_headMeta::googleSiteVerification('+nxGUDJ4QpAZ5l9Bsjdi102tLVC21AIh5d1Nl23908vVuFHs34=');
 	 * <meta name="google-site-verification" content="+nxGUDJ4QpAZ5l9Bsjdi102tLVC21AIh5d1Nl23908vVuFHs34=" />
 	 * @return string
 	 */
 	public static function googleSiteVerification($content){
 		return self::getInstance()->name('google-site-verification',$content);
 	}
+
 	/**
 	 * Add meta name keywords
 	 * @param string $content
 	 * 
 	 * @access public
 	 * @example 
-	 * magixcjquery_view_helper_headMeta::keywords('magixcjquery,jquery,ajax');
+	 * helpers_headMeta::keywords('magixcjquery,jquery,ajax');
 	 * <meta name="keywords" content="magixcjquery,jquery,ajax" />
 	 * @return string
 	 */
 	public static function keywords($content){
 		return self::getInstance()->name('keywords',$content);
 	}
+
 	/**
 	 * Add meta name description
 	 * @param string $content
 	 * 
 	 * @access public
 	 * @example 
-	 * magixcjquery_view_helper_headMeta::description('my website');
+	 * helpers_headMeta::description('my website');
 	 * <meta name="description" content="my website" />
 	 * @return string
 	 */

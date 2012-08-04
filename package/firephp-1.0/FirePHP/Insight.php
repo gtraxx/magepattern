@@ -150,7 +150,7 @@ class FirePHP_Insight extends FirePHP {
             $firephp = self::getInstance();
             $enabled = $firephp->getEnabled();
             $firephp->setEnabled(true);
-            $firephp->info('Your client only supports some features of the FirePHP library being used on the server. See http://upgrade.firephp.org/ for information on how to upgrade your client.');
+            //$firephp->info('Your client only supports some features of the FirePHP library being used on the server. See http://upgrade.firephp.org/ for information on how to upgrade your client.');
             $firephp->setEnabled($enabled);
         }
     }

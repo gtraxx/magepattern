@@ -38,12 +38,14 @@
 # -- END LICENSE BLOCK -----------------------------------
 
 class helpers_headScript{
+
 	/**
 	 * Instance
 	 * @var void
 	 * @access private
 	 */
 	private static $instance = null;
+
 	/**
      * instance singleton
      * @access public
@@ -56,6 +58,7 @@ class helpers_headScript{
       	}
 		return self::$instance;
     }
+
 	/**
 	 * 
 	 * start Ini link meta
@@ -67,6 +70,7 @@ class helpers_headScript{
 			return '<script ';
 		}
 	}
+
 	/**
 	 * end script meta
 	 * 
@@ -77,10 +81,12 @@ class helpers_headScript{
 			return '</script>'.PHP_EOL;
 		}
 	}
+
 	/**
 	 * Retourne le type
 	 * @param string $type
-	 */
+     * @return string
+     */
 	private function type($type){
 		if(self::getInstance()){
 			switch($type){
@@ -90,14 +96,16 @@ class helpers_headScript{
 			}
 		}
 	}
+
 	/**
 	 * 
-	 * magixcjquery_view_helper_script::src($uri,$type)
+	 * helpers_headScript::src($uri,$type)
 	 * <script type="text/javascript" src="/monscript.js"></script>
 	 * 
 	 * @param string $uri
 	 * @param string media
-	 */
+     * @return string
+     */
 	public static function src($uri,$type){
 		if(self::getInstance()){
 			return self::getInstance()->startScript().'src="'.$uri.'" '.self::getInstance()->type($type).'>'.self::getInstance()->endScript();

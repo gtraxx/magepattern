@@ -78,21 +78,25 @@ class helpers_doctype{
 	 * @var string
 	 */
 	const CUSTOM              = 'CUSTOM';
+
 	/**
 	 * Default DocType
 	 * @var string
      */
     protected static $_defaultDoctype = self::HTML4_LOOSE;
+
 	/**
 	 * Function construc class
 	 */
 	function __construct(){}
+
 	/**
 	 * 
 	 * Add doctype 
 	 * 
 	 * @param string $doctype
-	 */
+     * @return string
+     */
 	public static function doctype($doctype=null){
 		if (null !== $doctype) {
             switch ($doctype) {
