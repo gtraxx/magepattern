@@ -94,6 +94,11 @@ class http_url{
      * @param array $option
      * @return mixed|string
      * @throws Exception
+     * @example:
+    http_url::clean(
+        '/public/test/truc-machin01/aussi/version-1.0/',
+        array('dot'=>'display','ampersand'=>'strict','cspec'=>array('[\/]'),'rspec'=>array(''))
+        );
      */
     public static function clean($str,$option = array('dot'=>false,'ampersand'=>'strict','cspec'=>'','rspec'=>'')){
         /**Clean accent*/
