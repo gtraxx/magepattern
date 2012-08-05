@@ -36,8 +36,31 @@
 #
 # -- END LICENSE BLOCK -----------------------------------
 
+Version 0.2
+
+* Ajout de la classe json dans http
+* Ajout de commentaires dans les helpers.
+* Ajout des premières fonctions dans la classe pagination.
+* Suppression des fichiers superflus dans Swiftmailer
+* Suppression du message d'information de version dans firephp
+* Ajout des langues par défaut en respectant les codes ISO 639-1
+* Fix bug des logs dans la classe dateformat (datetime)
+
 Version 0.1
 
+* Fix bug avec trim dans inputFilter
+* Répartition des fonctions dans les classes adaptés
+* Ajout de la classe inputEscape
+* Ajout de la classe string
+* Ajout des fonctions pour le nettoyage avec taille maximum (inputfilter)
+* Ajout des informations sur la fonction clean dans la classe URL
+* Ajout des fonctions de nettoyage dans la classe sanitize
+* Ajout des Helpers pour la construction des métas et doctype (View)
+* Fix bug dans la constante principale de firephp
+* Ajout de la classe escapeHtml
+* Ajout de la classe pour le traitement des URLS
+* Ajout de condition dans la classe des sessions (start)
+* Ajout du dossier pour les éléments de pagination
 * Remplacement des constante de l'autoload de librairie par des variables non public
 * Fix bug basePath (Remplacement des slashs)
 * Suppression du paramètre pour les caractères de remplacement (Système de détection automatique)
