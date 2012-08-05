@@ -140,5 +140,14 @@ $result = $json->arrayJsonReplace(
     /*array('mykey'=>'ma clé','supertruc'=>'super truc'),
     array('mykey'=>'ma nouvelle clé','supertruc'=>'mon nouveau super truc')*/
 );
-print $json->encode($result,array('',''));
+/*$header = new http_header();
+$header->head_expires("Mon, 26 Jul 1997 05:00:00 GMT");
+$header->head_last_modified(gmdate( "D, d M Y H:i:s" ) . "GMT");
+$header->pragma();
+$header->cache_control("nocache");
+$header->getStatus('200');
+$header->html_header("UTF-8");
+print $json->encode($result,array('',''));*/
+$url = new http_url();
+print $url->getUri();
 ?>

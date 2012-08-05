@@ -58,18 +58,20 @@ class http_url{
     {
         return preg_replace('|^[a-z]{3,}://.*?(/.*$)|','$1',$url);
     }
+
     /**
      *
      * @get the full url of page
      *
-     * @param bool $file
+     * @param bool $uri
      * @param bool $absolute
+     * @internal param bool $file
      * @return string
      */
-    public static function getUrl($file=false,$absolute=true){
+    public static function getUrl($uri=false,$absolute=true){
         /*** check for https ***/
         $protocol = isset($_SERVER['HTTPS']) == 'on' ? 'https' : 'http';
-        if($file){
+        if($uri){
             $source = '://';
             $source .= $_SERVER['HTTP_HOST'];
             $source .= $_SERVER['REQUEST_URI'];
@@ -183,6 +185,61 @@ class http_url{
         /*Convert lower case*/
         $str = filter_htmlentities::strtolower($str);
         return $str;
+    }
+
+    /**
+     * @return string
+     */
+    public function currentUri(){
+        return self::getUrl(true);
+    }
+
+    /**
+     * @return string
+     */
+    public function getUri()
+    {
+        $uri = trim(self::getUrl(true));
+
+        // absolute URL?
+        if (0 === strpos($uri, 'http')) {
+            return $uri;
+        }
+
+        // empty URI
+        if (!$uri) {
+            return $this->currentUri;
+        }
+
+        // only an anchor
+        if ('#' === $uri[0]) {
+            $baseUri = $this->currentUri;
+            if (false !== $pos = strpos($baseUri, '#')) {
+                $baseUri = substr($baseUri, 0, $pos);
+            }
+
+            return $baseUri.$uri;
+        }
+
+        // only a query string
+        if ('?' === $uri[0]) {
+            $baseUri = $this->currentUri;
+
+            // remove the query string from the current uri
+            if (false !== $pos = strpos($baseUri, '?')) {
+                $baseUri = substr($baseUri, 0, $pos);
+            }
+
+            return $baseUri.$uri;
+        }
+
+        // absolute path
+        if ('/' === $uri[0]) {
+            return preg_replace('#^(.*?//[^/]+)(?:\/.*)?$#', '$1', $this->currentUri).$uri;
+        }
+
+        // relative path
+        return substr($this->currentUri, 0, strrpos($this->currentUri, '/') + 1).$uri;
     }
 }
 ?>
