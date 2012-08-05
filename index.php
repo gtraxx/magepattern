@@ -88,9 +88,10 @@ $sql =  'SELECT id, color FROM fruit';
     $color.= $row['color'].'<br />';
 }
 print $color.'<br />';*/
-$fetch = $db->fetchAll($sql);
+/*$fetch = $db->fetchAll($sql);
 $test = new collections_splTools();
-print_r(collections_ArrayTools::iteratorToArray($fetch));
+print_r(collections_ArrayTools::iteratorToArray($fetch));*/
+
 /*$option = '';
 foreach($fetch as $value){
     $id[] = $value['id'];
@@ -129,4 +130,15 @@ print_r($truc->getPrefixFallbacks());
 $truc->register();*/
 /*$test = new test();
 $test->mafonction();*/
+$sql =  'SELECT id, color
+        FROM fruit';
+$fetch = $db->fetchAll($sql);
+$json = new http_json();
+//print_r($fetch);
+$result = $json->arrayJsonReplace(
+    $fetch
+    /*array('mykey'=>'ma clé','supertruc'=>'super truc'),
+    array('mykey'=>'ma nouvelle clé','supertruc'=>'mon nouveau super truc')*/
+);
+print $json->encode($result,array('',''));
 ?>
