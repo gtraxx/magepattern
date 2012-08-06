@@ -241,6 +241,7 @@ class db_layer{
      * @param $sql
      * @param bool $execute
      * @param bool $setOption
+     * @throws Exception
      * @return mixed
      * @example :
      * #### No params ###
@@ -248,17 +249,17 @@ class db_layer{
         $db = new db_layer();
         $sql =  'SELECT id, color FROM fruit';
         foreach  ($db->fetchAll($sql) as $row) {
-        $color.= $row['color'].'<br />';
+            $color.= $row['color'].'<br />';
         }
-    print $color.'<br />';
-     * ### With params ###
-     * $id=1;
+        print $color.'<br />';
+         * ### With params ###
+        $id=1;
         $db = new db_layer();
         $sql =  'SELECT id, color
         FROM fruit
         WHERE id = ?';
         foreach  ($db->fetchAll($sql,array($id)) as $row) {
-        $color.= $row['color'];
+            $color.= $row['color'];
         }
         print $color.'<br />';
      */
@@ -354,6 +355,7 @@ class db_layer{
      * @param $sql
      * @param bool $execute
      * @param bool $setOption
+     * @throws Exception
      */
     public function insert($sql,$execute=false,$setOption=false){
         try{
@@ -380,6 +382,7 @@ class db_layer{
      * @param $sql
      * @param bool $execute
      * @param bool $setOption
+     * @throws Exception
      */
     public function update($sql,$execute=false,$setOption=false){
         try{
@@ -406,6 +409,7 @@ class db_layer{
      * @param $sql
      * @param bool $execute
      * @param bool $setOption
+     * @throws Exception
      */
     public function delete($sql,$execute=false,$setOption=false){
         try{
@@ -568,6 +572,120 @@ class db_layer{
                 return $result;
             }else{
                 throw new Exception('rowCount Error with SQL prepare');
+            }
+        }catch (PDOException $e){
+            $logger = new debug_logger(MP_LOG_DIR);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
+        }
+    }
+
+    /**
+     * Create simple table
+     * @param $sql
+     * @param bool $setOption
+     * @throws Exception
+     */
+    public function createTable($sql,$setOption=false){
+        try{
+            /**
+             * Charge la configuration
+             */
+            $setConfig = $this->setConfig($sql,$setOption=false);
+            $prepare = $this->prepare($sql);
+            if(is_object($prepare)){
+                $prepare->execute();
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+            }else{
+                throw new Exception('createTable Error with SQL prepare');
+            }
+        }catch (PDOException $e){
+            $logger = new debug_logger(MP_LOG_DIR);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
+        }
+    }
+
+    /**
+     * SHOW TABLE WITH PDO
+     * @param $table
+     * @param bool $setOption
+     * @return mixed
+     * @throws Exception
+     */
+    public function showTable($table,$setOption=false){
+        try{
+            /**
+             * Charge la configuration
+             */
+            $sql = 'SHOW TABLES FROM '.self::getInfo()->getDB().' LIKE  \''. $table. '\'';
+            $setConfig = $this->setConfig($sql,$setOption=false);
+            $prepare = $this->prepare($sql);
+            if(is_object($prepare)){
+                $prepare->execute();
+                $result = $prepare->rowCount();
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+                return $result;
+            }else{
+                throw new Exception('showTable Error with SQL prepare');
+            }
+        }catch (PDOException $e){
+            $logger = new debug_logger(MP_LOG_DIR);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
+        }
+    }
+
+    /**
+     * SHOW DATABASE WITH PDO
+     * @param $database
+     * @param bool $setOption
+     * @return mixed
+     * @throws Exception
+     */
+    public function showDatabase($database,$setOption=false){
+        try{
+            /**
+             * Charge la configuration
+             */
+            $sql = 'SHOW DATABASES LIKE  \''. $database. '\'';
+            $setConfig = $this->setConfig($sql,$setOption=false);
+            $prepare = $this->prepare($sql);
+            if(is_object($prepare)){
+                $prepare->execute();
+                $result = $prepare->rowCount();
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+                return $result;
+            }else{
+                throw new Exception('showTable Error with SQL prepare');
+            }
+        }catch (PDOException $e){
+            $logger = new debug_logger(MP_LOG_DIR);
+            $logger->log('statement', 'db', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);
+        }
+    }
+
+    /**
+     * function truncate table
+     *
+     * @param void $table
+     * @param bool $setOption
+     * @throws Exception
+     */
+    public function truncateTable($table,$setOption=false){
+        try{
+            /**
+             * Charge la configuration
+             */
+            $sql = 'TRUNCATE TABLE '. $table;
+            $setConfig = $this->setConfig($sql,$setOption=false);
+            $prepare = $this->prepare($sql);
+            if(is_object($prepare)){
+                $prepare->execute();
+                $setConfig['debugParams'] ? $prepare->debugDumpParams():'';
+                $setConfig['closeCursor'] ? $prepare->closeCursor():'';
+            }else{
+                throw new Exception('showTable Error with SQL prepare');
             }
         }catch (PDOException $e){
             $logger = new debug_logger(MP_LOG_DIR);
