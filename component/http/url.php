@@ -63,15 +63,18 @@ class http_url{
      *
      * @get the full url of page
      *
-     * @param bool $uri
-     * @param bool $absolute
-     * @internal param bool $file
+     * @param bool $requestUri
      * @return string
      */
-    public static function getUrl($uri=false,$absolute=true){
+    public static function getUrl($requestUri = false){
         /*** check for https ***/
-        $protocol = isset($_SERVER['HTTPS']) == 'on' ? 'https' : 'http';
-        if($uri){
+        if(isset($_SERVER['HTTPS']) == 'on'){
+            $isHttps = 'https';
+        }else{
+            $isHttps = 'http';
+        }
+        if($requestUri){
+            /*** return the full address ***/
             $source = '://';
             $source .= $_SERVER['HTTP_HOST'];
             $source .= $_SERVER['REQUEST_URI'];
@@ -79,14 +82,17 @@ class http_url{
             $source = '://';
             $source .= $_SERVER['HTTP_HOST'];
         }
-        if ($absolute){
-            /*** return the full address ***/
-            $path = $protocol.$source;
-        }else{
-            $path = '';
-        }
-
+        //$_SERVER["SERVER_NAME"]
+        $path = $isHttps.$source;
         return $path;
+    }
+
+    /**
+     * @static
+     * @return string
+     */
+    public static function getFiles(){
+        return substr($_SERVER["SCRIPT_NAME"],strrpos($_SERVER["SCRIPT_NAME"],"/")+1);
     }
 
     /**
