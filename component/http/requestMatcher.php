@@ -50,7 +50,7 @@ class http_requestMatcher{
      *
      * @return boolean True valid, false if not.
      */
-    protected function checkIp($requestIp, $ip)
+    public function checkIp($requestIp, $ip)
     {
         // IPv6 address
         if (false !== strpos($requestIp, ':')) {
