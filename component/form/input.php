@@ -72,7 +72,7 @@ class form_input{
             if(array_key_exists('class', $setInput)){
                 self::$getInput['class'] = $setInput['class'];
             }else{
-                self::$getInput['default'] = '';
+                self::$getInput['class'] = '';
             }
             if(array_key_exists('default', $setInput)){
                 self::$getInput['default'] = $setInput['default'];
