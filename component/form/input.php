@@ -123,7 +123,34 @@ class form_input{
             $name = $id = $nid;
         }
     }
-
+    public static function form($input,$arrayOption){
+        if(is_array($arrayOption)){
+            if(array_key_exists('class', $arrayOption)){
+                $class = ' class="'.$arrayOption['class'].'" ';
+            }else{
+                $class = '';
+            }
+            if(array_key_exists('id', $arrayOption)){
+                $id = ' id="'.$arrayOption['id'].'" ';
+            }else{
+                $id = '';
+            }
+            if(array_key_exists('method', $arrayOption)){
+                $method = ' method="'.$arrayOption['method'].'" ';
+            }else{
+                $method = ' method="get" ';
+            }
+            if(array_key_exists('action', $arrayOption)){
+                $action = ' action="'.$arrayOption['action'].'" ';
+            }else{
+                $action = ' action=""';
+            }
+            $forms = '<form'.$id.$class.$method.$action.'>';
+            $forms .= $input;
+            $forms .= '</form>';
+            return $forms;
+        }
+    }
     /**
      * Select Field
      *
