@@ -38,6 +38,9 @@
 # -- END LICENSE BLOCK -----------------------------------
 
 class form_input{
+    /**
+     * @var $getInput
+     */
     private static $getInput;
     /**
      * @var array
@@ -48,6 +51,7 @@ class form_input{
         'tabindex'  =>  '',
         'disabled'  =>  false,
         'readonly'  =>  false,
+        'checked'   =>  false,
         'size'      =>  '',
         'max'       =>  ''
     );
@@ -94,6 +98,11 @@ class form_input{
             }else{
                 self::$getInput['readonly'] = false;
             }
+            if(array_key_exists('checked', $setInput)){
+                self::$getInput['checked'] = $setInput['checked'];
+            }else{
+                self::$getInput['checked'] = false;
+            }
             if(array_key_exists('size', $setInput)){
                 self::$getInput['size'] = $setInput['size'];
             }else{
@@ -123,6 +132,13 @@ class form_input{
             $name = $id = $nid;
         }
     }
+
+    /**
+     * Retourne le formulaire
+     * @param $input
+     * @param $arrayOption
+     * @return string
+     */
     public static function form($input,$arrayOption){
         if(is_array($arrayOption)){
             if(array_key_exists('class', $arrayOption)){
@@ -145,11 +161,34 @@ class form_input{
             }else{
                 $action = ' action=""';
             }
-            $forms = '<form'.$id.$class.$method.$action.'>';
+            $forms = '<form'.$id.$class.$method.$action.'>'."\n";
             $forms .= $input;
-            $forms .= '</form>';
+            $forms .= '</form>'."\n";
             return $forms;
         }
+    }
+
+    /**
+     * @access public
+     * @static
+     * @param $name
+     * @param bool $arrayOption
+     * @return string
+     */
+    public static function label($name,$arrayOption = false){
+        if(is_array($arrayOption)){
+            if(array_key_exists('for', $arrayOption)){
+                $attr = ' for="'.$arrayOption['for'].'"';
+            }else{
+                $attr = '';
+            }
+        }else{
+            $attr = '';
+        }
+        $res = '<label'.$attr.'>';
+        $res .= $name;
+        $res .= '</label>';
+        return $res;
     }
     /**
      * Select Field
@@ -272,32 +311,38 @@ class form_input{
      * name and ID.
      *
      * @param string|array    $nid            Element ID and name
+     * @param bool $arrInput
      * @param integer        $cols        Number of columns
      * @param integer        $rows        Number of rows
-     * @param string        $default        Element value
-     * @param bool|string $class Element class name
-     * @param string        $tabindex        Element tabindex
-     * @param boolean        $disabled        True if disabled
+     * @internal param string $default Element value
+     * @internal param bool|string $class Element class name
+     * @internal param string $tabindex Element tabindex
+     * @internal param bool $disabled True if disabled
      * @internal param string $extra_html Extra HTML attributes
      *
      * @return string
      * @example :
-        $form = new form_input();
-        print print $form->textArea('myfield',20,30,'Default text','myclass');
-        return <textarea cols="20" rows="30" name="myfield" id="myfield" class="myclass" >Default text</textarea>
+    $form = new form_input();
+    $form->textArea(
+        array('myfield'),
+        array('default'=>'Default text','class'=>'myclass')
+        ,20,
+        30
+     );
+    return <textarea cols="20" rows="30" name="myfield" id="myfield" class="myclass" >Default text</textarea>
      */
-    public static function textArea($nid, $cols=20, $rows=30, $default='',$class='',$tabindex='', $disabled=false)
+    public static function textArea($nid, $arrInput=false, $cols=20, $rows=30)
     {
         self::getNameAndId($nid,$name,$id);
+        $getInput = self::setInputConfig($arrInput);
 
-        $res = '<textarea cols="'.$cols.'" rows="'.$rows.'" ';
-        $res .= 'name="'.$name.'" ';
-        $res .= $id ? 'id="'.$id.'" ' : '';
-        $res .= ($tabindex != '') ? 'tabindex="'.$tabindex.'" ' : '';
-        $res .= $class ? 'class="'.$class.'" ' : '';
-        $res .= $disabled ? 'disabled="disabled" ' : '';
+        $res = '<textarea cols="'.$cols.'" rows="'.$rows.'" name="'.$name.'" ';
+        $res .= $getInput['class'] ? 'class="'.$getInput['class'].'" ' : '';
+        $res .= $getInput['tabindex'] ? 'tabindex="'.$getInput['tabindex'].'" ' : '';
+        $res .= $getInput['disabled'] ? 'disabled="disabled" ' : '';
+        $res .= $getInput['readonly'] ? 'readonly="readonly" ' : '';
         $res .= '>';
-        $res .= $default;
+        $res .= $getInput['default'] || $getInput['default'] === '0' ? $getInput['default'] : '';
         $res .= '</textarea>'."\n";
 
         return $res;
@@ -309,30 +354,31 @@ class form_input{
      * Returns HTML code for a password field. $nid could be a string or an array of
      * name and ID.
      *
-     * @param string|array	$nid			Element ID and name
-     * @param integer		$size		Element size
-     * @param integer		$max			Element maxlength
-     * @param string		$default		Element value
-     * @param string		$class		Element class name
-     * @param string		$tabindex		Element tabindex
-     * @param boolean		$disabled		True if disabled
-     * @param string		$extra_html	Extra HTML attributes
+     * @param string|array    $nid            Element ID and name
+     * @param bool $arrInput
+     * @internal param int $size Element size
+     * @internal param int $max Element maxlength
+     * @internal param string $default Element value
+     * @internal param string $class Element class name
+     * @internal param string $tabindex Element tabindex
+     * @internal param bool $disabled True if disabled
+     * @internal param string $extra_html Extra HTML attributes
      *
      * @return string
      */
-    public static function password($nid, $size, $max, $default='', $class='', $tabindex='', $disabled=false, $extra_html='')
+    public static function password($nid, $arrInput=false)
     {
         self::getNameAndId($nid,$name,$id);
-
-        $res = '<input type="password" size="'.$size.'" name="'.$name.'" ';
+        $getInput = self::setInputConfig($arrInput);
+        $res = '<input type="password" size="'.$getInput['size'].'" name="'.$name.'" ';
 
         $res .= $id ? 'id="'.$id.'" ' : '';
-        $res .= $max ? 'maxlength="'.$max.'" ' : '';
-        $res .= $default || $default === '0' ? 'value="'.$default.'" ' : '';
-        $res .= $class ? 'class="'.$class.'" ' : '';
-        $res .= $tabindex ? 'tabindex="'.$tabindex.'" ' : '';
-        $res .= $disabled ? 'disabled="disabled" ' : '';
-        $res .= $extra_html;
+        $res .= $getInput['max'] ? 'maxlength="'.$getInput['max'].'" ' : '';
+        $res .= $getInput['default'] || $getInput['default'] === '0' ? 'value="'.$getInput['default'].'" ' : '';
+        $res .= $getInput['class'] ? 'class="'.$getInput['class'].'" ' : '';
+        $res .= $getInput['tabindex'] ? 'tabindex="'.$getInput['tabindex'].'" ' : '';
+        $res .= $getInput['disabled'] ? 'disabled="disabled" ' : '';
+        $res .= $getInput['readonly'] ? 'readonly="readonly" ' : '';
 
         $res .= ' />'."\n";
 
@@ -356,19 +402,18 @@ class form_input{
      * @internal param bool $disabled True if disabled
      * @return string
      */
-    public static function radio($nid, $value, $arrInput=false, $checked=false, $extra_html='')
+    public static function radio($nid, $arrInput=false)
     {
         self::getNameAndId($nid,$name,$id);
         $getInput = self::setInputConfig($arrInput);
-        $res = '<input type="radio" name="'.$name.'" value="'.$value.'" ';
+        $res = '<input type="radio" name="'.$name.'"';
 
-        $res .= $id ? 'id="'.$id.'" ' : '';
-        $res .= $checked ? 'checked="checked" ' : '';
-        $res .= $getInput['class'] ? 'class="'.$getInput['class'].'" ' : '';
-        $res .= $getInput['tabindex'] ? 'tabindex="'.$getInput['tabindex'].'" ' : '';
-        $res .= $getInput['disabled'] ? 'disabled="disabled" ' : '';
-        $res .= $extra_html;
-
+        $res .= $id ? ' id="'.$id.'" ' : '';
+        $res .= $getInput['default'] || $getInput['default'] === '0' ? ' value="'.$getInput['default'].'" ' : '';
+        $res .= $getInput['class'] ? ' class="'.$getInput['class'].'" ' : '';
+        $res .= $getInput['checked'] ? ' checked="checked" ' : '';
+        $res .= $getInput['tabindex'] ? ' tabindex="'.$getInput['tabindex'].'" ' : '';
+        $res .= $getInput['disabled'] ? ' disabled="disabled" ' : '';
         $res .= '/>'."\n";
 
         return $res;
@@ -390,18 +435,18 @@ class form_input{
      *
      * @return string
      */
-    public static function checkbox($nid, $value, $checked='', $class='', $tabindex='',$disabled=false, $extra_html='')
+    public static function checkbox($nid, $arrInput=false)
     {
         self::getNameAndId($nid,$name,$id);
-
-        $res = '<input type="checkbox" name="'.$name.'" value="'.$value.'" ';
+        $getInput = self::setInputConfig($arrInput);
+        $res = '<input type="checkbox" name="'.$name.'"';
 
         $res .= $id ? 'id="'.$id.'" ' : '';
-        $res .= $checked ? 'checked="checked" ' : '';
-        $res .= $class ? 'class="'.$class.'" ' : '';
-        $res .= $tabindex ? 'tabindex="'.$tabindex.'" ' : '';
-        $res .= $disabled ? 'disabled="disabled" ' : '';
-        $res .= $extra_html;
+        $res .= $getInput['default'] || $getInput['default'] === '0' ? ' value="'.$getInput['default'].'" ' : '';
+        $res .= $getInput['class'] ? ' class="'.$getInput['class'].'" ' : '';
+        $res .= $getInput['checked'] ? ' checked="checked" ' : '';
+        $res .= $getInput['tabindex'] ? ' tabindex="'.$getInput['tabindex'].'" ' : '';
+        $res .= $getInput['disabled'] ? ' disabled="disabled" ' : '';
 
         $res .= ' />'."\n";
 
