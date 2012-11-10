@@ -155,7 +155,7 @@ class http_url{
             }
         }
         /* stripcslashes backslash */
-        $str = filter_htmlEntities::cleanQuote($str);
+        $str = filter_escapeHtml::cleanQuote($str);
         $tbl_o = array("@'@i",'@[[:blank:]]@i','[\?]','[\#]','[\@]','[\,]','[\!]','[\:]','[\(]','[\)]');
         $tbl_r = array ('-','-',"","","","","","","","");
         $cSpec = '';
@@ -189,7 +189,7 @@ class http_url{
         /*Convert UTF8 encode*/
         $str = filter_htmlentities::decode_utf8($str);
         /*Convert lower case*/
-        $str = filter_htmlentities::strtolower($str);
+        $str = filter_string::strtolower($str);
         return $str;
     }
 
