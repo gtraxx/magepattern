@@ -132,11 +132,10 @@ class form_inputEscape{
     public static function arrayClean($array){
         foreach($array as $key => $val) {
             if (!is_array($array[$key])) {
-                $array[$key] = self::inputClean($val);
+                $array[$key] = self::simpleClean($val);
             }
             else{
                 $array[$key] = self::arrayClean($array[$key]);
-                //$array[$key] = self::inputClean($array[$key]);
             }
         }
         return $array;
