@@ -32,11 +32,11 @@ Licence
 <pre>
 This file is part of Mage Pattern.
 The toolkit PHP for developer, integrated in SC BOX
-Copyright (C) 2012  Gerits Aurelien aurelien[at]magix-dev[dot]be - aurelien[at]sc-box[dot]com
+Copyright (C) 2012 - 2013 Gerits Aurelien contact[at]aurelien-gerits[dot]be
 
 #### OFFICIAL TEAM MAGE PATTERN:
 
-* Gerits Aurelien (Author - Developer) aurelien[at]magix-dev[dot]be - aurelien[at]sc-box[dot]com
+* Gerits Aurelien (Author - Developer) contact[at]aurelien-gerits[dot]be
 
 Redistributions of files must retain the above copyright notice.
 This program is free software: you can redistribute it and/or modify
