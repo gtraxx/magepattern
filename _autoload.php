@@ -82,6 +82,10 @@ final class magepattern_bootstrap{
      */
     private static $path_firephp = '/package/firephp-1.0/FirePHP/Init.php';
     /**
+     * Constante Path Chrome Logger
+     */
+    private static $path_chrome_logger = '/package/chrome-logger/ChromePhp.php';
+    /**
      * @access private
      * @return array
      */
@@ -89,6 +93,7 @@ final class magepattern_bootstrap{
         return array(
             'autoloader' => __DIR__.self::$path_autoloader,
             'firephp'    => __DIR__.self::$path_firephp,
+            'chromephp'  => __DIR__.self::$path_chrome_logger,
             'swift'      => __DIR__.self::$path_swiftmailer
         );
     }

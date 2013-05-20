@@ -88,9 +88,9 @@ $sql =  'SELECT id, color FROM fruit';
     $color.= $row['color'].'<br />';
 }
 print $color.'<br />';*/
-/*$fetch = $db->fetchAll($sql);
+$fetch = $db->fetchAll($sql);
 $test = new collections_splTools();
-print_r(collections_ArrayTools::iteratorToArray($fetch));*/
+print_r(collections_ArrayTools::iteratorToArray($fetch));
 
 /*$option = '';
 foreach($fetch as $value){

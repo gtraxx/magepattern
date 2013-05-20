@@ -50,6 +50,7 @@ class xml_sitemap extends xml_factory_sitemap{
     protected static $xmlWriter;
 
     /**
+     * @throws Exception
      * @return XMLWriter
      */
     private function xmlWriter(){
