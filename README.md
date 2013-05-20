@@ -31,7 +31,7 @@ Licence
 
 <pre>
 This file is part of Mage Pattern.
-The toolkit PHP for developer, integrated in SC BOX
+The toolkit PHP for developer
 Copyright (C) 2012 - 2013 Gerits Aurelien contact[at]aurelien-gerits[dot]be
 
 #### OFFICIAL TEAM MAGE PATTERN:
@@ -56,6 +56,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Do not edit or add to this file if you wish to upgrade Mage Pattern to newer
 versions in the future. If you wish to customize Mage Pattern for your
-needs please refer to http://www.sc-box.com for more information.
+needs please refer to http://www.magepattern.com for more information.
 
 </pre>
