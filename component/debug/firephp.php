@@ -3,11 +3,11 @@
 #
 # This file is part of Mage Pattern.
 # The toolkit PHP for developer
-# Copyright (C) 2012  Gerits Aurelien <aurelien@magix-dev.be> - <aurelien@aurelien-gerits.be>
+# Copyright (C) 2012 - 2013 Gerits Aurelien contact[at]aurelien-gerits[dot]be
 #
 # OFFICIAL TEAM MAGE PATTERN:
 #
-#   * Gerits Aurelien (Author - Developer) <aurelien@aurelien-gerits.be>
+#   * Gerits Aurelien (Author - Developer) contact[at]aurelien-gerits[dot]be
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -56,24 +56,18 @@ if (MP_FIREPHP == false){
 ############
 */
 /**
- * 
- * Magix cjQuery
- * 
- * @author Gérits Aurélien
- * @copyright Magix cjQuery
- * @version 0.3
  * @package debug with FirePHP
  * FirePHP (false or true)
  * define('M_FIREPHP',true);
  *
  */
 class debug_firephp{
-	/**
-	 * Instance FirePHP class
-	 * @var Instance
-	 * @access protected
-	 * @static
-	 */
+    /**
+     * Instance FirePHP class
+     * @var Instance
+     * @access protected
+     * @static
+     */
   protected static $Instance;
 	/**
 	* timer start
@@ -95,9 +89,10 @@ class debug_firephp{
         }
     return self::$Instance;
   }
-  /*
+
+  /**
    * get Instance FirePHP and execute if M_FIREPHP = true
-   */
+   **/
 	protected static function getIniInstance(){
 	    if (MP_FIREPHP){
 	    	$firephp = self::Instance()->getInstance(true);
@@ -140,6 +135,7 @@ class debug_firephp{
                  'includeLineNumbers' => $includeLineNumbers);
   		return self::Instance()->setOptions($tabs);
   	}
+
   /**
    * Specify a filter to be used when encoding an object
    * 
@@ -148,23 +144,27 @@ class debug_firephp{
    * @param string $Class The class name of the object
    * @param array $Filter An array of members to exclude
    * @return void
-   * exemple : magixcjquery_debug_magixfire::setObjectFilter('ClassName',
-                           array('MemberName'));
+   * exemple :
+   debug_firephp::setObjectFilter(
+        'ClassName',
+        array('MemberName')
+   );
    */
   	public static function setObjectFilter($Class, $Filter){
   		return self::Instance()->setObjectFilter($Class, $Filter);
   	}
+
 	/**
 	 * function configErrorHandler
 	 * Ini send Convert E_WARNING, E_NOTICE, E_USER_ERROR, E_USER_WARNING, E_USER_NOTICE 
 	 * and E_RECOVERABLE_ERROR to Firebug automatically.
 	 * exemple in config application :
-	 * magixcjquery_debug_firephp::configErrorHandler();
-	 * try {
-	 * throw new Exception('Test Exception');
-	 * catch(Exception $e) {
-	        magixcjquery_debug_magixfire::magixFireError($e);
-		}
+	 debug_firephp::configErrorHandler();
+	 try {
+	    throw new Exception('Test Exception');
+	 catch(Exception $e) {
+        debug_firephp::magixFireError($e);
+     }
 	 * 
 	 */
   	public static function configErrorHandler(){
@@ -179,67 +179,76 @@ class debug_firephp{
   			);
   		}
   	}
-  	/**
-  	 * 
-  	 * Log object with label to firebug console
-  	 * 
-     * @param mixes $Object
-     * @param string $Label
-  	 */
+
+    /**
+     *
+     * Log object with label to firebug console
+     *
+     * @param $object
+     * @param bool $label
+     * @return
+     */
   	public static function log($object,$label=false){
   		if(self::getIniInstance()){
   			return self::Instance()->log($object,$label);
   		}
   	}
-	/**
-  	 * 
-  	 * Log object with label to firebug console
-  	 * 
-  	 * @param void $object
-  	 * @param string $label
-  	 */
+
+    /**
+     *
+     * Log object with label to firebug console
+     *
+     * @param void $object
+     * @param bool|string $label
+     * @return
+     */
 	public static function info($object,$label=false){
   		if(self::getIniInstance()){
   			return self::Instance()->info($object,$label);
   		}
   	}
-	/**
-  	 * 
-  	 * Log object with label to firebug console
-  	 * 
-  	 * @param void $object
-  	 * @param string $label
-  	 */
+
+    /**
+     *
+     * Log object with label to firebug console
+     *
+     * @param void $object
+     * @param bool|string $label
+     * @return
+     */
 	public static function error($object,$label=false){
   		if(self::getIniInstance()){
   			return self::Instance()->error($object,$label);
   		}
   	}
-	/**
-  	 * 
-  	 * Log object with label to firebug console
-  	 * 
-  	 * @param void $object
-  	 * @param string $label
-  	 */
+
+    /**
+     *
+     * Log object with label to firebug console
+     *
+     * @param void $object
+     * @param bool|string $label
+     * @return
+     */
 	public static function warn($object,$label=false){
   		if(self::getIniInstance()){
   			return self::Instance()->warn($object,$label);
   		}
   	}
-	/**
-  	 * Start a group for following messages.
-  	 * 
-  	 * @param void $object
-  	 * @param string $label
-  	 * @return true
-   	 * @throws Exception	
-  	 */
+
+    /**
+     * Start a group for following messages.
+     *
+     * @param void $object
+     * @param bool|string $label
+     * @return true
+     */
 	public static function group($object,$label=false){
   		if(self::getIniInstance()){
   			return self::Instance()->group($object,$label);
   		}
   	}
+
   /**
    * Ends a group you have started before
    *
@@ -251,14 +260,15 @@ class debug_firephp{
   			return self::Instance()->groupEnd();
   		}
   	}
-	/**
-  	 * Dumps key and variable to firebug server panel
-  	 * @return true
-   	 * @throws Exception
-  	 * @param void $object
-  	 * @param void $vars
-  	 * @param string $label(false)
-  	 */
+
+    /**
+     * Dumps key and variable to firebug server panel
+     * @return true
+     *
+     * @param void $object
+     * @param void $vars
+     * @param bool|string $label (false)
+     */
 	public static function dump($object,$vars,$label=false){
   		if(self::getIniInstance()){
   			if (!is_array($vars)) {
@@ -281,39 +291,43 @@ class debug_firephp{
 	        }
   		}
   	}
-  	/**
-   * Log a table in the firebug console
-   *
-   * @see magixcjquery_debug_magixfire::magixFireTable
-   * @param string $Label
-   * @param string $Table
-   * @return true
-   * @throws Exception
-   * @example
-   * $table   = array();
-   * $table[] = array('Col 1 Heading','Col 2 Heading');
-   * $table[] = array('Row 1 Col 1','Row 1 Col 2');
-   * $table[] = array('Row 2 Col 1','Row 2 Col 2');
-   * $table[] = array('Row 3 Col 1','Row 3 Col 2');
-   */
+
+    /**
+     * Log a table in the firebug console
+     *
+     * @see debug_firephp::magixFireTable
+     * @param $label
+     * @param $table
+     * @internal param string $Label
+     * @internal param string $Table
+     * @return true
+     * @example
+     * $table   = array();
+     * $table[] = array('Col 1 Heading','Col 2 Heading');
+     * $table[] = array('Row 1 Col 1','Row 1 Col 2');
+     * $table[] = array('Row 2 Col 1','Row 2 Col 2');
+     * $table[] = array('Row 3 Col 1','Row 3 Col 2');
+     */
   	public static function table($label,$table){
   		if(self::getIniInstance()){
   			return self::Instance()->table($label, $table);
   		}
   	}
-  	/**
-   * Log a trace in the firebug console
-   *
-   * @see magixcjquery_debug_magixfire::TRACE
-   * @param string $Label
-   * @return true
-   * @throws Exception
-   */
+
+    /**
+     * Log a trace in the firebug console
+     *
+     * @see debug_firephp::TRACE
+     * @param $label
+     * @internal param string $Label
+     * @return true
+     */
   	public static function trace($label){
   		if(self::getIniInstance()){
   			return self::Instance()->trace($label);
   		}
   	}
+
 	/**
 	 * start Current Unix timestamp with microseconds
 	 * @access protected
@@ -324,7 +338,8 @@ class debug_firephp{
 		    self::$timerStart = microtime();
 		    self::$timerEnd = 0;
 	  	}
-	  }
+	}
+
 	/**
 	 * Stop Current Unix timestamp with microseconds
 	 * @access protected
@@ -333,7 +348,8 @@ class debug_firephp{
 	  	if(self::getIniInstance()){
 	    	self::$timerEnd =microtime();
 	  	}
-	  }
+	}
+
   	/**
   	 * @see timeStart calculation with microtime
   	 * @access public
@@ -343,6 +359,7 @@ class debug_firephp{
   			return self::timeStart();
   		}
   	}
+
   	/**
   	 * @see timeStop calculation end microtime
   	 * @access public
@@ -352,14 +369,16 @@ class debug_firephp{
   			return self::timeStop();
 		}
   	}
+
 	/**
 	 * @see calculation for execute start and stop
 	 * @access protected
 	 */
-	  protected static function getResultCalculation(){
+	 protected static function getResultCalculation(){
 	    if(self::$timerEnd == 0) self::timerStop();
 	      return self::$timerEnd - self::$timerStart;
-	  }
+	 }
+
   	/**
   	 * return result where Timerget 
   	 * @see getResultCalculation

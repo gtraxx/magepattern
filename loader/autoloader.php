@@ -3,11 +3,11 @@
 #
 # This file is part of Mage Pattern.
 # The toolkit PHP for developer
-# Copyright (C) 2012  Gerits Aurelien <aurelien@magix-dev.be> - <aurelien@aurelien-gerits.be>
+# Copyright (C) 2012 - 2013 Gerits Aurelien contact[at]aurelien-gerits[dot]be
 #
 # OFFICIAL TEAM MAGE PATTERN:
 #
-#   * Gerits Aurelien (Author - Developer) <aurelien@aurelien-gerits.be>
+#   * Gerits Aurelien (Author - Developer) contact[at]aurelien-gerits[dot]be
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
