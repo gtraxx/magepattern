@@ -44,13 +44,17 @@
  *
  */
 class http_header{
-    
+    /**
+     * @var int
+     */
     protected
         $statusCode  = 200,
         $statusText  = 'OK',
         $headerOnly  = false,
         $headers     = array();
-
+    /**
+     * @var array
+     */
     static protected $statusTexts = array(
         '100' => 'Continue',
         '101' => 'Switching Protocols',
@@ -99,6 +103,7 @@ class http_header{
      * Configuration du status
      * @param integer $code
      * @param string $name
+     * @return null|string
      */
     public function setStatusCode($code, $name = null){
         $this->statusCode = $code;
@@ -112,12 +117,14 @@ class http_header{
     public function getStatus($code, $name = null){
         return header('HTTP/1.1 '.$code.' '.$name);
     }
+
     /**
      * Retrieves a formated date.
      *
      * @param  string $timestamp  Timestamp
      * @param  string $type       Format type
      *
+     * @throws InvalidArgumentException
      * @return string Formatted date
      */
     static public function getDate($timestamp, $type = 'rfc1123')
@@ -176,13 +183,14 @@ class http_header{
     public function head_last_modified($date){
         return header("Last-Modified: ".$date );
     }
+
     /**
-     * @return
-     * retourne pragma
+     * @return void pragma
      */
     public function pragma(){
         return header("Pragma: no-cache" );
     }
+
     /**
      * retourne le cache control
      * @return string
@@ -203,6 +211,7 @@ class http_header{
         }
         return implode(',',$controle);
     }
+
     /**
      * retourne l'entete json
      * @param string $charset
@@ -214,6 +223,7 @@ class http_header{
             debug_firephp::log("Headers:", headers_list());
         }
     }
+
     /**
      * retourne l'entete html
      * @param string $charset
@@ -225,6 +235,27 @@ class http_header{
             debug_firephp::log("Headers:", headers_list());
         }
     }
+
+    /**
+     * @param $charset
+     * @param string $type
+     * @param bool $debug
+     */
+    public function excel_header($charset,$type='excel',$debug=false){
+        switch($type){
+            case 'excel':
+                $content_type = 'application/vnd.ms-excel';
+                break;
+            case '2007':
+                $content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                break;
+        }
+        header("Content-Type: {$content_type}; charset={$charset}");
+        if($debug == true){
+            debug_firephp::log("Headers:", headers_list());
+        }
+    }
+
     /**
      * retourne l'entete txt
      * @param string $charset
@@ -236,6 +267,7 @@ class http_header{
             debug_firephp::log("Headers:", headers_list());
         }
     }
+
     /**
      *
      * Retourne
@@ -247,6 +279,7 @@ class http_header{
             debug_firephp::log("Headers:", headers_list());
         }
     }
+
     /**
      * @param string $method
      * @param  $arguments

@@ -103,6 +103,7 @@ class form_inputEscape{
      * @param string $str
      * @param intégrer $lg_max
      * @param string $delimiter
+     * @return string
      */
     public static function truncateClean($str,$lg_max,$delimiter){
         return filter_escapeHtml::trim(filter_string::truncate($str,$lg_max,$delimiter));
@@ -111,6 +112,7 @@ class form_inputEscape{
      * Combine function trimText and isPostAlphaNumeric for input
      * @param string $str
      *
+     * @return string
      */
     public static function alphaNumeric($str){
         return filter_escapeHtml::trim(form_inputFilter::isAlphaNumeric($str));
@@ -119,6 +121,7 @@ class form_inputEscape{
      * Combine function trimText and isPostNumeric for input
      * @param string $str
      *
+     * @return string
      */
     public static function numeric($str){
         return filter_escapeHtml::trim(form_inputFilter::isNumeric($str));

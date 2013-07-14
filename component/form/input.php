@@ -199,9 +199,6 @@ class form_input{
      * @param array $arrayOption
      * @param bool $arrInput
      * @throws Exception
-     * @internal param string $class
-     * @internal param string $default
-     * @internal param null $cvalue
      * @return string
      *
      * @example :
@@ -273,14 +270,6 @@ class form_input{
      *
      * @param string|array    $nid            Element ID and name
      * @param bool $arrInput
-     * @internal param int $size Element size
-     * @internal param int $max Element maxlength
-     * @internal param string $default Element value
-     * @internal param bool|string $class Element class name
-     * @internal param string $tabindex Element tabindex
-     * @internal param bool $disabled True if disabled
-     *
-     * @internal param bool $readonly
      * @return string
      * @example :
         $form = new form_input();
@@ -314,11 +303,6 @@ class form_input{
      * @param bool $arrInput
      * @param integer        $cols        Number of columns
      * @param integer        $rows        Number of rows
-     * @internal param string $default Element value
-     * @internal param bool|string $class Element class name
-     * @internal param string $tabindex Element tabindex
-     * @internal param bool $disabled True if disabled
-     * @internal param string $extra_html Extra HTML attributes
      *
      * @return string
      * @example :
@@ -356,13 +340,6 @@ class form_input{
      *
      * @param string|array    $nid            Element ID and name
      * @param bool $arrInput
-     * @internal param int $size Element size
-     * @internal param int $max Element maxlength
-     * @internal param string $default Element value
-     * @internal param string $class Element class name
-     * @internal param string $tabindex Element tabindex
-     * @internal param bool $disabled True if disabled
-     * @internal param string $extra_html Extra HTML attributes
      *
      * @return string
      */
@@ -391,15 +368,8 @@ class form_input{
      * Returns HTML code for a radio button. $nid could be a string or an array of
      * name and ID.
      *
-     * @param string|array    $nid            Element ID and name
-     * @param string        $value        Element value
+     * @param string|array $nid            Element ID and name
      * @param bool $arrInput
-     * @param bool|string $checked True if checked
-     * @param string  $extra_html    Extra HTML attributes
-     *
-     * @internal param string $class Element class name
-     * @internal param string $tabindex Element tabindex
-     * @internal param bool $disabled True if disabled
      * @return string
      */
     public static function radio($nid, $arrInput=false)
@@ -425,13 +395,8 @@ class form_input{
      * Returns HTML code for a checkbox. $nid could be a string or an array of
      * name and ID.
      *
-     * @param string|array    $nid            Element ID and name
-     * @param string        $value        Element value
-     * @param bool|string $checked True if checked
-     * @param string        $class        Element class name
-     * @param string        $tabindex        Element tabindex
-     * @param boolean        $disabled        True if disabled
-     * @param string        $extra_html    Extra HTML attributes
+     * @param string|array $nid            Element ID and name
+     * @param bool $arrInput
      *
      * @return string
      */

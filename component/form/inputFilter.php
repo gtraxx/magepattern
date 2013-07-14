@@ -57,10 +57,12 @@ class form_inputFilter{
       (:[0-9]+)?                              		# a port (optional)
       (/?|/\S+)                               		# a /, nothing or a / with something
     $~ix';
+
     /**
      * function isEmpty
      *
      * @param string $val
+     * @param bool $zero
      * @return false
      */
     public static function isEmpty($val,$zero = true){
@@ -85,13 +87,12 @@ class form_inputFilter{
           return $url;*/
         //String
         $clean = (string) $url;
-        if($url != ''){
-            if (!preg_match(self::REGEX_URL_FORMAT, $clean)){
-                //Generate exception
-                throw new Exception('Invalid URL: '.$url);
-            }
+        // Invalid URL
+        if (!preg_match(self::REGEX_URL_FORMAT, $clean)){
+            return false;
+        }else{
+            return $clean;
         }
-        return $clean;
     }
     /**
      * function isMail
