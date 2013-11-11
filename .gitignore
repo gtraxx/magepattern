@@ -2,3 +2,5 @@
 .svn
 .idea
 .DS_Store
+.htaccess
+test.php
