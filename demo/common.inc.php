@@ -62,7 +62,7 @@ define('MP_DBNAME','test');
 define('MP_LOG','debug');
 
 // Path for error log
-define('MP_LOG_DIR','/Applications/MAMP/htdocs/magepattern/demo/log');
+define('MP_LOG_DIR','/magepattern/demo/log');
 
 // FirePHP (false or true)
 define('MP_FIREPHP',true);
