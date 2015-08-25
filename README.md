@@ -9,7 +9,7 @@ elle comprend les fonctionnalités les plus courante pour le développement d'ap
 Authors
 -------
 
- * Gerits Aurelien (Author-Developer) aurelien[at]magix-dev[dot]be - aurelien[at]sc-box[dot]com
+ * Gerits Aurelien (Author-Developer) contact[at]aurelien-gerits[dot]be
 
 Requirements
 ------------
@@ -31,7 +31,7 @@ Licence
 <pre>
 This file is part of Mage Pattern.
 The toolkit PHP for developer
-Copyright (C) 2012 - 2013 Gerits Aurelien contact[at]aurelien-gerits[dot]be
+Copyright (C) 2012 - 2015 Gerits Aurelien contact[at]aurelien-gerits[dot]be
 
 #### OFFICIAL TEAM MAGE PATTERN:
 
