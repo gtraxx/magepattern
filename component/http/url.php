@@ -196,14 +196,14 @@ class http_url{
     /**
      * @return string
      */
-    public function currentUri(){
+    public static function currentUri(){
         return self::getUrl(true);
     }
 
     /**
      * @return string
      */
-    public function getUri()
+    public static function getUri()
     {
         $uri = trim(self::getUrl(true));
 
@@ -214,12 +214,12 @@ class http_url{
 
         // empty URI
         if (!$uri) {
-            return $this->currentUri;
+            return self::currentUri;
         }
 
         // only an anchor
         if ('#' === $uri[0]) {
-            $baseUri = $this->currentUri;
+            $baseUri = self::currentUri;
             if (false !== $pos = strpos($baseUri, '#')) {
                 $baseUri = substr($baseUri, 0, $pos);
             }
@@ -229,7 +229,7 @@ class http_url{
 
         // only a query string
         if ('?' === $uri[0]) {
-            $baseUri = $this->currentUri;
+            $baseUri = self::currentUri;
 
             // remove the query string from the current uri
             if (false !== $pos = strpos($baseUri, '?')) {
@@ -241,11 +241,11 @@ class http_url{
 
         // absolute path
         if ('/' === $uri[0]) {
-            return preg_replace('#^(.*?//[^/]+)(?:\/.*)?$#', '$1', $this->currentUri).$uri;
+            return preg_replace('#^(.*?//[^/]+)(?:\/.*)?$#', '$1', self::currentUri).$uri;
         }
 
         // relative path
-        return substr($this->currentUri, 0, strrpos($this->currentUri, '/') + 1).$uri;
+        return substr(self::currentUri, 0, strrpos(self::currentUri, '/') + 1).$uri;
     }
 }
 ?>

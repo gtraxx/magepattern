@@ -72,7 +72,7 @@ final class magepattern_bootstrap{
     /**
      * Constante Path swiftmailer lib
      */
-    private static $path_swiftmailer = '/package/Swift-5.0.0/lib/swift_required.php';
+    private static $path_swiftmailer = '/package/Swift-5.2.1/lib/swift_required.php';
     /**
      * Constante Path Autoloader magepattern
      */

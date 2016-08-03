@@ -122,9 +122,9 @@ class date_dateformat extends DateTime{
      * @return string
      * @example
      * $datecreate = new date_dateformat();
-     * echo $datecreate->date_europeen_format('2000-01-01');
+     * echo $datecreate->dateEuropeenFormat('2000-01-01');
      */
-	public function date_europeen_format($time=null){
+	public function dateEuropeenFormat($time=null){
 		return $this->dateDefine('Y/m/d',$time);
 	}
 
@@ -132,12 +132,12 @@ class date_dateformat extends DateTime{
      * @access public
      * Retourne la date au format W3C
      * $datecreate = new date_dateformat();
-     * echo $datecreate->date_w3c('2005-08-15');
+     * echo $datecreate->dateW3C('2005-08-15');
      * 2005-08-15T15:52:01+00:00
      * @param null $time
      * @return string
      */
-	public function date_w3c($time=null){ 
+	public function dateW3C($time=null){
 		return $this->dateDefine(DATE_W3C,$time);
 	}
 
@@ -214,7 +214,7 @@ class date_dateformat extends DateTime{
      * @return DateInterval
      * @throws Exception
      */
-    private function option_interval($interval_spec=array('interval'=>'','type'=>'string')){
+    private function optionInterval($interval_spec=array('interval'=>'','type'=>'string')){
         if(isset($interval_spec['interval'])){
             $interval = $interval_spec['interval'];
         }else{
@@ -317,7 +317,7 @@ class date_dateformat extends DateTime{
     public function add(array $interval_spec,$format='Y-m-d',$time=null){
         if(is_array($interval_spec)){
             $datetime = $this->_datetime($time);
-            $duration = $this->option_interval($interval_spec);
+            $duration = $this->optionInterval($interval_spec);
             $datetime->add($duration);
             return $datetime->format($format);
         }else{
@@ -348,7 +348,7 @@ class date_dateformat extends DateTime{
     public function sub(array $interval_spec,$format='Y-m-d',$time=null){
         if($interval_spec != null){
             $datetime = $this->_datetime($time);
-            $duration = $this->option_interval($interval_spec);
+            $duration = $this->optionInterval($interval_spec);
             $datetime->sub($duration);
             return $datetime->format($format);
         }else{
