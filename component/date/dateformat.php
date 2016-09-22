@@ -122,12 +122,22 @@ class date_dateformat extends DateTime{
      * @return string
      * @example
      * $datecreate = new date_dateformat();
-     * echo $datecreate->dateEuropeenFormat('2000-01-01');
+     * echo $datecreate->dateToEuropeanFormat('2000-01-01');
      */
-	public function dateEuropeenFormat($time=null){
+	public function dateToEuropeanFormat($time=null){
 		return $this->dateDefine('Y/m/d',$time);
 	}
 
+    /**
+     * Transforme une date au format européen en format SQL
+     * @param $d
+     * @param string $separator
+     * @return string
+     */
+    public function dateToDbFormat($d,$separator = '/'){
+        list($day, $month, $year) = explode($separator, $d);
+        return "$year-$month-$day";
+    }
     /**
      * @access public
      * Retourne la date au format W3C
