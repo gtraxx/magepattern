@@ -128,27 +128,28 @@ class filesystem_makefile{
      * This function rename files and dir
      *
      * @access public
-     * @param $files
+     * @param $files array
      * @throws Exception
      */
     public function rename($files){
         try{
             if(is_array($files)){
-                foreach ($files as $origin => $target) {
-                    // we check that target does not exist
-                    if (is_readable($target)) {
-                        throw new Exception(sprintf('Cannot rename because the target "%s" already exist.', $origin));
-                    }
-                    if(!file_exists($origin)){
-                        continue;
-                    }
-                    if (true !== @rename($origin, $target)) {
-                        throw new Exception(sprintf('Failed to rename %s', $origin));
-                    }
+               // print_r($files);
+                // we check that target does not exist
+                if (is_readable($files['target'])) {
+                    throw new Exception(sprintf('Cannot rename because the target "%s" already exist.', $origin));
+                }
+                //print $files['origin'];
+                if(!file_exists($files['origin'])){
+                    return false;
+                }
+                if (true !== @rename($files['origin'], $files['target'])) {
+                    throw new Exception(sprintf('Failed to rename %s', $files['origin']));
                 }
             }else{
                 throw new Exception(sprintf('%s is not array', $files));
             }
+
         }catch(Exception $e) {
             $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('php', 'error', 'An error has occured : '.$e->getMessage(), debug_logger::LOG_MONTH);

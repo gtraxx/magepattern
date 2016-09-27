@@ -146,13 +146,21 @@ class http_curl{
                 }
                 //get answer
                 $response = curl_exec($curlInit);
+                $curlInfo = curl_getinfo($curlInit);
                 curl_close($curlInit);
-                if($debug){
-                    $firephp = new debug_firephp();
-                    $firephp->log($response);
+                if ($debug) {
+                    var_dump($curlInfo);
+                    var_dump($response);
                 }
-                if ($response) return true;
-                return false;
+                /*if ($response) return true;
+                return false;*/
+                if ($curlInfo['http_code'] == '200') {
+                    if ($response) {
+                        return true;
+                    }
+                }else{
+                    return false;
+                }
             }
         }catch (Exception $e){
             $logger = new debug_logger(MP_LOG_DIR);
@@ -225,8 +233,10 @@ class http_curl{
                     var_dump($curlInfo);
                     var_dump($response);
                 }
-                if ($response) {
-                    return $response;
+                if ($curlInfo['http_code'] == '200') {
+                    if ($response) {
+                        return $response;
+                    }
                 }
             }
         }catch (Exception $e){
@@ -283,8 +293,10 @@ class http_curl{
                         var_dump($curlInfo);
                         var_dump($response);
                     }
-                    if ($response) {
-                        return $response;
+                    if ($curlInfo['http_code'] == '200') {
+                        if ($response) {
+                            return $response;
+                        }
                     }
                 }
             }
