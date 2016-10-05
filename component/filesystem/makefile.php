@@ -129,6 +129,7 @@ class filesystem_makefile{
      *
      * @access public
      * @param $files array
+     * @return bool
      * @throws Exception
      */
     public function rename($files){
@@ -137,7 +138,7 @@ class filesystem_makefile{
                // print_r($files);
                 // we check that target does not exist
                 if (is_readable($files['target'])) {
-                    throw new Exception(sprintf('Cannot rename because the target "%s" already exist.', $origin));
+                    throw new Exception(sprintf('Cannot rename because the target "%s" already exist.', $files['origin']));
                 }
                 //print $files['origin'];
                 if(!file_exists($files['origin'])){
