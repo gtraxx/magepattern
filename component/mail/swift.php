@@ -257,12 +257,12 @@ class mail_swift{
      */
     public function batch_send_mail($message,$failures=false,$log=false){
     	if(!$this->_mailer->send($message)){
-            debug_firephp::dump("Failures: ", $failures);
+            print ("Failures: ". $failures);
     	}
     	if($log){
 	    	$echologger = new Swift_Plugins_Loggers_EchoLogger();
 			$this->_mailer->registerPlugin(new Swift_Plugins_LoggerPlugin($echologger));
-	    	debug_firephp::dump("Failures: ",$echologger->dump());
+	    	print "Failures: ".$echologger->dump();
             $logger = new debug_logger(MP_LOG_DIR);
             $logger->log('mail', 'Failures', 'Failures : '.$echologger->dump(), debug_logger::LOG_VOID);
     	}
