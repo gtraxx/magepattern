@@ -80,7 +80,7 @@ if(defined('MP_FIREPHP')){
  * Autoloader registerPrefixes pour les composants de l'application
  */
 $loader = new autoloader();
-$loader->registerPrefixes(array(
+$loader->addPrefixes(array(
     'frontend' => 'app'
 ));
 $loader->register();
