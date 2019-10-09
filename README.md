@@ -3,7 +3,7 @@ Magepattern
 
 Presentation
 ------------
-Magepattern est une boite à outil écrite pour PHP 5.3 ou plus, 
+Magepattern est une boite à outil écrite pour PHP 5.6 ou plus, 
 elle comprend les fonctionnalités les plus courante pour le développement d'application tel que la création de fichier xml,le routing d'URL, interaction avec la base de données, et bien plus.
 
 Authors
