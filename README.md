@@ -16,13 +16,14 @@ Requirements
 
 ### Server
  * APACHE / IIS
- * PHP 5.3 et plus (Compatible uniquement à partir de cette version)
+ * PHP 5.6 et plus (Compatible uniquement à partir de cette version), PHP 7.x.x recommandé
      * GD activé
      * SPL
      * SimpleXML et XML READER
      * PDO
+     * CURL
  * MYSQL
- * MARIADB (coming soon)
+ * MARIADB
  * Postgresql (coming soon)
 
 Licence
@@ -31,7 +32,7 @@ Licence
 <pre>
 This file is part of Mage Pattern.
 The toolkit PHP for developer
-Copyright (C) 2012 - 2015 Gerits Aurelien contact[at]aurelien-gerits[dot]be
+Copyright (C) 2012 - 2019 Gerits Aurelien contact[at]aurelien-gerits[dot]be
 
 #### OFFICIAL TEAM MAGE PATTERN:
 
