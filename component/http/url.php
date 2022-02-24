@@ -149,6 +149,7 @@ class http_url {
                         break;
                     case 'none':
                         // replace & => ''
+                        $str = str_replace('&amp;', '', $str);
                         $str = str_replace('&', '', $str);
                         break;
                     default:
@@ -165,7 +166,8 @@ class http_url {
 
         // Convert special characters
         $str = filter_escapeHtml::cleanQuote($str);
-        $cSpec = ['@["’|,+\'\\/[:blank:]\s]+@i', '@[?#!:()\[\]{}\@\X$€%ʹ]+@i'];
+        //$cSpec = ['@["’|,+\'\\/[:blank:]\s]+@i', '@[?#!:()\[\]{}\@\X$€%ʹ]+@i'];
+        $cSpec = ['@["’|,+\'\\/[:blank:]\s]+@i', '@[?#!:()\[\]{}\@\x$€%ʹ]+@i'];
         $rSpec = ['-', ''];
 
         if(is_array($option)){

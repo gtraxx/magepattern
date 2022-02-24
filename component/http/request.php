@@ -46,6 +46,15 @@
  */
 class http_request{
     /**
+     * @param string $method
+     * @return bool
+     */
+    public static function isMethod(string $method):bool
+    {
+        return $_SERVER['REQUEST_METHOD'] === $method;
+    }
+
+    /**
      * Checks if variable of POST type exists
      *
      * @param bool $str
@@ -78,11 +87,14 @@ class http_request{
      * @return bool
      */
     public static function isRequest($str){
-        if(function_exists('filter_has_var')){
-            return filter_has_var(INPUT_REQUEST, $str) ? true : false;
-        }else{
-            return isset($_REQUEST[$str]) ? true : false;
-        }
+        //@ToDo INPUT_REQUEST is not yet implemented for filter_has_var
+        //
+        //if(function_exists('filter_has_var')){
+        //    return filter_has_var(INPUT_REQUEST, $str) ? true : false;
+        //}else{
+        //    return isset($_REQUEST[$str]) ? true : false;
+        //}
+        return isset($_REQUEST[$str]) ? true : false;
     }
     /**
      * Checks if variable of SESSION type exists
