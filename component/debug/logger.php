@@ -198,7 +198,7 @@ class debug_logger {
         }
 
         # Ajout de la date et de l'heure au début de la ligne
-        $row = $date->dateDefine('d/m/Y H:i:s').' '.$row;
+        $row = $date->dateDefine('d/m/Y H:i:s:u').' '.$row;
 
         # Ajout du retour chariot de fin de ligne si il n'y en a pas
 		$row = preg_replace('/[ \r\n\t]+/',' ',$row);
@@ -217,12 +217,12 @@ class debug_logger {
 		$this->write($logfile, $row);
 
         # Firephp
-        if (defined('MP_FIREPHP') && MP_FIREPHP == false){
+        /*if (defined('MP_FIREPHP') && MP_FIREPHP == false){
             $firephp = new debug_firephp();
             if($firephp instanceof debug_firephp){
                 $firephp->error($row);
             }
-        }
+        }*/
     }
 
 	/**
@@ -295,10 +295,10 @@ class debug_logger {
         $this->write($logfile, $row);
 
         # Firephp
-        $firephp = new debug_firephp();
+        /*$firephp = new debug_firephp();
         if($firephp instanceof debug_firephp){
             $firephp->error($row);
-        }
+        }*/
     }
 }
 ?>
