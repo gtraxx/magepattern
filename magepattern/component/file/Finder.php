@@ -127,26 +127,35 @@ class Finder
     }
 
     /**
-     * @recursively check if a value is in array
-     * @param string $needle ()
-     * @param array $haystack ()
-     * @param bool $type (optional)
+     * check if a value is in array
+     * @param string $needle
+     * @param array $haystack
+     * @param bool $type
      * @return bool
      */
-    public static function in_array_recursive(string $needle, array $haystack, bool $type = false): bool
+    public static function arrayContainsRecursive(string $needle, array $haystack, bool $type = false): bool
     {
-        /*** an recursive iterator object ***/
-        $rii = new RecursiveIteratorIterator(new RecursiveArrayIterator($haystack));
+        try {
+            $rii = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($haystack));
 
-        /*** traverse the $iterator object ***/
-        while($rii->valid())
-        {
-            /*** check for a match ***/
-            if(($type === false && $rii->current() == $needle) || $rii->current() === $needle) return true;
-            $rii->next();
+            while ($rii->valid()) {
+                if (($type === false && $rii->current() == $needle) || $rii->current() === $needle) {
+                    return true;
+                }
+                $rii->next();
+            }
+
+            return false;
+            
+        } catch (\Exception $e) {
+            Logger::getInstance()->log(
+                'Erreur dans arrayContainsRecursive : ' . $e->getMessage() . "\n" .
+                'Needle : ' . print_r($needle, true) . "\n" .
+                'Haystack : ' . print_r($haystack, true) . "\n" .
+                'Trace : ' . $e->getTraceAsString()
+            );
+            return false; // Ou lancez une exception, selon votre stratégie de gestion des erreurs
         }
-        /*** if no match is found ***/
-        return false;
     }
 
     /**
