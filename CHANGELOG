@@ -1,3 +1,7 @@
+Version 3.0 Beta
+* Ajout du système de namespace
+* Réécriture des class et fonctions
+
 Version 0.3
 * Modification de la licence
 * Intégration de ChromeLogger dans package
