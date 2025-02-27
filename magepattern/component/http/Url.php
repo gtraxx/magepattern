@@ -1,7 +1,8 @@
 <?php
 namespace Magepattern\Component\HTTP;
 use Magepattern\Component\Tool\EscapeTool,
-    Magepattern\Component\Tool\StringTool;
+    Magepattern\Component\Tool\StringTool,
+    Magepattern\Component\Debug\Logger;
 
 class Url
 {
@@ -61,20 +62,54 @@ class Url
      * @param array $option
      * @return string
      * @example:
-    http_url::clean(
+    URL::clean(
     '/public/test/truc-machin01/aussi/version-1.0/',
     array('dot'=>'display','ampersand'=>'strict','cspec'=>array('[\/]'),'rspec'=>array(''))
     );
      */
-    public static function clean(string $str, array $option = ['dot'=>false, 'ampersand'=>'none', 'cspec'=>'', 'rspec'=>'']): string
+    public static function clean(string $str, array $option = []) : string
     {
-        /** Clean accent */
-        /** Clean non Latin characters */
-        if(class_exists('Transliterator')){
-            $transliterator = Transliterator::createFromRules(':: Any-Latin; :: Latin-ASCII; :: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;', \Transliterator::FORWARD);
-            $str = $transliterator->transliterate($str);
+        $default = ['dot' => 'none', 'ampersand' => 'none', 'cspec' => [], 'rspec' => []];
+        $option = array_merge($default, $option);
+
+        // Validation des options
+        /*if (!is_array($option)) {
+            //echo "Validation failed: options is not an array\n";
+            return ''; // Ou lancez une exception
+        }*/
+        if (isset($option['dot']) && !is_bool($option['dot']) && !is_string($option['dot'])) {
+            //echo "Validation failed: dot is not a boolean or string\n";
+            return ''; // Ou lancez une exception
         }
-        else {
+        if (isset($option['ampersand']) && !is_string($option['ampersand'])) {
+            //echo "Validation failed: ampersand is not a string\n";
+            return ''; // Ou lancez une exception
+        }
+        if (isset($option['cspec']) && !is_array($option['cspec'])) {
+            //echo "Validation failed: cspec is not an array\n";
+            return ''; // Ou lancez une exception
+        }
+        if (isset($option['rspec']) && !is_array($option['rspec'])) {
+            //echo "Validation failed: rspec is not an array\n";
+            return ''; // Ou lancez une exception
+        }
+        //echo "Après Options: ";
+        //var_dump($str);
+        // Gestion des accents et des caractères non latins
+        if (class_exists('Transliterator')) {
+            try {
+                $transliterator = \Transliterator::createFromRules(':: Any-Latin; :: Latin-ASCII; :: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;', \Transliterator::FORWARD);
+                $str = $transliterator->transliterate($str);
+            } catch (\IntlException $e) {
+                // Gestion spécifique des exceptions IntlException
+                $str = strtr($str, self::$chararcters);
+                Logger::getInstance()->log("Transliterator (IntlException): " . $e->getMessage(), 'php', 'error', Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
+            } catch (\Exception $e) {
+                // Gestion des autres exceptions
+                $str = strtr($str, self::$chararcters);
+                Logger::getInstance()->log("Transliterator (Exception): " . $e->getMessage(), 'php', 'error', Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
+            }
+        } else {
             $str = strtr($str, self::$chararcters);
         }
 
@@ -84,12 +119,13 @@ class Url
             if(array_key_exists('dot', $option) && $option['dot'] == 'none') {
                 $str = str_replace('.','',$str);
             }
-            if(array_key_exists('ampersand', $option) && is_string($option['ampersand'])) {
+            if (array_key_exists('ampersand', $option) && is_string($option['ampersand'])) {
                 $str = match ($option['ampersand']) {
-                    'strict' => str_replace('&', '&amp;', $str), // replace & => $amp (w3c convert)
+                    'strict' => str_replace('&', '&amp;', $str), //htmlspecialchars($str, ENT_QUOTES | ENT_HTML5),// replace & => $amp (w3c convert)
                     'none' => str_replace('&', '', $str), // replace & => ''
-                    default => str_replace('&', (is_string($option['ampersand']) ? $option['ampersand'] : '&amp;'), $str), // replace & => $option['ampersand'] value
+                    default => str_replace('&', $option['ampersand'], $str) // replace & => $option['ampersand'] value
                 };
+                print $str;
             }
         }
         else {
@@ -100,22 +136,25 @@ class Url
 
         // Convert special characters
         $str = EscapeTool::cleanQuote($str);
-        $cSpec = ['@["’|,+\'\\/[:blank:]\s]+@i', '@[?#!:()\[\]{}\@\X$€%ʹ]+@i'];
+
+        $cSpec = ['@["’|,+\'\\/[:blank:]\s]+@i', '@[?#!:()\\[\\]{}\@$%]+@i'];//['@["’|,+\'\\/[:blank:]\s]+@i', '@[?#!:()\\[\\]{}\@.$%]+@i']
         $rSpec = ['-', ''];
 
-        if(is_array($option)){
-            if(array_key_exists('cspec', $option) && is_array($option['cspec']) && !empty($option['cspec'])) $cSpec = array_merge($cSpec,$option['cspec']);
-            if(array_key_exists('rspec', $option) && is_array($option['rspec']) && !empty($option['rspec'])) $rSpec = array_merge($rSpec,$option['rspec']);
+        if (is_array($option)) {
+            if (array_key_exists('cspec', $option) && is_array($option['cspec']) && !empty($option['cspec'])) $cSpec = array_merge($cSpec, $option['cspec']);
+            if (array_key_exists('rspec', $option) && is_array($option['rspec']) && !empty($option['rspec'])) $rSpec = array_merge($rSpec, $option['rspec']);
         }
-        $str = preg_replace($cSpec,$rSpec,$str);
 
-        // Convert following '-' to single '-'
-        $str = preg_replace("/[-]+/",'-',$str);
-        // Removes the indent if end of string
-        $str = rtrim($str,"-");
-        // Convert UTF8 encode
+        if (preg_replace($cSpec, $rSpec, $str) === NULL) {
+            // Gestion de l'erreur
+            Logger::getInstance()->log("preg_replace error: " . preg_last_error(), 'php', 'error', Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
+            $str = ""; // Ou une autre valeur par défaut
+        }
+        $str = preg_replace($cSpec, $rSpec, $str);
+        $str = preg_replace("/[-]+/", '-', $str);
+        $str = rtrim($str, "-");
         $str = EscapeTool::decode_utf8($str);
-        // Convert lower case
+
         return StringTool::strtolower($str);
     }
 

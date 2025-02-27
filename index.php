@@ -11,6 +11,7 @@ if (file_exists($bootstrap)){
 }
 use Magepattern\Component\HTTP\Request,
     Magepattern\Component\HTTP\Url,
+    Magepattern\Component\HTTP\JSON,
     Magepattern\Component\Tool\RSATool,
     Magepattern\Component\File\Finder,
     Magepattern\Component\Debug\Logger;
@@ -38,7 +39,7 @@ print RSATool::uniqID();
 // Définition des constantes
 define('MP_LOG_DIR', __DIR__ . '/logs');
 //print MP_LOG_DIR;
-define('MP_LOG_DETAILS', 'high');
+define('MP_LOG_DETAILS', 'full');
 
 $logger = Logger::getInstance();
 
@@ -50,7 +51,7 @@ $logger = Logger::getInstance();
 //$logger->log("Test");
 
 //$logger->setLogLevel(Logger::LOG_LEVEL_DEBUG);
-$logger->log("Message d'information", "php", "debug", Logger::LOG_MONTH, Logger::LOG_LEVEL_DEBUG);
+//$logger->log("Message d'information", "php", "debug", Logger::LOG_MONTH, Logger::LOG_LEVEL_DEBUG);
 
 //$logger->log("Message d'information", "test", "test", Logger::LOG_MONTH, Logger::LOG_LEVEL_INFO);
 //$logger->log("Message d'avertissement", "test", "test", Logger::LOG_MONTH, Logger::LOG_LEVEL_WARNING);
@@ -58,4 +59,59 @@ $logger->log("Message d'information", "php", "debug", Logger::LOG_MONTH, Logger:
 
 //ob_flush();
 //flush();
+$jsonString = '{"name":"Jane Doe","age":25,"city":"London"}';
+
+$jsonInstance = new JSON();
+$decodedData = $jsonInstance->decode($jsonString);
+print '<br />';
+if (is_array($decodedData) || is_object($decodedData)) {
+    echo "Decoded data:\n";
+    print_r($decodedData);
+    print '<br />';
+} else {
+    echo "Error decoding JSON:\n";
+    echo $decodedData; // $decodedData contient le message d'erreur
+}
+
+// Exemple avec options personnalisées
+$options = ['assoc' => true];
+$assocArray = $jsonInstance->decode($jsonString, $options);
+
+if (is_array($assocArray)) {
+    echo "\n\nDecoded data as associative array:\n";
+    print_r($assocArray);
+    print '<br />';
+} else {
+    echo "Error decoding JSON:\n";
+    echo $assocArray; // $assocArray contient le message d'erreur
+}
+
+$jsonInstance = new JSON();
+
+$data = [
+    'name' => 'John Doe',
+    'age' => 30,
+    'city' => 'New York',
+];
+
+$json = $jsonInstance->encode($data);
+
+if (is_string($json)) {
+    echo "JSON encoded data:\n";
+    echo $json;
+    print '<br />';
+} else {
+    echo "Error encoding JSON:\n";
+    echo $json;
+}
+
+//$url = "test avec éàç";
+//$cleanedUrl = URL::clean($url);
+
+//echo "URL nettoyée : " . $cleanedUrl;
+print '<br />';
+print URL::clean(
+    'truc machin.01&machin=truc',
+    array('dot'=>'display','ampersand' => 'strict')
+);
 ?>
