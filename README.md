@@ -1,6 +1,8 @@
 Magepattern
 =============
 
+![Image](https://github.com/user-attachments/assets/b3bc7d92-d157-4945-ac35-c33e62580928)
+
 Presentation
 ------------
 Magepattern est une boite à outil écrite pour PHP 8 ou plus, 
