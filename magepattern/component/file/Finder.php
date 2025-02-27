@@ -72,6 +72,7 @@ class Finder
      *  foreach ($files as $file) {
      *       echo $file . "\n";
      *  }
+     * Exclude all files with the defined extensions
      * @param string $directory
      * @param array $excludeExtensions
      * @return array
@@ -128,6 +129,54 @@ class Finder
 
     /**
      * check if a value is in array
+     *
+     * $tableau = [
+     *      'a' => 1,
+     *      'b' => ['c' => 2, 'd' => 'recherche_moi'],
+     *      'e' => 3
+     * ];
+     *
+     * $resultat = Finder::arrayContainsRecursive('recherche_moi', $tableau);
+     *
+     * if ($resultat) {
+     * echo "'recherche_moi' a été trouvé dans le tableau.\n";
+     * } else {
+     *      echo "'recherche_moi' n'a pas été trouvé dans le tableau.\n";
+     * }
+     * Recherche un entier
+     * $tableau = [
+     *      10,
+     *      [20, 30, [40, 50]],
+     *      60,
+     * ];
+     *
+     * $resultat = Finder::arrayContainsRecursive(40, $tableau);
+     *
+     * if ($resultat) {
+     *      echo "40 a été trouvé dans le tableau.\n";
+     * } else {
+     *      echo "40 n'a pas été trouvé dans le tableau.\n";
+     * }
+     * Recherche d'une valeur avec comparaison stricte (type = true)
+     * $resultat1 = Finder::arrayContainsRecursive(10, $tableau); // Comparaison non stricte (par défaut)
+     * $resultat2 = Finder::arrayContainsRecursive(10, $tableau, true); // Comparaison stricte
+     *
+     * echo "Résultat 1 (non strict) : " . ($resultat1 ? 'true' : 'false') . "\n";
+     * echo "Résultat 2 (strict) : " . ($resultat2 ? 'true' : 'false') . "\n";
+     * Recherche d'une valeur absente
+     * $tableau = [
+     *      'a' => 1,
+     *      'b' => ['c' => 2, 'd' => 3],
+     *      'e' => 4,
+     * ];
+     *
+     * $resultat = Finder::arrayContainsRecursive(5, $tableau);
+     *
+     * if ($resultat) {
+     *      echo "5 a été trouvé dans le tableau.\n";
+     * } else {
+     *      echo "5 n'a pas été trouvé dans le tableau.\n";
+     * }
      * @param string $needle
      * @param array $haystack
      * @param bool $type
@@ -146,7 +195,7 @@ class Finder
             }
 
             return false;
-            
+
         } catch (\Exception $e) {
             Logger::getInstance()->log(
                 'Erreur dans arrayContainsRecursive : ' . $e->getMessage() . "\n" .
@@ -159,28 +208,41 @@ class Finder
     }
 
     /**
-     * filterFiles => filter files with extension
-     * $t = new file_finder();
-     * var_dump($t->filterFiles('mydir',['gif','png','jpe?g']));
-     * or
-     * var_dump($t->filterFiles('mydir','php'));
+     * $directory = '/chemin/vers/votre/dossier';
+     * $extension = 'txt';
+     *
+     * $files = Finder::filterFiles($directory, $extension);
+     *
+     * if ($files !== false) {
+     * foreach ($files as $file) {
+     *      echo $file . "\n";
+     * }
+     * } else {
+     *      echo 'Erreur lors du filtrage des fichiers.';
+     * }
+     * Includes all files with the extension
      * @param string $directory
      * @param string $extension
-     * @internal param $dir
      * @return array|false
      */
     public static function filterFiles(string $directory, string $extension): array|false
     {
         try {
-            $filterfiles = new \filterFiles($directory,$extension);
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory));
             $filter = [];
-            foreach($filterfiles as $file) {
-                if(($file->isDot()) || ($file->isDir())) continue;
-                $filter[] .= $file;
+
+            foreach ($iterator as $file) {
+                if ($file->isDot() || $file->isDir()) {
+                    continue;
+                }
+
+                if ($file->isFile() && pathinfo($file->getFilename(), PATHINFO_EXTENSION) === $extension) {
+                    $filter[] = $file->getPathname();
+                }
             }
+
             return $filter;
-        }
-        catch (\Exception $e){
+        } catch (\Exception $e) {
             Logger::getInstance()->log($e);
             return false;
         }
