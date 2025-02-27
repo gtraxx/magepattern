@@ -107,11 +107,11 @@ class FormTool
 
     /**
      * Special function for clean array
-     *
      * @param array $array
+     * @param string $haystack
      * @return array
      */
-    public static function arrayClean(array $array): array
+    public static function arrayClean(array $array,string $haystack = 'content'): array
     {
         foreach($array as $key => &$val) {
             if (!is_array($val)) {
@@ -119,7 +119,7 @@ class FormTool
                     $val = null;
                 }
                 else {
-                    $val = str_contains('content', $key) ? self::cleanQuote($val) : self::simpleClean($val);
+                    $val = str_contains($haystack, $key) ? self::cleanQuote($val) : self::simpleClean($val);
                 }
             }
             else {

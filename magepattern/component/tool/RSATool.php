@@ -31,19 +31,33 @@ class RSATool
      * Return an unique identifier
      * @return string
      */
-    public static function uniqID(): string
-    {
-        $id = uniqid(mt_rand(), true);
-        return base_convert($id, 10, 36);
+    public static function uniqID(int $length = 16): string {
+        try {
+            $bytes = random_bytes(ceil($length / 2));
+            $hex = bin2hex($bytes);
+            return substr($hex, 0, $length);
+        } catch (\TypeError $e) {
+            Logger::getInstance()->log("Erreur de type lors de la génération d'un ID unique : " . $e->getMessage(), 'php', 'error', Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
+            return '';
+        } catch (\Exception $e) {
+            Logger::getInstance()->log("Erreur lors de la génération d'un ID unique : " . $e->getMessage(), 'php', 'error', Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
+            return '';
+        }
     }
 
     /**
-     * Generate token
+     * @param int $length
      * @return string
+     * @throws \Random\RandomException
      */
-    public static function tokenID(): string
-    {
-        return md5(session_id() . time() . $_SERVER['HTTP_USER_AGENT']);
+    public static function tokenID(int $length = 20): string {
+        if (function_exists('openssl_random_pseudo_bytes')) {
+            return base64_encode(openssl_random_pseudo_bytes($length));
+        } else if (function_exists('random_bytes')) {
+            return base64_encode(random_bytes($length));
+        } else {
+            throw new \Exception("No cryptographically secure random number generation function is available.");
+        }
     }
 
     /**

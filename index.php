@@ -11,6 +11,7 @@ if (file_exists($bootstrap)){
 }
 use Magepattern\Component\HTTP\Request,
     Magepattern\Component\HTTP\Url,
+    Magepattern\Component\Tool\RSATool,
     Magepattern\Component\File\Finder,
     Magepattern\Component\Debug\Logger;
 
@@ -33,6 +34,7 @@ if ($resultat) {
     echo "'recherche_moi' n'a pas été trouvé dans le tableau.\n";
 }
 print '<br />';
+print RSATool::uniqID();
 // Définition des constantes
 define('MP_LOG_DIR', __DIR__ . '/logs');
 //print MP_LOG_DIR;
