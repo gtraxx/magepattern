@@ -125,7 +125,6 @@ class Url
                     'none' => str_replace('&', '', $str), // replace & => ''
                     default => str_replace('&', $option['ampersand'], $str) // replace & => $option['ampersand'] value
                 };
-                print $str;
             }
         }
         else {

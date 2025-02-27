@@ -112,6 +112,6 @@ if (is_string($json)) {
 print '<br />';
 print URL::clean(
     'truc machin.01&machin=truc',
-    array('dot'=>'display','ampersand' => 'strict')
+    ['dot'=>'display','ampersand' => 'strict']
 );
 ?>
