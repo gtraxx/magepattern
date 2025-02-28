@@ -59,7 +59,8 @@ class StringTool
      * @param string $str
      * @return bool
      */
-    public static function isAlpha(string $str){
+    public static function isAlpha(string $str) : bool
+    {
         return ctype_alpha($str);
     }
 
@@ -68,7 +69,8 @@ class StringTool
      * @param string $str
      * @return bool
      */
-    public static function isAlphaNumeric(string $str){
+    public static function isAlphaNumeric(string $str) : bool
+    {
         return ctype_alnum($str);
     }
 
@@ -213,7 +215,7 @@ class StringTool
      * @param string $delimiter (delimiter ...)
      * @return string
      */
-    public static function truncate(string $str, int $lg_max, string $delimiter)
+    public static function truncate(string $str, int $lg_max, string $delimiter) : string
     {
         if(self::isMaxString($str,$lg_max)){
             $str = substr($str, 0, $lg_max);

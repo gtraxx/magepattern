@@ -8,7 +8,7 @@ class DateTime extends \DateTime
      * @param string $format
      * @return string
      */
-    public function toInterval($format = 'YMD'): string
+    public function toInterval(string $format = 'YMD'): string
     {
         $interval = 'P';
         $format = explode('',$format);
