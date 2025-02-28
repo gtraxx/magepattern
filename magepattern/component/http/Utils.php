@@ -60,7 +60,7 @@ class Utils
             }
         }
         catch (\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             $browser = self::get_browser_name($_SERVER['HTTP_USER_AGENT']);
         }
 

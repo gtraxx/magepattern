@@ -176,8 +176,7 @@ class FormTool
             return filter_var($str, $filter, $option);
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
-            return $str;
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);            return $str;
         }
     }
 }

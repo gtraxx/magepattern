@@ -38,7 +38,7 @@ class Sitemap extends \XMLWriter
             if(!extension_loaded('xmlwriter')) throw new \Exception('extension xmlwriter not loaded',E_WARNING);
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return null;
         }
     }
@@ -67,8 +67,7 @@ class Sitemap extends \XMLWriter
             parent::openUri($uri);
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
-        }
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);        }
     }
 
     /**

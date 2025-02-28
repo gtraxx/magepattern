@@ -1,6 +1,6 @@
 <?php
 namespace Magepattern\Component\Mail;
-use CSSInliner\CSSInliner,
+use //CSSInliner\CSSInliner,
     Magepattern\Bootstrap,
     Magepattern\Component\Debug\Logger,
     Magepattern\Component\Tool\FormTool;
@@ -16,21 +16,21 @@ class Swift extends Mailer
      */
 	public function __construct(string $type, array $options = [])
     {
-		$this->_mailer = Swift_Mailer::newInstance($this->setTransportConfig($type, $options));
-		Bootstrap::getInstance()->load('cssinliner');
+		$this->_mailer = \Swift_Mailer::newInstance($this->setTransportConfig($type, $options));
+		//Bootstrap::getInstance()->load('cssinliner');
 	}
 
     /**
      * @param string $type
      * @param array $options
-     * @return Swift_Transport
+     * @return \Swift_Transport
      */
-    protected function setTransportConfig(string $type, array $options): Swift_Transport
+    protected function setTransportConfig(string $type, array $options): \Swift_Transport
     {
         $options = $options ?? $this->_options;
         return match($type) {
-    		'mail' => Swift_MailTransport::newInstance(),
-    		'smtp' => Swift_SmtpTransport::newInstance()
+    		'mail' => \Swift_MailTransport::newInstance(),
+    		'smtp' => \Swift_SmtpTransport::newInstance()
                     ->setHost($options["setHost"])
                     ->setPort($options["setPort"])
                     ->setEncryption($options["setEncryption"])
@@ -50,11 +50,11 @@ class Swift extends Mailer
      */
 	public function setBodyMail(string $subject, string $from, string $reply, array $recipients, string $body, string $setReadReceiptTo = ''): mixed
     {
-		$sw_message = Swift_Message::newInstance();
+		$sw_message = \Swift_Message::newInstance();
 		$sw_message->getHeaders()->get('Content-Type')->setValue('text/html');
 		$sw_message->getHeaders()->get('Content-Type')->setParameter('charset', 'utf-8');
 		$sw_message->setSubject($subject)
-		       ->setEncoder(Swift_Encoding::get8BitEncoding())
+		       ->setEncoder(\Swift_Encoding::get8BitEncoding())
             // Set the from address of this message.
                ->setFrom($from)
             // Set the reply-to address of this message.
@@ -80,10 +80,9 @@ class Swift extends Mailer
             return empty($failed);
         }
         catch(\Exception $e) {
-            $echoLogger = new Swift_Plugins_Loggers_EchoLogger();
-            $this->_mailer->registerPlugin(new Swift_Plugins_LoggerPlugin($echoLogger));
-            Logger::getInstance()->log($e);
-            Logger::getInstance()->log('Failures : '.$echoLogger->dump());
+            $echoLogger = new \Swift_Plugins_Loggers_EchoLogger();
+            $this->_mailer->registerPlugin(new \Swift_Plugins_LoggerPlugin($echoLogger));
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);            Logger::getInstance()->log('Failures : '.$echoLogger->dump());
             return false;
         }
     }
@@ -95,7 +94,7 @@ class Swift extends Mailer
      */
     public function plugin_decorator(string $replacements)
     {
-    	$decorator = new Swift_Plugins_DecoratorPlugin($replacements);
+    	$decorator = new \Swift_Plugins_DecoratorPlugin($replacements);
 		$this->_mailer->registerPlugin($decorator);
     }
 
@@ -108,7 +107,7 @@ class Swift extends Mailer
 	public function plugin_antiflood(int $threshold, int $sleep)
     {
     	//Use AntiFlood to re-connect after 100 emails specify a time in seconds to pause for (30 secs)
-		$antiflood = new Swift_Plugins_AntiFloodPlugin($threshold, $sleep);
+		$antiflood = new \Swift_Plugins_AntiFloodPlugin($threshold, $sleep);
 		$this->_mailer->registerPlugin($antiflood);
     }
 
@@ -121,7 +120,7 @@ class Swift extends Mailer
 	public function plugin_throttler(int $rate,$mode)
     {
     	//Use AntiFlood to re-connect after 100 emails specify a time in seconds to pause for (30 secs)
-		$throttler = new Swift_Plugins_ThrottlerPlugin($rate,$mode);
+		$throttler = new \Swift_Plugins_ThrottlerPlugin($rate,$mode);
 		//Rate limit to 10MB per-minute OR Rate limit to 100 emails per-minute
 		$this->_mailer->registerPlugin($throttler);
     }
@@ -138,12 +137,12 @@ class Swift extends Mailer
         switch($throttlermode) {
             case "bytes" :
                 $rate = 1024 * 1024 * 10;
-                $mode = Swift_Plugins_ThrottlerPlugin::BYTES_PER_MINUTE;
+                $mode = \Swift_Plugins_ThrottlerPlugin::BYTES_PER_MINUTE;
                 break;
             case "messages" :
             default:
                 $rate = 100;
-                $mode = Swift_Plugins_ThrottlerPlugin::MESSAGES_PER_MINUTE;
+                $mode = \Swift_Plugins_ThrottlerPlugin::MESSAGES_PER_MINUTE;
                 break;
         }
 

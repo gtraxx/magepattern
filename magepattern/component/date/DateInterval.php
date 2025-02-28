@@ -18,8 +18,8 @@ class DateInterval extends \DateInterval
             };
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
+            return false;
         }
-        return false;
     }
 }

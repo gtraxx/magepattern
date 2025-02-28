@@ -17,7 +17,7 @@ class FileTool
      * @param int $mode The directory mode
      * @return bool
      */
-    public static function mkdir(string|array|\Traversable $dirs, $mode = 0777): bool
+    public static function mkdir(string|array|\Traversable $dirs, int $mode = 0777): bool
     {
         try {
             foreach (ArrayTool::toIterator($dirs) as $dir) {
@@ -27,7 +27,7 @@ class FileTool
             return true;
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }
@@ -73,7 +73,7 @@ class FileTool
             return true;
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }
@@ -94,7 +94,7 @@ class FileTool
             return true;
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }
@@ -121,12 +121,12 @@ class FileTool
                 return true;
             }
             catch(\Exception $e) {
-                Logger::getInstance()->log($e);
+                Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
                 return false;
             }
         }
         else {
-            Logger::getInstance()->log('Target file newer than the origin file to copy');
+            Logger::getInstance()->log('Target file newer than the origin file to copy', "php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }
@@ -150,7 +150,7 @@ class FileTool
             return true;
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }
@@ -174,7 +174,7 @@ class FileTool
             return true;
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }
@@ -198,7 +198,7 @@ class FileTool
             return true;
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }
@@ -274,7 +274,7 @@ class FileTool
             return true;
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }

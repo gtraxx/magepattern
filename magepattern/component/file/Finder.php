@@ -31,7 +31,7 @@ class Finder
             return $files;
         }
         catch (\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }
@@ -122,7 +122,7 @@ class Finder
 
             return $foldersize . ' bytes';
         } catch (\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }
@@ -243,7 +243,7 @@ class Finder
 
             return $filter;
         } catch (\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }

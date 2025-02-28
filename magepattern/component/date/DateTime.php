@@ -29,7 +29,7 @@ class DateTime extends \DateTime
             return  $interval > 0 ? 'current' : ($interval == 0 ? 'lastday' : 'expired');
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }
@@ -63,7 +63,7 @@ class DateTime extends \DateTime
                 throw new \Exception('not instantiate the class: DateTime');
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
         }
     }
 
@@ -79,7 +79,7 @@ class DateTime extends \DateTime
             return $this->_datetime($time)->format($format);
         }
         catch(\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
         }
     }
 

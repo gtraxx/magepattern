@@ -85,8 +85,8 @@ class Session extends Utils
 			}
 		}
 		catch(\Exception $e) {
-            Logger::getInstance()->log($e);
-			return false;
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
+            return false;
 		}
     }
 

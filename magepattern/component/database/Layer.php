@@ -93,7 +93,7 @@ class Layer
             if(array_key_exists('port', $config)) $this->config['port'] = $config['port'];
         }
         catch (\Exception $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
         }
     }
 
@@ -133,11 +133,11 @@ class Layer
                 return $this->adapter->connect($this->config);
             }
             catch (\PDOException $e) {
-                Logger::getInstance()->log($e);
+                Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             }
         }
         catch (\UnhandledMatchError $e) {
-            Logger::getInstance()->log($e);
+            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
         }
     }
 
