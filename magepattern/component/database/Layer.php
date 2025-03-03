@@ -85,7 +85,7 @@ class Layer
      * Layer constructor.
      * @param array $config
      */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
         try {
             if(!extension_loaded('pdo_sqlite')) throw new \Exception('Extension PDO not loaded',E_ERROR);

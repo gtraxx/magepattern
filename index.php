@@ -14,7 +14,8 @@ use Magepattern\Component\HTTP\Request,
     Magepattern\Component\HTTP\JSON,
     Magepattern\Component\Tool\RSATool,
     Magepattern\Component\File\Finder,
-    Magepattern\Component\Debug\Logger;
+    Magepattern\Component\Debug\Logger,
+    Magepattern\Component\Database\Layer;
 
 print Url::getUrl();
 print '<br />';
@@ -114,4 +115,15 @@ print URL::clean(
     'truc machin.01&machin=truc',
     ['dot'=>'display','ampersand' => 'strict']
 );
+print '<br />';
+define('MP_DBHOST' , 'localhost');
+define('MP_DBNAME' , 'magixtemp');
+define('MP_DBUSER' , 'root');
+define('MP_DBPASSWORD' , 'root');
+define('MP_DBDRIVER'  , 'mysql');
+
+$db = new Layer();
+$sql =  'SELECT * FROM mc_news_content WHERE id_content =:id';
+$fetch = $db->fetchAll($sql, ['id' => 1]);
+print_r($fetch);
 ?>

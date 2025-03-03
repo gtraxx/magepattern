@@ -51,7 +51,7 @@ final class Bootstrap
         'mobiledetect' => __DIR__.'/package/mobiledetect/Mobile_Detect.php',
         'dompdf'       => __DIR__.'/package/dompdf/autoload.inc.php',
         'cssinliner'   => __DIR__.'/package/cssinliner/init.php',
-        'chromephp'    => __DIR__.'/package/chrome-logger/ChromePhp.php'
+        //'chromephp'    => __DIR__.'/package/chrome-logger/ChromePhp.php'
     ];
 
     /**
