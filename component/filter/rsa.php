@@ -83,14 +83,24 @@ class filter_rsa{
         return base_convert($id, 10, 36);
     }
 
-    /**
-     *
-     * Génération de token ou jeton
-     */
-    public static function tokenID(){
+    /*public static function tokenID(){
         return md5(session_id() . time() . $_SERVER['HTTP_USER_AGENT']);
+    }*/
+    /**
+     * Génération de token ou jeton
+     * @param int $length
+     * @return string
+     * @throws \Random\RandomException
+     */
+    public static function tokenID(int $length = 20): string {
+        if (function_exists('openssl_random_pseudo_bytes')) {
+            return base64_encode(openssl_random_pseudo_bytes($length));
+        } else if (function_exists('random_bytes')) {
+            return base64_encode(random_bytes($length));
+        } else {
+            throw new Exception("No cryptographically secure random number generation function is available.");
+        }
     }
-
     /**
      * Génération de micro id
      * @return string
