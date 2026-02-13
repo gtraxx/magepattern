@@ -1,136 +1,165 @@
 <?php
-namespace Magepattern\Component\HTTP;
-use Magepattern\Component\Debug\Logger;
 
+# -- BEGIN LICENSE BLOCK ----------------------------------
+#
+# This file is part of Mage Pattern.
+# The toolkit PHP for developer
+# Copyright (C) 2012 - 2026 Gerits Aurelien
+#
+# -- END LICENSE BLOCK ------------------------------------
+
+namespace Magepattern\Component\HTTP;
+
+use Magepattern\Component\Debug\Logger;
+use JsonException;
+
+/**
+ * Class JSON
+ * * Fournit une interface robuste pour l'encodage et le décodage JSON
+ * avec gestion native des exceptions et journalisation des erreurs.
+ */
 class JSON
 {
     /**
-     * Default options for JSON operations.
-     *
-     * @var array
+     * Options de configuration pour les opérations JSON.
      */
-    private static array $defaultOptions = [
+    private array $options = [
         'decode' => [
-            'assoc' => false,
+            'assoc' => true,
             'depth' => 512,
-            'options' => 0,
+            'flags' => JSON_THROW_ON_ERROR,
         ],
         'encode' => [
-            'options' => 0,
+            'flags' => JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
             'depth' => 512,
         ],
     ];
 
     /**
-     * Decode a JSON string and check for errors.
+     * JSON constructor.
+     * * @param array $customOptions Permet de surcharger les flags ou la profondeur par défaut.
+     */
+    public function __construct(array $customOptions = [])
+    {
+        $this->options = array_replace_recursive($this->options, $customOptions);
+    }
+
+    /**
+     * Décode une chaîne JSON en structure PHP.
      *
-     * $jsonString = '{"name":"Jane Doe","age":25,"city":"London"}';
+     * @param string $json La chaîne à décoder.
+     * @param array $overrideOptions Options locales pour cet appel spécifique.
+     * @return mixed Données décodées ou null en cas d'erreur.
+     */
+    public function decode(string $json, array $overrideOptions = []): mixed
+    {
+        $opt = array_merge($this->options['decode'], $overrideOptions);
+
+        try {
+            return json_decode($json, $opt['assoc'], $opt['depth'], $opt['flags']);
+        } catch (JsonException $e) {
+            Logger::getInstance()->log(
+                "JSON Decode Error: " . $e->getMessage(),
+                'php',
+                'json_error',
+                Logger::LOG_MONTH,
+                Logger::LOG_LEVEL_ERROR
+            );
+            return null;
+        }
+    }
+
+    /**
+     * Encode une valeur PHP en chaîne JSON.
      *
-     * $decodedData = $jsonInstance->decode($jsonString);
+     * @param mixed $value La valeur à encoder (tableau, objet, etc.).
+     * @param array $overrideOptions Options locales (ex: JSON_PRETTY_PRINT).
+     * @return string|null La chaîne JSON résultante ou null en cas d'erreur.
+     */
+    public function encode(mixed $value, array $overrideOptions = []): ?string
+    {
+        $opt = array_merge($this->options['encode'], $overrideOptions);
+
+        try {
+            return json_encode($value, $opt['flags'], $opt['depth']);
+        } catch (JsonException $e) {
+            Logger::getInstance()->log(
+                "JSON Encode Error: " . $e->getMessage(),
+                'php',
+                'json_error',
+                Logger::LOG_MONTH,
+                Logger::LOG_LEVEL_ERROR
+            );
+            return null;
+        }
+    }
+
+    /**
+     * Valide la syntaxe d'une chaîne JSON sans la décoder.
+     * * @param string $json
+     * @return bool
+     */
+    public function isValid(string $json): bool
+    {
+        if (function_exists('json_validate')) {
+            return json_validate($json);
+        }
+
+        try {
+            json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+            return true;
+        } catch (JsonException $e) {
+            Logger::getInstance()->log(
+                "JSON isValid Error: " . $e->getMessage(),
+                'php',
+                'json_error',
+                Logger::LOG_MONTH,
+                Logger::LOG_LEVEL_ERROR
+            );
+            return false;
+        }
+    }
+
+    /**
+     * Charge et décode un fichier JSON.
      *
-     * if (is_array($decodedData) || is_object($decodedData)) {
-     *      echo "Decoded data:\n";
-     *      print_r($decodedData);
-     * } else {
-     *      echo "Error decoding JSON:\n";
-     *      echo $decodedData; // $decodedData contient le message d'erreur
-     * }
-     *
-     * // Exemple avec options personnalisées
-     * $options = ['assoc' => true];
-     * $assocArray = $jsonInstance->decode($jsonString, $options);
-     *
-     * if (is_array($assocArray)) {
-     *      echo "\n\nDecoded data as associative array:\n";
-     *      print_r($assocArray);
-     * } else {
-     *      echo "Error decoding JSON:\n";
-     *      echo $assocArray; // $assocArray contient le message d'erreur
-     * }
-     *
-     * @param string $json The JSON string to decode.
-     * @param array|null $options Override default options.
-     *
+     * @param string $path Chemin vers le fichier .json
+     * @param array $overrideOptions
      * @return mixed
      */
-    public function decode(string $json, ?array $options = null): mixed
+    public function fromFile(string $path, array $overrideOptions = []): mixed
     {
-        $options = $options ? array_merge(self::$defaultOptions['decode'], $options) : self::$defaultOptions['decode'];
-        $decoded = json_decode($json, $options['assoc'], $options['depth'], $options['options']);
-        $error = $this->getLastError();
-        if ($error) {
-            Logger::getInstance()->log("JSON Decode Error: " . $error, 'php', 'error', Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
-            return $error;
+        if (!file_exists($path) || !is_readable($path)) {
+            Logger::getInstance()->log("JSON File missing or not readable: $path", 'php', 'json_error');
+            return null;
         }
-        return $decoded;
+
+        $content = file_get_contents($path);
+        return $this->decode($content, $overrideOptions);
     }
 
     /**
-     * Encode a value to JSON and check for errors.
+     * Encode et sauvegarde des données dans un fichier JSON.
      *
-     * use Magepattern\Component\HTTP\JSON;
-     * $jsonInstance = new JSON();
-     *
-     * $data = [
-     *      'name' => 'John Doe',
-     *      'age' => 30,
-     *      'city' => 'New York',
-     * ];
-     *
-     * $json = $jsonInstance->encode($data);
-     *
-     * if (is_string($json)) {
-     *      echo "JSON encoded data:\n";
-     *      echo $json;
-     * } else {
-     *      echo "Error encoding JSON:\n";
-     *      echo $json; // $json contient le message d'erreur
-     * }
-     *
-     * // Exemple avec options personnalisées
-     * $options = ['options' => JSON_PRETTY_PRINT];
-     * $prettyJson = $jsonInstance->encode($data, $options);
-     *
-     * if (is_string($prettyJson)) {
-     *      echo "\n\nPretty JSON encoded data:\n";
-     *      echo $prettyJson;
-     * } else {
-     *      echo "Error encoding JSON:\n";
-     *      echo $prettyJson; // $prettyJson contient le message d'erreur
-     * }
-     *
-     * @param mixed $value The value to encode.
-     * @param array|null $options Override default options.
-     *
-     * @return string
+     * @param string $path Chemin de destination.
+     * @param mixed $value Données à sauvegarder.
+     * @param bool $pretty Activer le formatage lisible (Indentation).
+     * @return bool True si l'écriture a réussi.
      */
-    public function encode(mixed $value, ?array $options = null): string
+    public function toFile(string $path, mixed $value, bool $pretty = true): bool
     {
-        $options = $options ? array_merge(self::$defaultOptions['encode'], $options) : self::$defaultOptions['encode'];
-        $encoded = json_encode($value, $options['options'], $options['depth']);
-        $error = $this->getLastError();
-        if ($error) {
-            Logger::getInstance()->log("JSON Encode Error: " . $error, 'php', 'error', Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
-            return $error;
-        }
-        return $encoded;
-    }
+        $flags = $this->options['encode']['flags'];
 
-    /**
-     * Get the last JSON error message.
-     *
-     * @return string|null The error message or null if no error occurred.
-     */
-    private function getLastError(): ?string
-    {
-        return match (json_last_error()) {
-            JSON_ERROR_NONE => null,
-            JSON_ERROR_DEPTH => 'Maximum stack depth exceeded',
-            JSON_ERROR_STATE_MISMATCH => 'Underflow or the modes mismatch',
-            JSON_ERROR_CTRL_CHAR => 'Unexpected control character found',
-            JSON_ERROR_SYNTAX => 'Syntax error, malformed JSON',
-            JSON_ERROR_UTF8 => 'Malformed UTF-8 characters, possibly incorrectly encoded',
-            default => 'Unknown JSON error'
-        };
+        if ($pretty) {
+            $flags |= JSON_PRETTY_PRINT;
+        }
+
+        $json = $this->encode($value, ['flags' => $flags]);
+
+        if ($json === null) {
+            return false;
+        }
+
+        return (bool) file_put_contents($path, $json, LOCK_EX);
     }
 }

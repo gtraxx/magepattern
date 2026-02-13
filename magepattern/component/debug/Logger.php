@@ -1,284 +1,314 @@
 <?php
-namespace Magepattern\Component\Debug;
-use Magepattern\Component\Tool\PathTool,
-    Magepattern\Component\Tool\FileTool,
-    Magepattern\Component\Date\Timer;
+# -- BEGIN LICENSE BLOCK ----------------------------------
+#
+# This file is part of Mage Pattern.
+# The toolkit PHP for developer
+# Copyright (C) 2012 - 2026 Gerits Aurelien contact[at]gerits-aurelien[dot]be
+#
+# OFFICIAL TEAM MAGE PATTERN:
+#
+#   * Gerits Aurelien (Author - Developer) contact[at]gerits-aurelien[dot]be
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Redistributions of source code must retain the above copyright notice,
+# this list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# DISCLAIMER
+
+namespace Magepattern\Component\Debug;
+
+use Magepattern\Component\Tool\PathTool;
+use Magepattern\Component\Tool\FileTool;
+
+/**
+ * Class Logger
+ * Gère la journalisation des événements avec support Singleton et multi-instances.
+ */
 class Logger
 {
     const LOG_MONTH = 'MONTH';
-    const LOG_YEAR = 'YEAR';
+    const LOG_YEAR  = 'YEAR';
 
-    /**
-     * @var Logger
-     */
-    protected static $_instance;
+    const LOG_LEVEL_DEBUG   = 0;
+    const LOG_LEVEL_INFO    = 1;
+    const LOG_LEVEL_WARNING = 2;
+    const LOG_LEVEL_ERROR   = 3;
 
-    /**
-     * @var int $log_level
-     */
-    const LOG_LEVEL_DEBUG = 0; // Informations de débogage détaillées
-    const LOG_LEVEL_INFO = 1; // Informations générales
-    const LOG_LEVEL_WARNING = 2; // Avertissements
-    const LOG_LEVEL_ERROR = 3; // Erreurs
+    protected static ?Logger $_instance = null;
 
-    protected static int $log_level = self::LOG_LEVEL_INFO;
+    protected int $log_level;
+    protected string $log_path;
+    protected string $log_details;
 
-    /**
-     * @var string
-     */
-    protected static string
-        $log_path = MP_LOG_DIR,
-        $log_details = MP_LOG_DETAILS ?? 'low';
-
-    /**
-     * @var array $lastLog
-     */
-    protected static array $lastLog = [
+    protected array $lastLog = [
         'filename' => '',
-        'folder' => ''
+        'folder'   => ''
     ];
 
-    /**
-     * @var bool $logger_ready
-     */
-    private static bool $logger_ready = false;
+    protected bool $logger_ready = false;
+
+    public float $ms = 0.0;
+    public float $last = 0.0;
 
     /**
-     * @var int
+     * Logger constructor.
      */
-	public static int
-        $ms = 0,
-        $last = 0;
+    public function __construct()
+    {
+        $this->log_path    = defined('MP_LOG_DIR') ? MP_LOG_DIR : __DIR__ . '/logs';
+        $this->log_details = defined('MP_LOG_DETAILS') ? MP_LOG_DETAILS : 'low';
+        $this->log_level   = self::LOG_LEVEL_INFO;
 
-    /**
-     * Constructor is set to private to prevent unwanted instantiation
-     */
-    public function __construct() {
-        self::$log_level = self::LOG_LEVEL_DEBUG; // Initialisation dans le constructeur
+        $this->checkLogPath($this->log_path);
     }
 
     /**
-     * Prevent clone to prevent double instance
+     * Accès au Singleton.
      */
-    private function __clone(){}
+    public static function getInstance(): self
+    {
+        return self::$_instance ??= new self();
+    }
 
     /**
-     * C'est la méthode qui "remplace" le constructeur vis à vis
-     * des autres classes.
-     *
-     * Son rôle est de créer / distribuer une unique
-     * instance de notre objet.
+     * Valide et prépare le répertoire de stockage des logs.
      */
-    public static function getInstance()
+    public function checkLogPath(string $path): void
     {
-        if(!self::$_instance instanceof self) self::$_instance = new self;
-        return self::$_instance;
+        if (empty($path)) {
+            $path = __DIR__ . '/logs';
+        }
+
+        if (is_dir($path)) {
+            $this->log_path = realpath($path);
+            $this->logger_ready = true;
+        } else {
+            // Tentative de création via FileTool ou mkdir natif
+            try {
+                if (class_exists(FileTool::class)) {
+                    FileTool::mkdir([$path]);
+                } else {
+                    mkdir($path, 0777, true);
+                }
+                $this->log_path = realpath($path);
+                $this->logger_ready = true;
+            } catch (\Throwable) {
+                $this->logger_ready = false;
+            }
+        }
     }
 
     /**
      * @param int $level
      * @return void
      */
-    public function setLogLevel(int $level)
+    public function setLogLevel(int $level): void
     {
         if (in_array($level, [self::LOG_LEVEL_DEBUG, self::LOG_LEVEL_INFO, self::LOG_LEVEL_WARNING, self::LOG_LEVEL_ERROR])) {
-            self::$log_level = $level;
+            $this->log_level = $level;
         }
     }
+
     /**
      * @param string $path
+     * @return void
      */
-    public function setLogPath(string $path = '')
+    public function setLogPath(string $path = ''): void
     {
-        if (!defined('MP_LOG_DIR')) {
-            trigger_error("MP_LOG_DIR not defined. Using default path.", E_USER_WARNING);
-            self::$log_path = __DIR__ . '/logs'; // Chemin par défaut
-        } else {
-            $path = $path ?: MP_LOG_DIR;
-        }
+        $this->checkLogPath($path);
+    }
 
-        if (is_dir($path)) {
-            self::$log_path = realpath($path);
-            self::$logger_ready = true;
-        } else {
-            trigger_error("{$path} does not exist. Using default path.", E_USER_WARNING);
-            self::$log_path = __DIR__ . '/logs'; // Chemin par défaut
-            self::$logger_ready = true;
+    /**
+     * @param string $level
+     * @return void
+     */
+    public function setLogDetails(string $level): void
+    {
+        if (in_array($level, ['full', 'high', 'medium', 'low'])) {
+            $this->log_details = $level;
         }
     }
 
     /**
-     * @param string $level full|high|medium|low
+     * Construit le chemin complet du fichier de log.
+     * @param string $folder
+     * @param string $filename
+     * @param string $archive
+     * @return string|false
      */
-    public function setLogDetails(string $level)
+    private function getLogFilePath(string $folder, string $filename, string $archive): string|false
     {
-        if (!defined('MP_LOG_DETAILS')) {
-            trigger_error("MP_LOG_DETAILS not defined. Using default level 'low'.", E_USER_WARNING);
-            self::$log_details = 'low'; // Niveau par défaut
-        } else {
-            if (in_array($level, ['full', 'high', 'medium', 'low'])) {
-                self::$log_details = $level;
-            } else {
-                trigger_error("Invalid log detail level. Using default level 'low'.", E_USER_WARNING);
-                self::$log_details = 'low'; // Niveau par défaut
-            }
+        if (!$this->logger_ready) {
+            $this->checkLogPath($this->log_path);
+            if (!$this->logger_ready) return false;
         }
-    }
 
-    /**
-     * @param string $folder Dossier dans lequel sera enregistré le fichier de log
-     * @param string $filename Nom du fichier de log
-     * @param string $archive Archivage : LOG_VOID, LOG_MONTH ou LOG_YEAR
-     * @return bool|string Chemin vers le fichier de log
-     **/
-    private function getLogFilePath(string $folder, string $filename, string $archive): bool|string {
-        //var_dump($folder);
-        //var_dump($filename);
-
-        if(!self::$logger_ready) self::setLogPath();
-
-        if(!self::$logger_ready){
-            trigger_error("Logger is not ready", E_USER_WARNING);
+        if (empty($folder) || empty($filename)) {
             return false;
         }
 
-        if( empty($folder) || empty($filename) ){
-            trigger_error("Incorrect parameters", E_USER_WARNING);
-            return false;
+        $path = $this->log_path . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR;
+
+        // Création du dossier de base
+        if (!is_dir($path)) {
+            class_exists(FileTool::class) ? FileTool::mkdir([$path]) : mkdir($path, 0777, true);
         }
 
-        $path = self::$log_path.DIRECTORY_SEPARATOR.$folder.DIRECTORY_SEPARATOR;
-        //echo "Chemin du répertoire : " . $path . "\n";
-        //var_dump(is_dir($path)); // Vérification de l'existence du répertoire
-        if(!is_dir($path)) FileTool::mkdir([$path]);
-
-        if($archive !== '') {
-            $date = new \DateTime();
-            $year = $date->format('Y');
+        if ($archive !== '') {
+            $date  = new \DateTime();
+            $year  = $date->format('Y');
             $month = $date->format('m');
-            $path = $path.$year.DIRECTORY_SEPARATOR;
-            if(!is_dir($path)) FileTool::mkdir(array($path));
+            $path .= $year . DIRECTORY_SEPARATOR;
 
-            $filename = match($archive) {
-                self::LOG_MONTH => $year.$month.'_'.$filename,
-                self::LOG_YEAR => $year.'_'.$filename,
-                default => $filename
+            if (!is_dir($path)) {
+                class_exists(FileTool::class) ? FileTool::mkdir([$path]) : mkdir($path, 0777, true);
+            }
+
+            $filename = match ($archive) {
+                self::LOG_MONTH => $year . $month . '_' . $filename,
+                self::LOG_YEAR  => $year . '_' . $filename,
+                default         => $filename
             };
         }
 
-        return $path.$filename.'.log';
+        return $path . $filename . '.log';
     }
 
     /**
-     * @param string $logfile Chemin vers le fichier de log
-     * @param string $row Chaîne de caractères à ajouter au fichier
+     * @param string $logfile
+     * @param string $row
+     * @return void
      */
-    private function write(string $logfile, string $row)
+    private function write(string $logfile, string $row): void
     {
-        //var_dump($logfile);
-        //var_dump($row);
-
-        if(!self::$logger_ready) exit;
-
-        $file = fopen($logfile,'a+');
-        fputs($file, $row);
-        fclose($file);
-    }
-
-    /**
-     * Enregistre $row dans le fichier log déterminé à partir des paramètres $type, $name et $archive
-     *
-     * @param string|\Exception $entry Texte à ajouter au fichier de log ou Exception reçue
-     * @param string $folder Dossier dans lequel sera enregistré le fichier de log
-     * @param string $filename Nom du fichier de log
-     * @param string $archive (LOG_VOID|LOG_MONTH|LOG_YEAR)
-     */
-    public function log(string|\Exception $entry, string $folder = 'php', string $filename = '', string $archive = self::LOG_MONTH, int $level = self::LOG_LEVEL_INFO) {
-        /*var_dump($folder);
-        var_dump($filename);
-        var_dump(self::$log_details);
-        var_dump(self::$log_level);
-        var_dump($level);*/
-        //var_dump(self::$log_level);
-        //var_dump($level);
-        if (!isset(self::$log_level)) {
-            self::$log_level = self::LOG_LEVEL_INFO;
+        if ($this->logger_ready) {
+            file_put_contents($logfile, $row, FILE_APPEND | LOCK_EX);
         }
-        if (self::$log_level <= $level) {
-            /*var_dump(self::$log_level);
-            var_dump($level);
-            print 'test';*/
-
-            if(!$filename) {
-                $trace = debug_backtrace();
-                $filename = basename($trace[0]['file'], ".php");
-            }
-
-            $logfile = self::getLogFilePath($folder, $filename, $archive);
-            //var_dump($logfile);
-            if($logfile) {
-                // Récupérer le niveau de log
-                $levelName = '';
-                switch ($level) {
-                    case self::LOG_LEVEL_DEBUG:
-                        $levelName = 'DEBUG';
-                        break;
-                    case self::LOG_LEVEL_INFO:
-                        $levelName = 'INFO';
-                        break;
-                    case self::LOG_LEVEL_WARNING:
-                        $levelName = 'WARNING';
-                        break;
-                    case self::LOG_LEVEL_ERROR:
-                        $levelName = 'ERROR';
-                        break;
-                    default:
-                        $levelName = 'UNKNOWN';
-                }
-
-                $str = $entry instanceof \Exception || $entry instanceof \PDOException ? $entry->getMessage() : $entry;
-                $date = new \DateTime();
-
-                switch (self::$log_details) {
-                    case 'full':
-                        $entry = $date->format('d/m/Y H:i:s') . ' | [' . $levelName . '] | ' . $str . "\n";
-                        foreach (debug_backtrace() as $trace) {
-                            $entry .= str_replace(PathTool::basePath(),'',$trace['file']).' | '.$trace['line'].' | '.$trace['function']."\n";
-                        }
-                        break;
-                    case 'high':
-                        $now = microtime(true);
-                        if(self::$lastLog['folder'] !== $folder ||self::$lastLog['filename'] !== $filename) self::$ms = self::$last = 0;
-                        $ms = self::$ms ?? $now;
-                        $last = self::$last;
-                        $bt = debug_backtrace();
-                        $entry = str_replace(PathTool::basePath(),'',$bt[0]['file']).' | '.$bt[0]['line'];
-                        $entry .= ' | '.($ms === $now ? '0' : number_format($now - $ms,4)).' ms ';
-                        $entry .= $last ? '(+'.number_format($now - $last,4).' ms)' : '';
-                        $entry .= ' | [' . $levelName . '] | ' . $str;
-
-                        self::$ms = $ms;
-                        self::$last = $now;
-                        break;
-                    case 'medium':
-                        $entry = $date->format('d/m/Y H:i:s') . ' [' . $levelName . '] ' . $entry;
-                        break;
-                    case 'low':
-                    default:
-                    $entry = $date->format('d/m/Y H:i:s') . ' [' . $levelName . '] ' . $str;
-                }
-
-                if(!preg_match('#\n$#',$entry)) $entry .= "\n";
-                self::write($logfile, $entry);
-            }
-        }/*else {
-            var_dump("Condition if false");
-        }*/
     }
 
     /**
-     * Supprime un fichier de log.
+     * Enregistre une entrée dans le journal.
+     * @param string|\Throwable $entry
+     * @param string $folder
+     * @param string $filename
+     * @param string $archive
+     * @param int $level
+     * @return void
+     */
+    public function log(string|\Throwable $entry, string $folder = 'php', string $filename = '', string $archive = self::LOG_MONTH, int $level = self::LOG_LEVEL_INFO): void
+    {
+        if ($this->log_level > $level) {
+            return;
+        }
+
+        // Auto-détection du fichier appelant si non spécifié
+        if (!$filename) {
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+            foreach ($trace as $t) {
+                // On ignore les appels internes à la classe Logger
+                if (isset($t['class']) && $t['class'] === __CLASS__) continue;
+                if (isset($t['file'])) {
+                    $filename = basename($t['file'], ".php");
+                    break;
+                }
+            }
+            $filename = $filename ?: 'unknown_source';
+        }
+
+        $logfile = $this->getLogFilePath($folder, $filename, $archive);
+
+        if ($logfile) {
+            $levelName = match ($level) {
+                self::LOG_LEVEL_DEBUG   => 'DEBUG',
+                self::LOG_LEVEL_INFO    => 'INFO',
+                self::LOG_LEVEL_WARNING => 'WARNING',
+                self::LOG_LEVEL_ERROR   => 'ERROR',
+                default                 => 'UNKNOWN'
+            };
+
+            $messageStr = ($entry instanceof \Throwable) ? $entry->getMessage() : (string)$entry;
+            $date = new \DateTime();
+            $formattedEntry = '';
+
+            switch ($this->log_details) {
+                case 'full':
+                    $formattedEntry = $date->format('d/m/Y H:i:s') . " | [$levelName] | $messageStr\n";
+                    foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS) as $trace) {
+                        if (isset($trace['file'])) {
+                            $file = class_exists(PathTool::class) ? str_replace(PathTool::basePath(), '', $trace['file']) : $trace['file'];
+                            $formattedEntry .= "  => $file | " . ($trace['line'] ?? '?') . " | " . ($trace['function'] ?? '') . "\n";
+                        }
+                    }
+                    break;
+
+                case 'high':
+                    $now = microtime(true);
+                    if ($this->lastLog['folder'] !== $folder || $this->lastLog['filename'] !== $filename) {
+                        $this->ms = 0.0;
+                        $this->last = 0.0;
+                    }
+
+                    $start = ($this->ms === 0.0) ? $now : $this->ms;
+                    $diff  = ($this->last !== 0.0) ? number_format($now - $this->last, 4) : '0';
+
+                    $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+                    $caller = $bt[0];
+                    // On cherche le vrai déclencheur hors Singleton/Logger
+                    foreach ($bt as $t) {
+                        if (!isset($t['class']) || $t['class'] !== __CLASS__) {
+                            $caller = $t;
+                            break;
+                        }
+                    }
+
+                    $fileRef = isset($caller['file']) ? (class_exists(PathTool::class) ? str_replace(PathTool::basePath(), '', $caller['file']) : basename($caller['file'])) : 'unknown';
+
+                    $formattedEntry = sprintf(
+                        "%s | %s | %s ms (+%s ms) | [%s] | %s",
+                        $fileRef,
+                        $caller['line'] ?? '?',
+                        number_format($now - $start, 4),
+                        $diff,
+                        $levelName,
+                        $messageStr
+                    );
+
+                    $this->ms   = $start;
+                    $this->last = $now;
+                    $this->lastLog = ['folder' => $folder, 'filename' => $filename];
+                    break;
+
+                case 'medium':
+                    $formattedEntry = $date->format('d/m/Y H:i:s') . " [$levelName] $messageStr";
+                    break;
+
+                case 'low':
+                default:
+                    $formattedEntry = $date->format('d/m/Y H:i:s') . " [$levelName] $messageStr";
+                    break;
+            }
+
+            $this->write($logfile, rtrim($formattedEntry) . "\n");
+        }
+    }
+
+    /**
      * @param string $folder
      * @param string $filename
      * @param string $archive
@@ -289,54 +319,17 @@ class Logger
         try {
             $logfile = $this->getLogFilePath($folder, $filename, $archive);
 
-            if (!is_string($logfile)) {
-                Logger::getInstance()->log('Erreur : Chemin de fichier de log invalide.', Logger::LOG_LEVEL_ERROR);
-                return false;
-            }
-
-            if (file_exists($logfile)) {
-                if (FileTool::remove($logfile)) {
-                    Logger::getInstance()->log("Suppression du fichier de log : $logfile", Logger::LOG_LEVEL_INFO);
+            if ($logfile && file_exists($logfile)) {
+                $removed = class_exists(FileTool::class) ? FileTool::remove($logfile) : unlink($logfile);
+                if ($removed) {
+                    $this->log("Log removed: $logfile", 'php', 'logger_system', self::LOG_MONTH, self::LOG_LEVEL_INFO);
                     return true;
-                } else {
-                    Logger::getInstance()->log("Erreur : Impossible de supprimer le fichier de log : $logfile", Logger::LOG_LEVEL_ERROR);
-                    return false;
                 }
-            } else {
-                Logger::getInstance()->log("Avertissement : Le fichier de log n'existe pas : $logfile", Logger::LOG_LEVEL_WARNING);
-                return true; // Considérer comme réussi si le fichier n'existe pas
             }
-        } catch (\Exception $e) {
-            Logger::getInstance()->log("Erreur lors de la suppression du fichier de log : " . $e->getMessage(), Logger::LOG_LEVEL_ERROR);
+            return false;
+        } catch (\Throwable $e) {
+            $this->log($e, 'php', 'logger_error', self::LOG_MONTH, self::LOG_LEVEL_ERROR);
             return false;
         }
-    }
-
-    /**
-     * Récupère les détails de la fonction ou de la classe appelante pour le débogage.
-     *
-     * @return array Un tableau contenant les détails de la fonction ou de la classe appelante.
-     */
-    public function getDebugTraceEntry(): array
-    {
-        $trace = debug_backtrace();
-
-        for ($i = 0; $i < count($trace); ++$i) {
-            if ('debug' == $trace[$i]['function']) {
-                if (isset($trace[$i + 1]['class'])) {
-                    return [
-                        'class' => $trace[$i + 1]['class'],
-                        'line' => $trace[$i]['line']
-                    ];
-                }
-
-                return [
-                    'file' => $trace[$i]['file'],
-                    'line' => $trace[$i]['line']
-                ];
-            }
-        }
-
-        return $trace[0];
     }
 }

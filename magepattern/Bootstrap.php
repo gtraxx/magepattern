@@ -3,141 +3,147 @@
 # -- BEGIN LICENSE BLOCK ----------------------------------
 #
 # This file is part of MAGIX CMS.
-# MAGIX CMS, The content management system optimized for users
-# Copyright (C) 2008 - 2021 magix-cms.com <support@magix-cms.com>
+# Copyright (C) 2008 - 2026 magix-cms.com <support@magix-cms.com>
 #
-# OFFICIAL TEAM :
-#
-#   * Aurelien Gerits (Author - Developer) <aurelien@magix-cms.com>
-#   * Salvatore Di Salvo (Author - Developer) <disalvo.infographiste@gmail.com>
-#
-# Redistributions of files must retain the above copyright notice.
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# -- END LICENSE BLOCK -----------------------------------
-#
-# DISCLAIMER
-#
-# Do not edit or add to this file if you wish to upgrade MAGIX CMS to newer
-# versions in the future. If you wish to customize MAGIX CMS for your
-# needs please refer to http://www.magix-cms.com for more information.
+# -- END LICENSE BLOCK ------------------------------------
 */
+
 namespace Magepattern;
+
+use Magepattern\Component\Autoload;
+use RuntimeException;
 
 final class Bootstrap
 {
-    /**
-     * @var Bootstrap $_instance
-     */
-    private static $_instance;
+    private static ?Bootstrap $instance = null;
 
     /**
-     * @var array $libraries Available libraries
+     * @var array<string, string> Définition des chemins des librairies externes
      */
     private static array $libraries = [
-        'autoloader'   => __DIR__.'/component/Autoload.php',
-        'swift'        => __DIR__.'/package/Swift-5.2.1/lib/swift_required.php',
-        'mobiledetect' => __DIR__.'/package/mobiledetect/Mobile_Detect.php',
-        'dompdf'       => __DIR__.'/package/dompdf/autoload.inc.php',
-        'cssinliner'   => __DIR__.'/package/cssinliner/init.php',
-        //'chromephp'    => __DIR__.'/package/chrome-logger/ChromePhp.php'
+        'autoloader'   => __DIR__ . '/component/Autoload.php',
+        // ATTENTION : SwiftMailer 5 n'est pas compatible PHP 8.
+        // Il faudra envisager Symfony Mailer ou PHPMailer.
+        'swift'        => __DIR__ . '/package/Swift-5.2.1/lib/swift_required.php',
+        'mobiledetect' => __DIR__ . '/package/mobiledetect/Mobile_Detect.php',
+        'dompdf'       => __DIR__ . '/package/dompdf/autoload.inc.php',
+        'cssinliner'   => __DIR__ . '/package/cssinliner/init.php',
     ];
 
     /**
-     * @var array $boot_libraries Libraries to always load
+     * @var array<string> Librairies à charger au démarrage
      */
     private static array $boot_libraries = [
         'autoloader',
-        'swift',
+        // 'swift', // Décommenter uniquement si une version compatible PHP 8 est installée
         'mobiledetect'
     ];
 
     /**
-     * @var array $loaded_libraries Libraries currently loaded
+     * @var array<string> Librairies déjà chargées en mémoire
      */
     private static array $loaded_libraries = [];
 
     /**
-     * Constructor is set to private to prevent unwanted instantiation
+     * Constructeur privé (Singleton)
      */
-    private function __construct(){}
+    private function __construct() {}
 
     /**
-     * Prevent clone to prevent double instance
+     * Clone interdit (Singleton)
      */
-    private function __clone(){}
+    private function __clone() {}
 
     /**
-     * @return Bootstrap
+     * Récupération de l'instance unique
      */
-    public static function getInstance()
+    public static function getInstance(): self
     {
-        // Check if there is an existing instance, if not create one
-        if(!self::$_instance instanceof self) self::$_instance = new self;
-        // Return instance
-        return self::$_instance;
+        return self::$instance ??= new self();
     }
 
     /**
-     * Load a specific library
-     * @param string $library
-     * @return bool
+     * Charge une librairie spécifique définie dans $libraries
+     *
+     * @param string $library Clé de la librairie (ex: 'swift')
+     * @return bool True si chargé ou déjà chargé, False si introuvable
      */
     public function load(string $library): bool
     {
-        if(in_array($library,self::$loaded_libraries)) return true;
+        // Si déjà chargée, on arrête là
+        if (in_array($library, self::$loaded_libraries, true)) {
+            return true;
+        }
 
-        if (file_exists(self::$libraries[$library])) {
-            require self::$libraries[$library];
+        // Vérification que la clé existe dans la config
+        if (!array_key_exists($library, self::$libraries)) {
+            // On pourrait logger ici : "Librairie $library non définie dans Bootstrap"
+            return false;
+        }
+
+        $path = self::$libraries[$library];
+
+        if (file_exists($path)) {
+            require_once $path;
             self::$loaded_libraries[] = $library;
             return true;
         }
-        else return false;
+
+        // Fichier physique introuvable
+        return false;
     }
 
     /**
-     * Load required libraries
+     * Charge les dépendances obligatoires définies dans boot_libraries
      */
-    private function getFilesRequire()
+    private function loadBootLibraries(): void
     {
-        foreach(self::$boot_libraries as $library) {
-            self::load($library);
+        foreach (self::$boot_libraries as $library) {
+            if (!$this->load($library)) {
+                // Si l'autoloader manque, c'est critique => Arrêt du script
+                if ($library === 'autoloader') {
+                    throw new RuntimeException("CRITICAL: Unable to load Autoloader at " . self::$libraries['autoloader']);
+                }
+            }
         }
     }
 
     /**
-     *
+     * Initialise l'Autoloader et enregistre les namespaces
      */
-    public function getClassAutoloader()
+    public function registerAutoloader(): void
     {
-        $this->getFilesRequire();
-        $autoloader = new Component\Autoload();
+        // 1. Charger les fichiers requis (dont Autoload.php)
+        $this->loadBootLibraries();
+
+        // 2. Vérifier que la classe existe bien (sécurité)
+        if (!class_exists(Autoload::class)) {
+            throw new RuntimeException("Autoload class not found. Check your file structure.");
+        }
+
+        // 3. Configuration de l'autoloader
+        $autoloader = new Autoload();
+
+        // Définition de la racine des composants
+        $baseComponentDir = __DIR__ . '/component';
+
         $autoloader->addNamespace(
             'Magepattern\Component',
             [
-                'Database' => __DIR__.'/component/database',
-                'Date' => __DIR__.'/component/date',
-                'Debug' => __DIR__.'/component/debug',
-                'File' => __DIR__.'/component/file',
-                'HTTP' => __DIR__.'/component/http',
-                'Mail' => __DIR__.'/component/mail',
-                'Tool' => __DIR__.'/component/tool',
-                'XML' => __DIR__.'/component/xml'
+                'Database' => $baseComponentDir . '/database',
+                'Date'     => $baseComponentDir . '/date',
+                'Debug'    => $baseComponentDir . '/debug',
+                'File'     => $baseComponentDir . '/file',
+                'HTTP'     => $baseComponentDir . '/http',
+                'Mail'     => $baseComponentDir . '/mail',
+                'Tool'     => $baseComponentDir . '/tool',
+                'XML'      => $baseComponentDir . '/xml'
             ]
         );
+
         $autoloader->register();
     }
 }
 
-Bootstrap::getInstance()->getClassAutoloader();
+// Lancement automatique
+Bootstrap::getInstance()->registerAutoloader();

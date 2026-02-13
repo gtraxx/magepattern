@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 /**
  * Chargement du bootstrap
  */
@@ -10,6 +13,7 @@ if (file_exists($bootstrap)){
     throw new Exception('Boostrap is not exist');
 }
 use Magepattern\Component\HTTP\Request,
+    Magepattern\Component\Tool\FormTool,
     Magepattern\Component\HTTP\Url,
     Magepattern\Component\HTTP\JSON,
     Magepattern\Component\Tool\RSATool,
@@ -17,7 +21,12 @@ use Magepattern\Component\HTTP\Request,
     Magepattern\Component\Debug\Logger,
     Magepattern\Component\Database\Layer;
 
+//print $_GET['test_get'];
 print Url::getUrl();
+$test = '';
+if(Request::isGet('test')) $test = FormTool::simpleClean($_GET['test']);//
+print $test;
+//if (http_request::isGet('id')) $this->id = form_inputEscape::numeric($_GET['id']);
 print '<br />';
 print_r(Finder::dirFilterIterator('test',['jpeg']));
 print Finder::sizeDirectory(__DIR__.'/test');
@@ -73,7 +82,11 @@ if (is_array($decodedData) || is_object($decodedData)) {
     echo "Error decoding JSON:\n";
     echo $decodedData; // $decodedData contient le message d'erreur
 }
-
+print '<br />';
+$json = new JSON();
+$jsondata = $json->decode('{"id": 10}');
+print_r($jsondata);
+print '<br />';
 // Exemple avec options personnalisées
 $options = ['assoc' => true];
 $assocArray = $jsonInstance->decode($jsonString, $options);
@@ -96,6 +109,7 @@ $data = [
 ];
 
 $json = $jsonInstance->encode($data);
+$logger->log($json, "php", "info", Logger::LOG_MONTH, Logger::LOG_LEVEL_INFO);
 
 if (is_string($json)) {
     echo "JSON encoded data:\n";
@@ -121,9 +135,33 @@ define('MP_DBNAME' , 'magixtemp');
 define('MP_DBUSER' , 'root');
 define('MP_DBPASSWORD' , 'root');
 define('MP_DBDRIVER'  , 'mysql');
+/* EN DEBUT DE FICHIER */
+function getmicrotime()
+{
+    list($usec, $sec) = explode(" ",microtime());
+    return ((float)$usec + (float)$sec);
+}
 
+/* AVANT REQUETE */
+$time_start = getmicrotime();
 $db = new Layer();
 $sql =  'SELECT * FROM mc_news_content WHERE id_content =:id';
 $fetch = $db->fetchAll($sql, ['id' => 1]);
+
 print_r($fetch);
+/* APRES REQUETE */
+$time_end = getmicrotime();
+$time = $time_end - $time_start;
+echo "Requete exécutée en $time secondes";
+// Connexion principale (par défaut)
+/*$mainDb = new Layer();
+
+// Connexion secondaire (ex: SQLite pour des logs ou une archive)
+$archiveDb = new Layer([
+    'driver' => 'sqlite',
+    'path'   => '/var/db/archive.sqlite' // Supposant que votre classe SQLite gère ce paramètre
+]);
+
+$users = $mainDb->fetchAll("SELECT * FROM users");
+$archiveDb->insert("INSERT INTO logs ...", $users);*/
 ?>

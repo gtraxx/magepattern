@@ -1,7 +1,7 @@
 <?php
 namespace Magepattern\Component\Mail;
 use //CSSInliner\CSSInliner,
-    Magepattern\Bootstrap,
+    //Magepattern\Bootstrap,
     Magepattern\Component\Debug\Logger,
     Magepattern\Component\Tool\FormTool;
 

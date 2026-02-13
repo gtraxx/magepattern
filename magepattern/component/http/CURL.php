@@ -1,287 +1,364 @@
 <?php
-namespace Magepattern\Component\HTTP;
-use Magepattern\Component\Debug\Logger,
-    Magepattern\Component\Tool\StringTool;
 
+# -- BEGIN LICENSE BLOCK ----------------------------------
+# This file is part of Mage Pattern.
+# Copyright (C) 2012 - 2026 Gerits Aurelien
+# -- END LICENSE BLOCK ------------------------------------
+
+namespace Magepattern\Component\HTTP;
+
+use Magepattern\Component\Debug\Logger;
+use Magepattern\Component\Tool\StringTool;
+use CurlHandle;
+use Exception;
+use Throwable;
+use CURLFile;
+use JsonException;
+
+/**
+ * $curl = new \Magepattern\Component\HTTP\CURL();
+ *
+ * // 1. Simple appel GET
+ * $html = $curl->get('https://google.com');
+ *
+ * // 2. Télécharger un fichier
+ * $success = $curl->download('https://site.com/image.jpg', '/var/www/uploads/image.jpg');
+ *
+ * // 3. Appel API JSON avec Auth
+ * $response = $curl->addHeader('Authorization', 'Bearer TOKEN123')
+ * ->post('https://api.site.com/v1/update', json_encode(['id' => 1]));
+ *
+ * $api = new CURL();
+ * // Envoi automatique en JSON + Réception automatique en Array
+ * $user = $api->requestJSON('POST', 'https://api.com/users', [
+ * 'name' => 'John Doe',
+ * 'role' => 'admin'
+ * ]);
+ *
+ * echo $user['id']; // Accès direct au tableau !
+ *
+ * $api->setProxy('192.168.0.1', 8080, 'user:password');
+ * $api->request('GET', 'https://google.com'); // Passe par le proxy
+ */
 class CURL
 {
-    /**
-     * @return bool
-     */
-    private function curl_exist(): bool
+    private array $defaultOptions = [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true, // Suivre les redirections 301/302
+        CURLOPT_MAXREDIRS      => 5,
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_USERAGENT      => 'Magepattern/2.1 HTTP Client'
+    ];
+
+    private array $headers = [];
+    private ?array $proxyConfig = null;
+
+    public function __construct()
     {
-        try {
-            if(extension_loaded('curl')) throw new \Exception('curl extension not loaded',E_WARNING);
-            return true;
-        }
-        catch (\Exception $e){
-            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
-            return false;
+        if (!extension_loaded('curl')) {
+            $e = new Exception('CURL extension not loaded');
+            Logger::getInstance()->log($e, "php", "critical");
+            throw $e;
         }
     }
 
     /**
-     * @param string $url
-     * @param array $data
-     * @param array $options
-     * @param string|array $files
-     * @param bool $debug
-     * @return bool|string
+     * Configure un proxy pour les prochaines requêtes.
+     * @param string $host Adresse IP ou Domaine (ex: '192.168.1.10')
+     * @param int $port Port (ex: 8080)
+     * @param string|null $auth Format 'user:pass' ou null si pas d'auth
      */
-    private function executeCurl(string $url, array $data = [], array $options = [], string|array $files = [], bool $debug = false) : bool|string
+    public function setProxy(string $host, int $port, ?string $auth = null): self
     {
+        $this->proxyConfig = [
+            CURLOPT_PROXY => $host,
+            CURLOPT_PROXYPORT => $port,
+        ];
+
+        if ($auth) {
+            $this->proxyConfig[CURLOPT_PROXYUSERPWD] = $auth;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Ajoute un header HTTP.
+     */
+    public function addHeader(string $key, string $value): self
+    {
+        $this->headers[$key] = "$key: $value";
+        return $this;
+    }
+
+    /**
+     * Vide les headers (utile entre deux requêtes).
+     */
+    public function resetHeaders(): self
+    {
+        $this->headers = [];
+        return $this;
+    }
+
+    /**
+     * Envoie une requête JSON complète (Request & Response).
+     *
+     * @param string $method GET, POST, PUT, DELETE
+     * @param string $url
+     * @param array $data Données à encoder en JSON
+     * @param bool $decodeResponse Si true, retourne un array associatif au lieu d'une string
+     * @return array|string|bool
+     */
+    public function requestJSON(string $method, string $url, array $data = [], bool $decodeResponse = true): array|string|bool
+    {
+        $this->addHeader('Content-Type', 'application/json');
+        $this->addHeader('Accept', 'application/json');
+
+        // Encodage automatique des données
         try {
-            if($this->curl_exist()) {
-                if(!StringTool::isURL($url)) throw new \Exception('url passed is not valid',E_WARNING);
+            $jsonBody = empty($data) ? null : json_encode($data, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            Logger::getInstance()->log("JSON Encode Error: " . $e->getMessage(), "curl", "error");
+            return false;
+        }
 
-                $curlopt = [
-                    CURLOPT_URL => $url,
-                    CURLOPT_RETURNTRANSFER => true
-                ];
-                if(!empty($files)) {
-                    $postfield = [];
-                    foreach($data['files'] as $name => $file) {
-                        $postfield[$name] = new \CURLFile($file);
-                    }
-                    $curlopt = [CURLOPT_POSTFIELDS => $postfield];
-                }
-                if($data['ssl']) $curlopt[CURLOPT_SSL_VERIFYPEER] = false;
+        // Exécution de la requête brute
+        $response = $this->request($method, $url, $jsonBody);
 
-                $ch = curl_init();
-                curl_setopt_array($ch, array_merge($options, $curlopt));
-                $response = curl_exec($ch);
-                $curlInfo = curl_getinfo($ch);
+        if ($response === false) {
+            return false;
+        }
+
+        // Décodage automatique de la réponse si demandé
+        if ($decodeResponse) {
+            try {
+                return json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException $e) {
+                // Si la réponse n'est pas du JSON valide (ex: erreur HTML), on retourne la string brute
+                return $response;
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * Méthode centrale d'exécution avec CurlHandle (PHP 8).
+     */
+    public function request(string $method, string $url, array|string|null $body = null, array $options = []): string|bool
+    {
+        $ch = null;
+        try {
+            if (!StringTool::isURL($url)) {
+                throw new Exception("Invalid URL format: $url");
+            }
+
+            // Initialisation PHP 8 (Retourne un objet CurlHandle)
+            $ch = curl_init();
+
+            // Sécurité de type
+            if (!$ch instanceof CurlHandle) {
+                throw new Exception("Failed to initialize CurlHandle");
+            }
+
+            // Configuration de base
+            $config = $this->defaultOptions + $options;
+            $config[CURLOPT_URL] = $url;
+            $config[CURLOPT_CUSTOMREQUEST] = strtoupper($method);
+
+            // Injection du Proxy si configuré
+            if ($this->proxyConfig) {
+                $config += $this->proxyConfig;
+            }
+
+            // Injection des Headers
+            if (!empty($this->headers)) {
+                $config[CURLOPT_HTTPHEADER] = array_values($this->headers);
+            }
+
+            // Injection du Body
+            if ($body !== null) {
+                $config[CURLOPT_POSTFIELDS] = $body;
+            }
+
+            curl_setopt_array($ch, $config);
+
+            $response = curl_exec($ch);
+
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $errno = curl_errno($ch);
+            $error = curl_error($ch);
+
+            // On ferme explicitement le handle, bien que PHP 8 le fasse au destruct
+            curl_close($ch);
+            $ch = null; // Pour le bloc finally si besoin
+
+            if ($errno) {
+                throw new Exception("CURL Error ($errno): $error");
+            }
+
+            if ($httpCode >= 400) {
+                Logger::getInstance()->log("HTTP $httpCode on $url", "curl", "warning");
+                return false;
+            }
+
+            return $response;
+
+        } catch (Throwable $e) {
+            Logger::getInstance()->log($e, "curl", "error");
+            // Sécurité : fermeture si l'exception survient avant le close
+            if ($ch instanceof CurlHandle) {
                 curl_close($ch);
-
-                if(curl_errno($ch)) throw new \Exception('Curl error occurs',E_ERROR);
-
-                if ($debug) {
-                    var_dump($curlInfo);
-                    var_dump($response);
-                }
-
-                if(isset($data['$directory']) && isset($data['status'])) {
-                    if((($data['status'] === 0 && $curlInfo['httpCode'] < 400) || $data['status'] === $curlInfo['httpCode']) && !file_exists($data['$directory'])) {
-                        $fp = fopen($data['$directory'],'wb');
-                        fwrite($fp, $response);
-                        fclose($fp);
-                    }
-                    else {
-                        return false;
-                    }
-                }
-                elseif ($curlInfo['http_code'] === 200 && $response) return $response;
             }
             return false;
         }
-        catch(\Exception $e) {
-            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);            return false;
+    }
+
+    /**
+     * Télécharge un fichier (Streaming direct sur disque).
+     */
+    public function download(string $url, string $destinationPath): bool
+    {
+        $fp = null;
+        $ch = null;
+        try {
+            $fp = fopen($destinationPath, 'wb');
+            if (!$fp) throw new Exception("Cannot open file: $destinationPath");
+
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_FILE => $fp,
+                CURLOPT_HEADER => false,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_FAILONERROR => true
+            ]);
+
+            // Injection Proxy pour le download aussi
+            if ($this->proxyConfig) {
+                curl_setopt_array($ch, $this->proxyConfig);
+            }
+
+            $result = curl_exec($ch);
+            curl_close($ch);
+            fclose($fp);
+
+            if (!$result) {
+                @unlink($destinationPath);
+                return false;
+            }
+
+            return true;
+        } catch (Throwable $e) {
+            Logger::getInstance()->log($e, "curl", "error");
+            if (is_resource($fp)) fclose($fp);
+            if ($ch instanceof CurlHandle) curl_close($ch);
+            return false;
         }
     }
-
     /**
-     * @param string $url
-     * @param bool $ssl
-     * @param bool $debug
-     * @return bool
+     * Envoie un fichier physique vers un serveur distant (Multipart/form-data).
+     * * @param string $url
+     * @param string $fieldName Le nom du champ attendu par le serveur (ex: 'file' ou 'image')
+     * @param string $filePath Chemin local du fichier (ex: __DIR__ . '/photo.jpg')
+     * @param array $extraFields Autres champs de formulaire à envoyer simultanément
+     * @return string|bool
      */
-    public function isDomainAvailable(string $url, bool $ssl = false, bool $debug = false): bool
-    {
-        $options = [
-            CURLOPT_HEADER => true,
-            CURLOPT_CONNECTTIMEOUT => 10,
-            CURLOPT_NOBODY => true
-        ];
-        return $this->executeCurl($url, ['ssl' => $ssl], $options);
-    }
-
-    /**
-     * @param string $url
-     * @param string $file
-     * @return bool|string
-     */
-    private function curlSetPing(string $url, string $file): bool|string
-    {
-        $options = [
-            CURLOPT_REFERER => Url::getUrl(),
-            CURLOPT_NOBODY => true
-        ];
-        return $this->executeCurl('https://www.google.com/webmasters/tools/ping?sitemap=http%3A%2F%2F'.$url.'%2F'.$file, [], $options);
-    }
-
-    /**
-     * @param string $url
-     * @param string $directory
-     * @param int $status
-     * @param bool $debug
-     * @return bool|string
-     */
-    public function copyRemoteFile(string $url, string $directory, int $status = 0, bool $debug = false): bool|string
-    {
-        $options = [
-            CURLOPT_HEADER => false,
-            CURLOPT_CONNECTTIMEOUT => 60,
-            //CURLOPT_BINARYTRANSFER => true,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_FAILONERROR => true
-        ];
-        return $this->executeCurl($url, ['directory' => $directory, 'status' => $status], $options);
-    }
-
-    /**
-     * Prepare request Data with Curl (no files)
-     * @example
-     *  $json = json_encode(array(
-     *      'category'=>array(
-     *      'id'  =>'16'
-     *  )));
-     *  print_r($json);
-     *  print $this->webservice->setPrepareSendData([
-     *      'wsAuthKey' => $this->setWsAuthKey(),
-     *      'method' => 'xml',
-     *      'data' => $test,
-     *      'customRequest' => 'DELETE',
-     *      'debug' => false,
-     *      'url' => 'http://www.mywebsite.tld/webservice/catalog/categories/'
-     *  ]);
-     * @param array $data
-     * @return bool|string
-     */
-    public function sendData(array $data): bool|string
-    {
-        $type = match ($data['method']) {
-            'xml' => 'text/xml',
-            default => 'application/json',
-        };
-
-        $options = [
-            CURLINFO_HEADER_OUT     => true,
-            CURLOPT_HTTPAUTH        => CURLAUTH_BASIC,
-            CURLOPT_USERPWD         => $data['wsAuthKey'],
-            CURLOPT_HTTPHEADER      => ["Authorization : Basic ".$data['wsAuthKey'], 'Content-type: '.$type, 'Accept: '.$type, 'charset=utf-8'],
-            CURLOPT_CONNECTTIMEOUT  => 300,
-            CURLOPT_CUSTOMREQUEST   => $data['customRequest'],
-            CURLOPT_SSL_VERIFYPEER  => false
-        ];
-
-        $spec_options = match ($data['customRequest']) {
-            'GET' => [
-                CURLOPT_TIMEOUT => 300,
-                CURLOPT_SSL_VERIFYHOST  => false
-            ],
-            'POST' => [
-                CURLOPT_HEADER=> false,
-                CURLOPT_NOBODY=> false,
-                CURLOPT_POST => true
-            ],
-            default => [
-                CURLOPT_HEADER=> false,
-                CURLOPT_NOBODY=> false,
-            ],
-        };
-
-        return $this->executeCurl($data['url'], $data, [urlencode($data['data'])], array_merge($options,$spec_options));
-    }
-
-    /**
-     * @param array $data
-     * @param array $files
-     * @return bool|string
-     */
-    private function sendFiles(array $data, array $files): bool|string
-    {
-        $options = [
-            CURLOPT_HEADER => false,
-            CURLINFO_HEADER_OUT => true,
-            CURLOPT_NOBODY => false,
-            CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-            CURLOPT_USERPWD => $data['wsAuthKey'],
-            CURLOPT_HTTPHEADER => ["Authorization : Basic ".$data['wsAuthKey']],
-            CURLOPT_CONNECTTIMEOUT => 300,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POST => true,
-            CURLOPT_SSL_VERIFYPEER => false
-        ];
-
-        return $this->executeCurl($data['url'], $data, [$files], $options);
-    }
-
-    /**
-     * Prepare post Img with Curl (files only)
-     * @example
-     *  print $this->webservice->setPreparePostImg([
-     *      'wsAuthKey' => $this->setWsAuthKey(),
-     *      'url' => 'http://www.website.tld/webservice/catalog/categories/3',
-     *      'debug' => false,
-     *  ]);
-     * @param array $data
-     * @return bool|string
-     */
-    public function sendPostImg(array $data): bool|string
+    public function upload(string $url, string $fieldName, string $filePath, array $extraFields = []): string|bool
     {
         try {
-            if (isset($_FILES[$data['name']])) {
-                return $this->sendFiles($data,$_FILES[$data['name']]);
+            if (!file_exists($filePath)) {
+                throw new \Exception("File to upload not found: $filePath");
             }
-            else {
-                throw new \Exception('File key not set',E_WARNING);
-            }
-        }
-        catch (\Exception $e) {
-            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);            return false;
+
+            // [Utilisation de CURLFile ici]
+            // On crée l'objet qui indique à cURL de traiter ce chemin comme un fichier à envoyer
+            $cfile = new \CURLFile($filePath);
+
+            // On prépare le corps de la requête (Multipart)
+            $postFields = array_merge([$fieldName => $cfile], $extraFields);
+
+            // On utilise notre moteur 'request' existant
+            return $this->request('POST', $url, $postFields);
+
+        } catch (\Throwable $e) {
+            Logger::getInstance()->log($e, "curl", "error");
+            return false;
         }
     }
-
     /**
-     * Send Copy file on remote url
-     * @param array $data
-     * @return bool|string
+     * Envoie plusieurs fichiers dans une seule requête.
+     * * @param string $url
+     * @param array $files Tableau de fichiers [ 'champ_form' => 'chemin/physique' ]
+     * @param array $extraFields Champs texte additionnels
+     * @return string|bool
+     *
+     * // Exemple pour envoyer dans un tableau 'photos'
+     * $filesToUpload = [
+     * 'photos[0]' => '/path/to/img1.jpg',
+     * 'photos[1]' => '/path/to/img2.jpg'
+     * ];
+     * $curl->uploadMultiple($url, $filesToUpload);
      */
-    public function sendMultiImg(array $data): bool|string
+    public function uploadMultiple(string $url, array $files, array $extraFields = []): string|bool
     {
         try {
-            if (isset($data['files'])) {
-                return $this->sendFiles($data,$data['files']);
+            $postFields = $extraFields;
+
+            foreach ($files as $name => $path) {
+                if (!file_exists($path)) {
+                    Logger::getInstance()->log("File not found for upload: $path", "curl", "warning");
+                    continue;
+                }
+                // On crée un CURLFile pour chaque chemin
+                $postFields[$name] = new \CURLFile($path);
             }
-            else {
-                throw new \Exception('File not set',E_WARNING);
+
+            if (empty($postFields)) {
+                throw new \Exception("No valid files to upload.");
             }
+
+            // Notre moteur request() détecte que c'est un tableau et envoie en multipart/form-data
+            return $this->request('POST', $url, $postFields);
+
+        } catch (\Throwable $e) {
+            Logger::getInstance()->log($e, "curl", "error");
+            return false;
         }
-        catch (\Exception $e) {
-            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);            return false;
+    }
+    /**
+     * @param string $url
+     * @param string $fieldName
+     * @param string $filePath
+     * @param callable|null $onProgress Fonction de rappel : function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded)
+     * @return string|bool
+     *
+     * $curl = new \Magepattern\Component\HTTP\CURL();
+     *
+     * $curl->uploadWithProgress(
+     * 'https://api.remote-storage.com/upload',
+     * 'image',
+     * '/path/to/very-big-file.zip',
+     * function($resource, $dltotal, $dlnow, $ultotal, $ulnow) {
+     * if ($ultotal > 0) {
+     * $percent = round(($ulnow / $ultotal) * 100);
+     * // On peut loguer la progression ou l'écrire dans un fichier de statut pour JS
+     * echo "Progression de l'upload : $percent% \r";
+     * }
+     * }
+     * );
+     */
+    public function uploadWithProgress(string $url, string $fieldName, string $filePath, ?callable $onProgress = null): string|bool
+    {
+        $options = [
+            // Activer la progression
+            CURLOPT_NOPROGRESS => false,
+        ];
+
+        if ($onProgress) {
+            $options[CURLOPT_PROGRESSFUNCTION] = $onProgress;
         }
-    }
 
-    /**
-     * Send Copy file on remote url
-     * @deprecated use sendMultiImg instead
-     * @param array $data
-     * @return bool|string
-     */
-    #[Deprecated] public function sendCopyFiles(array $data): bool|string
-    {
-        return $this->sendMultiImg($data);
-    }
-
-    /**
-     * Send Copy file on remote url
-     * @deprecated use sendMultiImg instead
-     * @param array $data
-     * @return bool|string
-     */
-    #[Deprecated] public function sendCopyImg(array $data): bool|string
-    {
-        return $this->sendMultiImg($data);
-    }
-
-    /**
-     * @param array $data
-     * @return bool|string
-     */
-    public function sendGet(array $data): bool|string
-    {
-        $data['customRequest'] = 'GET';
-        return $this->sendData($data);
+        return $this->upload($url, $fieldName, $filePath, [], $options);
     }
 }

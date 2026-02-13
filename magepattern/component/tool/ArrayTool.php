@@ -1,193 +1,119 @@
 <?php
+
+# -- BEGIN LICENSE BLOCK ----------------------------------
+# This file is part of Mage Pattern.
+# Copyright (C) 2012 - 2026 Gerits Aurelien
+# -- END LICENSE BLOCK ------------------------------------
+
 namespace Magepattern\Component\Tool;
+
+use ArrayObject;
+use Traversable;
+use IteratorAggregate;
 
 class ArrayTool
 {
     /**
+     * Convertit une variable en itérateur (Traversable).
+     * Si ce n'est pas un tableau ou un itérateur, on le transforme en tableau d'abord.
+     *
      * @param mixed $var
-     * @return \ArrayObject|\Traversable
+     * @return Traversable
      */
-    public static function toIterator(mixed $var): \ArrayObject|\Traversable
+    public static function toIterator(mixed $var): Traversable
     {
-        if (!$var instanceof \Traversable && !$var instanceof \Iterator) $var = new \ArrayObject(is_array($var) ? $var : [$var]);
-        return $var;
+        if ($var instanceof Traversable) {
+            return $var;
+        }
+
+        return new ArrayObject(is_array($var) ? $var : [$var]);
     }
 
     /**
-     * @static
-     * @param array|\Traversable $iterator
+     * Convertit un itérateur (ou un tableau) en tableau PHP standard.
+     * Supporte la récursivité.
+     *
+     * @param iterable $iterator
      * @param bool $recursive
      * @return array
      */
-    public static function iteratorToArray(array|\Traversable $iterator, $recursive = true): array
+    public static function iteratorToArray(iterable $iterator, bool $recursive = true): array
     {
+        // Cas simple non récursif ou tableau natif
         if (!$recursive) {
-            if (is_array($iterator)) return $iterator;
-            return iterator_to_array($iterator);
+            return is_array($iterator) ? $iterator : iterator_to_array($iterator);
         }
 
-        if (method_exists($iterator, 'toArray')) return $iterator->toArray();
+        // Si l'objet possède sa propre méthode toArray (ex: Collections)
+        if (is_object($iterator) && method_exists($iterator, 'toArray')) {
+            return $iterator->toArray();
+        }
 
         $array = [];
         foreach ($iterator as $key => $value) {
-            if (is_scalar($value)) {
+            if (is_scalar($value) || $value === null) {
                 $array[$key] = $value;
                 continue;
             }
 
-            if ($value instanceof \Traversable) {
-                $array[$key] = static::iteratorToArray($value, $recursive);
-                continue;
+            // Appel récursif si c'est un itérable (Tableau ou Objet Traversable)
+            if (is_iterable($value)) {
+                $array[$key] = self::iteratorToArray($value, $recursive);
+            } else {
+                $array[$key] = $value;
             }
-
-            if (is_array($value)) {
-                $array[$key] = static::iteratorToArray($value, $recursive);
-                continue;
-            }
-
-            $array[$key] = $value;
         }
+
         return $array;
     }
 
     /**
-     * @param array $arr
-     * @param array $new_arr
+     * Remplace les éléments d'un tableau par ceux d'un autre (Wrapper natif).
+     *
+     * @param array $arr Tableau de base.
+     * @param array $new_arr Tableau de remplacement.
      * @return array
      */
     public static function replaceArray(array $arr, array $new_arr): array
     {
-        if (!function_exists('array_replace')){
-            foreach($new_arr as $key=>$value)
-                $arr[$key]=$value;
-            return $arr;
-        }
-        else{
-            return array_replace($arr, $new_arr);
-        }
+        return array_replace($arr, $new_arr);
     }
 
     /**
-     * Returns the values from a single column of the input array, identified by
-     * the $columnKey.
+     * Retourne les valeurs d'une colonne spécifique du tableau d'entrée.
+     * (Wrapper natif direct, suppression du polyfill PHP 5.5).
      *
-     * Optionally, you may provide an $indexKey to index the values in the returned
-     * array by the values from the $indexKey column in the input array.
-     *
-     * @param array $input A multi-dimensional array (record set) from which to pull
-     *                     a column of values.
-     * @param string|int $columnKey The column of values to return. This value may be the
-     *                         integer key of the column you wish to retrieve, or it
-     *                         may be the string key name for an associative array.
-     * @param string|int $indexKey (Optional.) The column to use as the index/keys for
-     *                        the returned array. This value may be the integer key
-     *                        of the column, or it may be the string key name.
+     * @param array $input Tableau multidimensionnel.
+     * @param string|int|null $columnKey La colonne à récupérer.
+     * @param string|int|null $indexKey La colonne à utiliser comme index (optionnel).
      * @return array
      */
-    public static function array_column(array $input, string|int $columnKey, string|int $indexKey = ''): array
+    public static function array_column(array $input, string|int|null $columnKey, string|int|null $indexKey = null): array
     {
-        if (!function_exists('array_column')) {
-                // Using func_get_args() in order to check for proper number of
-                // parameters and trigger errors exactly as the built-in array_column()
-                // does in PHP 5.5.
-                $argc = func_num_args();
-                $params = func_get_args();
-                if ($argc < 2) {
-                    trigger_error("array_column() expects at least 2 parameters, {$argc} given", E_USER_WARNING);
-                    return [];
-                }
-                if (!is_array($params[0])) {
-                    trigger_error(
-                        'array_column() expects parameter 1 to be array, ' . gettype($params[0]) . ' given',
-                        E_USER_WARNING
-                    );
-                    return [];
-                }
-                if (!is_int($params[1])
-                    && !is_float($params[1])
-                    && !is_string($params[1])
-                    && $params[1] !== null
-                    && !(is_object($params[1]) && method_exists($params[1], '__toString'))
-                ) {
-                    trigger_error('array_column(): The column key should be either a string or an integer', E_USER_WARNING);
-                    return [];
-                }
-                if (isset($params[2])
-                    && !is_int($params[2])
-                    && !is_float($params[2])
-                    && !is_string($params[2])
-                    && !(is_object($params[2]) && method_exists($params[2], '__toString'))
-                ) {
-                    trigger_error('array_column(): The index key should be either a string or an integer', E_USER_WARNING);
-                    return [];
-                }
-                $paramsInput = $params[0];
-                $paramsColumnKey = ($params[1] !== null) ? (string) $params[1] : null;
-                $paramsIndexKey = null;
-                if (isset($params[2])) {
-                    if (is_float($params[2]) || is_int($params[2])) {
-                        $paramsIndexKey = (int) $params[2];
-                    }
-                    else {
-                        $paramsIndexKey = (string) $params[2];
-                    }
-                }
-                $resultArray = array();
-                foreach ($paramsInput as $row) {
-                    $key = $value = null;
-                    $keySet = $valueSet = false;
-                    if ($paramsIndexKey !== null && array_key_exists($paramsIndexKey, $row)) {
-                        $keySet = true;
-                        $key = (string) $row[$paramsIndexKey];
-                    }
-                    if ($paramsColumnKey === null) {
-                        $valueSet = true;
-                        $value = $row;
-                    }
-                    elseif (is_array($row) && array_key_exists($paramsColumnKey, $row)) {
-                        $valueSet = true;
-                        $value = $row[$paramsColumnKey];
-                    }
-                    if ($valueSet) {
-                        if ($keySet) {
-                            $resultArray[$key] = $value;
-                        }
-                        else {
-                            $resultArray[] = $value;
-                        }
-                    }
-                }
-                return $resultArray;
-        }
-        else{
-            $resultArray = array_column($input, $columnKey, $indexKey);
-        }
-        return $resultArray;
+        return array_column($input, $columnKey, $indexKey);
     }
 
     /**
-     * Sort an array by values
-     * @param string|int $field
-     * @param array $array
-     * @param string $direction
+     * Trie un tableau de tableaux associatifs par une clé donnée.
+     * Utilise l'opérateur Spaceship (<=>) de PHP 7+.
+     *
+     * @param string|int $field La clé sur laquelle trier.
+     * @param array $array Le tableau à trier (passé par référence).
+     * @param string $direction 'asc' ou 'desc'.
+     * @return void
      */
-    public static function array_sortBy(string|int $field, array &$array, string $direction = 'asc')
+    public static function array_sortBy(string|int $field, array &$array, string $direction = 'asc'): void
     {
-        usort($array,function ($a, $b) use ($field,$direction) {
-            $at = $a[$field];
-            $bt = $b[$field];
+        usort($array, function ($a, $b) use ($field, $direction) {
+            $valA = $a[$field] ?? null;
+            $valB = $b[$field] ?? null;
 
-            if ($at == $bt)
-            {
-                return 0;
+            // Opérateur Spaceship : renvoie -1, 0 ou 1 automatiquement
+            if ($direction === 'desc') {
+                return $valB <=> $valA;
             }
 
-            if($direction === 'desc') {
-                return ($at > $bt ? -1 : 1);
-            }
-            else {
-                return ($at < $bt ? -1 : 1);
-            }
+            return $valA <=> $valB;
         });
     }
 }

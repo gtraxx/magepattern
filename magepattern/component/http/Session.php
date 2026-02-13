@@ -1,170 +1,184 @@
 <?php
+
+# -- BEGIN LICENSE BLOCK ----------------------------------
+# This file is part of Mage Pattern.
+# Copyright (C) 2012 - 2026 Gerits Aurelien
+# -- END LICENSE BLOCK ------------------------------------
+
 namespace Magepattern\Component\HTTP;
+
 use Magepattern\Component\Debug\Logger;
 use Magepattern\Component\Tool\RSATool;
+use RuntimeException;
+use Throwable;
 
-class Session extends Utils
+class Session
 {
-    /**
-     * @var bool $ssl
-     */
-	protected bool
-        $ssl;
+    // Clés de configuration (identifiants dans $_SESSION)
+    protected string $ipKey;
+    protected string $uaKey;
+    protected string $csrfKey;
+
+    protected bool $ssl;
+    protected string $sessionName;
 
     /**
      * Session constructor.
-     * @param bool $ssl
+     * * @param bool $ssl Force le mode HTTPS (Secure cookie)
+     * @param string $name Nom du cookie de session (ex: MP_SESSID)
+     * @param array $config Clés personnalisées [ip_key, ua_key, csrf_key]
      */
-	public function __construct(bool $ssl = false)
+    public function __construct(
+        bool $ssl = true,
+        string $name = 'mp_sess_id',
+        array $config = []
+    ) {
+        $this->ssl = $ssl;
+        $this->sessionName = $name;
+
+        // Injection des clés personnalisées ou valeurs par défaut
+        $this->ipKey   = $config['ip_key']   ?? 'mp_client_ip';
+        $this->uaKey   = $config['ua_key']   ?? 'mp_client_ua';
+        $this->csrfKey = $config['csrf_key'] ?? 'mp_csrf_token';
+    }
+
+    /**
+     * Démarre la session avec des paramètres de sécurité modernes.
+     * * @param int $lifetime 0 pour session de navigateur, ou durée en secondes
+     * @return bool
+     */
+    public function start(int $lifetime = 0): bool
     {
-		$this->ssl = $ssl;
-	}
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            return true;
+        }
 
-	/**
-	 * Regenerate the session id and update the session
-	 * @param int $lifetime
-	 * @return string
-	 */
-	public function regenerate(int $lifetime = 0): string
-    {
-		$cookie_params = session_get_cookie_params();
-		session_regenerate_id();
-		$id = session_id();
-		$session_name = session_name();
-		session_write_close();
-		session_name($session_name);
-		session_id($id);
-		session_start();
-		setcookie($session_name,$id,$lifetime,'/',$cookie_params['domain'],$this->ssl,true);
-		return $id;
-	}
+        try {
+            $options = [
+                'name'                   => $this->sessionName,
+                'cookie_lifetime'        => $lifetime,
+                'cookie_path'            => '/',
+                'cookie_domain'          => '',
+                'cookie_secure'          => $this->ssl,
+                'cookie_httponly'        => true,
+                'cookie_samesite'        => 'Lax',
+                'use_strict_mode'        => 1,
+                'use_only_cookies'       => 1,
+                'sid_length'             => 48,
+                'sid_bits_per_character' => 6,
+            ];
 
-	/**
-	 * Start a new session
-	 * @param string $session_name
-	 * @param array $params
-	 * @return string|false session id, false on error
-	 */
-    public function start(string $session_name = 'mp_default_s', array $params = []): string|false
-    {
-		try {
-			if (is_string($session_name) && $session_name !== '') {
-				$ssid = session_id();
+            if (!session_start($options)) {
+                throw new RuntimeException("Impossible de démarrer la session.");
+            }
 
-				if (!isset($_SESSION)) session_cache_limiter('nocache');
+            // Validation de l'empreinte (Anti-Hijacking)
+            if (!$this->validateFingerprint()) {
+                $this->destroy();
+                session_start($options);
+                $this->regenerate();
+            }
 
-				//Fermeture de la première session, ses données sont sauvegardées.
-				if(session_name() !== $session_name || !empty($params)) {
-					session_write_close();
+            return true;
 
-					// **PREVENTING SESSION FIXATION**
-					// Session ID cannot be passed through URLs
-					ini_set('session.use_only_cookies', 1);
-
-					$cookie_params = array_merge(session_get_cookie_params(),$params);
-					session_set_cookie_params($cookie_params['lifetime'], '/', $cookie_params['domain'], $this->ssl, true);
-
-					if(!isset($_COOKIE[$session_name])) {
-						session_name($session_name);
-						ini_set('session.hash_function',1);
-						session_start();
-						session_regenerate_id();
-						$ssid = session_id();
-					}
-					else {
-						$ssid = $_COOKIE[$session_name];
-						session_name($session_name);
-						session_id($ssid);
-						session_start();
-					}
-				}
-				return $ssid;
-			}
-			else {
-				throw new \Exception('Unable to start a new session. No session name defined',E_WARNING);
-			}
-		}
-		catch(\Exception $e) {
-            Logger::getInstance()->log($e,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
+        } catch (Throwable $e) {
+            Logger::getInstance()->log($e, "session", "critical");
             return false;
-		}
-    }
-
-	/**
-	 * Reset a session
-	 */
-    public function destroy()
-    {
-    	session_unset();
-    	$_SESSION = [];
-        session_destroy();
-        session_start();
-    }
-
-	/**
-	 * Close a session
-	 * @param string $session_name
-	 */
-    public function close(string $session_name)
-    {
-    	session_name($session_name);
-		session_start();
-		session_unset();
-		session_destroy();
-		$CookieInfo = session_get_cookie_params();
-		if ( (empty($CookieInfo['domain'])) && (empty($CookieInfo['secure'])) ) setcookie($session_name, '', time()-3600, $CookieInfo['path']);
-		elseif (empty($CookieInfo['secure'])) setcookie($session_name, '', time()-3600, $CookieInfo['path'], $CookieInfo['domain']);
-		else setcookie($session_name, '', time()-3600, $CookieInfo['path'], $CookieInfo['domain'], $CookieInfo['secure']);
+        }
     }
 
     /**
-     * Creation of token
-     * @param string $name
-     * @param string $token
-     * @return string
+     * Régénère l'ID (à utiliser après un changement de privilèges / login).
      */
-    public function token(string $name = 'token', string $token = ''): string
+    public function regenerate(bool $deleteOldSession = true): string
     {
-        return !Request::isSession($name) || empty($_SESSION[$name]) ? ($_SESSION[$name] = $token ?: RSATool::tokenID()) : $_SESSION[$name];
+        if (session_status() !== PHP_SESSION_ACTIVE) return '';
+
+        session_regenerate_id($deleteOldSession);
+        $this->setFingerprint();
+
+        return session_id();
     }
 
     /**
-     * Init session variables
-     * @param array $session
-     * @internal param bool $debug
+     * Détruit la session proprement côté serveur et navigateur.
      */
-    private function iniSessionVar(array $session) {
-        $_SESSION = array_merge($_SESSION, $session);
+    public function destroy(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION = [];
+            if (ini_get("session.use_cookies")) {
+                $p = session_get_cookie_params();
+                setcookie(session_name(), '', time() - 42000, $p["path"], $p["domain"], $p["secure"], $p["httponly"]);
+            }
+            session_destroy();
+        }
     }
 
     /**
-     * Init session ou renew the session
-     * @param $session_tabs
-     * @param bool $setOption
-     * @internal param array $session
-     * @internal param bool $debug
+     * Gestion du Token CSRF (Cross-Site Request Forgery).
      */
-    public function run(array $session_tabs = [])
+    public function getToken(bool $forceRegenerate = false): string
     {
-        if(!empty($session_tabs)) $this->iniSessionVar($session_tabs);
+        $this->ensureStarted();
+
+        if ($forceRegenerate || empty($_SESSION[$this->csrfKey])) {
+            $token = class_exists(RSATool::class) ? RSATool::tokenID(32) : bin2hex(random_bytes(32));
+            $_SESSION[$this->csrfKey] = $token;
+        }
+
+        return $_SESSION[$this->csrfKey];
     }
 
     /**
-     * @param string $requestIp
-     * @return string|bool
+     * Vérification sécurisée du Token (Timing-attack safe).
      */
-    public function ip(string $requestIp = ''): string|bool
+    public function validateToken(?string $token): bool
     {
-        $ip = parent::getIp();
-        $matcher = new IPMatcher();
-        return $matcher->checkIp($requestIp ?? $ip,$ip) ? $ip : false;
+        $this->ensureStarted();
+        $stored = $_SESSION[$this->csrfKey] ?? '';
+        return is_string($token) && hash_equals($stored, $token);
     }
 
     /**
-     * @return string browser
+     * Accesseurs de données.
      */
-    public function browser(): string
+    public function set(string $key, mixed $value): void
     {
-        return parent::getBrowser();
+        $this->ensureStarted();
+        $_SESSION[$key] = $value;
+    }
+
+    public function get(string $key, mixed $default = null): mixed
+    {
+        $this->ensureStarted();
+        return $_SESSION[$key] ?? $default;
+    }
+
+    /**
+     * Fingerprinting : IP + User Agent.
+     */
+    private function setFingerprint(): void
+    {
+        $_SESSION[$this->ipKey] = IPMatcher::getVisitorIp();
+        $_SESSION[$this->uaKey] = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+    }
+
+    private function validateFingerprint(): bool
+    {
+        if (!isset($_SESSION[$this->ipKey])) {
+            $this->setFingerprint();
+            return true;
+        }
+
+        return ($_SESSION[$this->ipKey] === IPMatcher::getVisitorIp() &&
+            $_SESSION[$this->uaKey] === ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'));
+    }
+
+    private function ensureStarted(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            $this->start();
+        }
     }
 }

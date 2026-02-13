@@ -1,14 +1,23 @@
 <?php
+
+# -- BEGIN LICENSE BLOCK ----------------------------------
+# This file is part of Mage Pattern.
+# Copyright (C) 2012 - 2026 Gerits Aurelien
+# -- END LICENSE BLOCK ------------------------------------
+
 namespace Magepattern\Component\HTTP;
 
 class Header
 {
     /**
-     * @var array
+     * Liste des codes HTTP standards (RFC).
+     * Enrichie avec les codes modernes (422, 429, etc.).
      */
     protected static array $statusTexts = [
         100 => 'Continue',
         101 => 'Switching Protocols',
+        102 => 'Processing',            // RFC 2518
+        103 => 'Early Hints',           // RFC 8297
         200 => 'OK',
         201 => 'Created',
         202 => 'Accepted',
@@ -16,14 +25,17 @@ class Header
         204 => 'No Content',
         205 => 'Reset Content',
         206 => 'Partial Content',
+        207 => 'Multi-Status',          // RFC 4918
+        208 => 'Already Reported',      // RFC 5842
+        226 => 'IM Used',               // RFC 3229
         300 => 'Multiple Choices',
         301 => 'Moved Permanently',
         302 => 'Found',
         303 => 'See Other',
         304 => 'Not Modified',
         305 => 'Use Proxy',
-        306 => '(Unused)',
         307 => 'Temporary Redirect',
+        308 => 'Permanent Redirect',    // RFC 7538
         400 => 'Bad Request',
         401 => 'Unauthorized',
         402 => 'Payment Required',
@@ -37,90 +49,147 @@ class Header
         410 => 'Gone',
         411 => 'Length Required',
         412 => 'Precondition Failed',
-        413 => 'Request Entity Too Large',
-        414 => 'Request-URI Too Long',
+        413 => 'Content Too Large',     // Renommé par RFC 7231
+        414 => 'URI Too Long',
         415 => 'Unsupported Media Type',
-        416 => 'Requested Range Not Satisfiable',
+        416 => 'Range Not Satisfiable',
         417 => 'Expectation Failed',
+        418 => 'I\'m a teapot',         // RFC 2324 (Legacy/Fun)
+        421 => 'Misdirected Request',   // RFC 7540
+        422 => 'Unprocessable Entity',  // WebDAV (Très utilisé en API JSON)
+        423 => 'Locked',                // WebDAV
+        424 => 'Failed Dependency',     // WebDAV
+        425 => 'Too Early',             // RFC 8470
+        426 => 'Upgrade Required',
+        428 => 'Precondition Required', // RFC 6585
+        429 => 'Too Many Requests',     // RFC 6585 (Rate Limiting)
+        431 => 'Request Header Fields Too Large', // RFC 6585
+        451 => 'Unavailable For Legal Reasons',   // RFC 7725
         500 => 'Internal Server Error',
         501 => 'Not Implemented',
         502 => 'Bad Gateway',
         503 => 'Service Unavailable',
         504 => 'Gateway Timeout',
-        505 => 'HTTP Version Not Supported'
+        505 => 'HTTP Version Not Supported',
+        506 => 'Variant Also Negotiates', // RFC 2295
+        507 => 'Insufficient Storage',    // WebDAV
+        508 => 'Loop Detected',           // WebDAV
+        510 => 'Not Extended',            // RFC 2774
+        511 => 'Network Authentication Required', // RFC 6585
     ];
 
     /**
-     * @param int $code
-     * @return string
+     * Récupère le message associé au code.
      */
     public static function getStatusText(int $code): string
     {
-        return self::$statusTexts[$code] ?? '';
+        return self::$statusTexts[$code] ?? 'Unknown Status';
     }
 
     /**
-     * @param int $code
+     * Définit le code de réponse HTTP.
+     * Utilise la fonction native PHP pour la compatibilité (FastCGI/Apache/Nginx).
      */
-    public static function setStatus(int $code)
+    public static function setStatus(int $code): void
     {
-        header('HTTP/1.1 '.$code.' '.self::$statusTexts[$code]);
+        if (isset(self::$statusTexts[$code])) {
+            http_response_code($code);
+            // On peut forcer le texte si nécessaire, mais http_response_code le fait bien.
+            // header('Status: ' . $code . ' ' . self::$statusTexts[$code]);
+        }
     }
 
     /**
-     * @param string $cache
+     * Définit les headers de cache.
      */
-    public static function cache_control(string $cache)
+    public static function cache_control(string $cache): void
     {
         $control = match($cache) {
-            'nocache' => ['no-store', 'no-cache', 'max-age=0', 'must-revalidate'],
-            'public', 'private' => ['public', 'must-revalidate']
+            'nocache' => ['no-store', 'no-cache', 'must-revalidate', 'max-age=0'],
+            'public'  => ['public', 'max-age=3600'], // Ajout d'une durée par défaut pour public
+            'private' => ['private', 'max-age=3600'],
+            default   => ['no-cache'] // Sécurité par défaut
         };
-        header('Cache-Control: '.implode(',',$control));
+
+        header('Cache-Control: ' . implode(', ', $control));
     }
 
     /**
-     * @param string $type
-     * @param string $charset
+     * Définit le Content-Type.
      */
-    public static function content_type(string $type, string $charset = 'UTF-8')
+    public static function content_type(string $type, string $charset = 'UTF-8'): void
     {
-        $content = match($type) {
-            'text' => 'text/plain',
-            'html' => 'text/html',
-            'json' => 'application/json',
-            'excel' => 'application/vnd.ms-excel',
+        $mime = match($type) {
+            'text'      => 'text/plain',
+            'html'      => 'text/html',
+            'json'      => 'application/json',
+            'xml'       => 'application/xml',
+            'js'        => 'application/javascript',
+            'css'       => 'text/css',
+            'pdf'       => 'application/pdf',
+            'excel'     => 'application/vnd.ms-excel',
             'excel2007' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'zip'       => 'application/zip',
+            default     => 'application/octet-stream' // Binaire par défaut
         };
-        header('Content-type: '.$content.'; charset='.$charset);
+
+        header("Content-Type: $mime; charset=$charset");
     }
 
     /**
-     * @param string $charset
+     * Prépare les headers pour une réponse JSON (API).
      */
-	public static function set_json_headers(string $charset = 'UTF-8')
-	{
-	    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-	    header('Last-Modified: '.gmdate("D, d M Y H:i:s").'GMT');
-        header("Pragma: no-cache" );
-		self::cache_control("nocache");
-		self::setStatus(200);
-		self::content_type('json',$charset);
-	}
+    public static function set_json_headers(string $charset = 'UTF-8'): void
+    {
+        // Headers anti-cache agressifs
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate("D, d M Y H:i:s") . ' GMT');
+        header('Pragma: no-cache');
 
-	/**
-	 * @param string $origin
-	 * @param array $validOrigins
-	 * @param bool $redirect
-	 */
-    public static function amp_headers(string $origin, array $validOrigins, $redirect = false){
+        self::cache_control("nocache");
+        self::setStatus(200);
+        self::content_type('json', $charset);
+    }
+
+    /**
+     * Headers spécifiques pour Google AMP (Accelerated Mobile Pages).
+     *
+     * @param string $origin L'origine de la requête (ex: https://google.com)
+     * @param array $validOrigins Liste des domaines autorisés
+     * @param bool|string $redirect URL de redirection ou true pour utiliser le Referer
+     */
+    public static function amp_headers(string $origin, array $validOrigins, bool|string $redirect = false): void
+    {
         header('AMP-Same-Origin: true');
-        header('Access-Control-Allow-Origin: '.(in_array($origin,$validOrigins) ? $origin : implode(' ',$validOrigins)));
-        header('AMP-Access-Control-Allow-Source-Origin: '.$origin);
-        header('Access-Control-Expose-Headers: AMP-Access-Control-Allow-Source-Origin'.($redirect ? ', AMP-Redirect-To' : ''));
-		if($redirect) {
-			$headers = getallheaders();
-			header('AMP-Redirect-To: '.($redirect === true ? $headers['Referer'] : $redirect));
-		}
+
+        // Sécurité CORS : On ne renvoie l'origine que si elle est dans la liste blanche.
+        // On n'envoie JAMAIS une liste séparée par des espaces (invalide).
+        if (in_array($origin, $validOrigins, true)) {
+            header("Access-Control-Allow-Origin: $origin");
+            header("AMP-Access-Control-Allow-Source-Origin: $origin");
+        } else {
+            // Si l'origine n'est pas valide, on ne met pas le header ou on met null,
+            // ce qui bloquera la requête côté navigateur.
+            // Optionnel : header("Access-Control-Allow-Origin: null");
+        }
+
+        $exposeHeaders = ['AMP-Access-Control-Allow-Source-Origin'];
+        if ($redirect) {
+            $exposeHeaders[] = 'AMP-Redirect-To';
+        }
+        header('Access-Control-Expose-Headers: ' . implode(', ', $exposeHeaders));
+
+        if ($redirect) {
+            $targetUrl = ($redirect === true) ? (self::getReferer() ?? '/') : $redirect;
+            header("AMP-Redirect-To: $targetUrl");
+        }
+    }
+
+    /**
+     * Helper sécurisé pour récupérer le Referer (compatible Nginx/Apache).
+     */
+    private static function getReferer(): ?string
+    {
+        return $_SERVER['HTTP_REFERER'] ?? null;
     }
 }

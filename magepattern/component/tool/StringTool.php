@@ -1,53 +1,63 @@
 <?php
+
+# -- BEGIN LICENSE BLOCK ----------------------------------
+# This file is part of Mage Pattern.
+# Copyright (C) 2012 - 2026 Gerits Aurelien
+# -- END LICENSE BLOCK ------------------------------------
+
 namespace Magepattern\Component\Tool;
 
+use Magepattern\Component\Debug\Logger;
+use Throwable;
+
+/**
+ * Class StringTool
+ * Fournit des utilitaires pour la manipulation et la validation de chaînes de caractères.
+ * Compatible UTF-8 (Multibyte).
+ */
 class StringTool
 {
     /**
-     * Search for one or more substring in a string
-     * @param string $haystack
-     * @param array $needles
-     * @param bool $contains Define the way of searching, true must contain the substring, false must not contain the substring
+     * Regex pour validation d'URL complexe (fallback si filter_var ne suffit pas).
+     */
+    public const REGEX_URL_FORMAT = '~^(https?|ftps?):(([a-z0-9-]+\.)+[a-z]{2,6}|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(:[0-9]+)?(/?|/\S+)$~ix';
+
+    /**
+     * Recherche une ou plusieurs sous-chaînes.
+     *
+     * @param string $haystack La botte de foin.
+     * @param array $needles Les aiguilles à chercher.
+     * @param bool $contains Mode de recherche :
+     * - true : Retourne TRUE si AU MOINS UNE aiguille est trouvée.
+     * - false : Retourne TRUE si AUCUNE aiguille n'est trouvée.
      * @return bool
      */
     public static function str_search(string $haystack, array $needles, bool $contains = true): bool
     {
-        if(empty($needles)) return !$contains;
-        foreach ($needles as $needle) {
-            if(is_string($needle) && str_contains($haystack,$needle)) return $contains;
+        if (empty($needles)) {
+            return !$contains;
         }
+
+        foreach ($needles as $needle) {
+            if (is_string($needle) && str_contains($haystack, $needle)) {
+                return $contains;
+            }
+        }
+
         return !$contains;
     }
 
     /**
-     * Constante for URL format
-     * @var void
-     */
-    const REGEX_URL_FORMAT = '~^(https?|ftps?):(([a-z0-9-]+\.)+[a-z]{2,6}|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(:[0-9]+)?(/?|/\S+)$~ix';
-    /**
-     * ~^(https?|ftps?)://                      # protocol
-     * (([a-z0-9-]+\.)+[a-z]{2,6}              	# a domain name
-     *     |                                   	#  or
-     *   \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}    	# a IP address
-     * )
-     * (:[0-9]+)?                              	# a port (optional)
-     * (/?|/\S+)                               	# a /, nothing or a / with something
-     * $~ix
-     */
-
-    /**
-     * @param string $url
-     * @return bool
+     * Vérifie si la chaîne est une URL valide.
+     * Utilise le filtre natif PHP 8 (plus robuste que la regex).
      */
     public static function isURL(string $url): bool
     {
-        return (bool)preg_match(self::REGEX_URL_FORMAT, $url);
+        return (bool)filter_var($url, FILTER_VALIDATE_URL);
     }
 
     /**
-     * function isMail
-     * @param string $mail
-     * @return bool
+     * Vérifie si la chaîne est un email valide.
      */
     public static function isMail(string $mail): bool
     {
@@ -55,173 +65,126 @@ class StringTool
     }
 
     /**
-     * Checks if variable of String
-     * @param string $str
-     * @return bool
+     * Vérifie si la chaîne ne contient que des lettres (Compatible UTF-8/Accents).
+     * Remplace ctype_alpha qui échoue sur "Hélène".
      */
-    public static function isAlpha(string $str) : bool
+    public static function isAlpha(string $str): bool
     {
-        return ctype_alpha($str);
+        // \p{L} match n'importe quelle lettre unicode, /u active le mode UTF-8
+        return (bool)preg_match('/^[\p{L}]+$/u', $str);
     }
 
     /**
-     * Checks if variable of alphanumeric
-     * @param string $str
-     * @return bool
+     * Vérifie si la chaîne est alphanumérique (Lettres + Chiffres, UTF-8).
      */
-    public static function isAlphaNumeric(string $str) : bool
+    public static function isAlphaNumeric(string $str): bool
     {
-        return ctype_alnum($str);
+        // \p{L} pour lettres, \p{N} pour chiffres
+        return (bool)preg_match('/^[\p{L}\p{N}]+$/u', $str);
     }
 
     /**
-     * Function pour vérifier la longueur minimal d'un texte
-     * @param string $str
-     * @param int $size
-     * @internal param string $getPost
-     * @return bool
+     * Vérifie la longueur minimale (en caractères, pas en octets).
      */
     public static function isMinString(string $str, int $size): bool
     {
-        return strlen($str) < $size;
+        return mb_strlen($str, 'UTF-8') < $size;
     }
 
     /**
-     * Function pour vérifier la longueur maximal d'un texte
-     * @param string $str
-     * @param int $size
-     * @internal param string $getPost
-     * @return bool
+     * Vérifie la longueur maximale (en caractères).
      */
     public static function isMaxString(string $str, int $size): bool
     {
-        return strlen($str) > $size;
-    }
-    
-    /**
-     * Join function for get Alpha string
-     *
-     * @see filter_escapeHtml::trim
-     * @see filter_escapeHtml::isAlpha
-     * @see filter_escapeHtml::isMaxString
-     *
-     * @param string $str
-     * @param int $lg_max
-     * @return string
-     */
-    public static function isAlphaMax(string $str,int $lg_max): string
-    {
-        return self::isAlpha(trim($str)) . self::isMaxString($str,$lg_max);
+        return mb_strlen($str, 'UTF-8') > $size;
     }
 
     /**
-     * Join function for get Alpha Numéric string
-     *
-     * @see filter_escapeHtml::trim
-     * @see filter_escapeHtml::isAlphaNumeric
-     * @see filter_escapeHtml::isMaxString
-     *
-     * @param string $str
-     * @param int $lg_max
-     * @return string
+     * Vérifie si la chaîne est Alpha ET respecte la longueur max.
+     * Note : Retourne un booléen strict (l'ancienne version retournait une concaténation "11").
      */
-    public static function isAlphaNumericMax(string $str,int $lg_max): string
+    public static function isAlphaMax(string $str, int $lg_max): bool
     {
-        return self::isAlphaNumeric(trim($str)) . self::isMaxString($str,$lg_max);
+        $clean = trim($str);
+        return self::isAlpha($clean) && !self::isMaxString($clean, $lg_max);
     }
 
     /**
-     * Join function for get Intéger
-     *
-     * @see filter_escapeHtml::trim
-     * @see filter_escapeHtml::isNumeric
-     * @see filter_escapeHtml::isMaxString
-     *
-     * @param string $str
-     * @param int $lg_max
-     * @return string
+     * Vérifie si la chaîne est AlphaNumérique ET respecte la longueur max.
      */
-    public static function isNumericClean(string $str,int $lg_max): string
+    public static function isAlphaNumericMax(string $str, int $lg_max): bool
     {
-        return MathTool::isNumeric(trim($str)) . self::isMaxString($str,$lg_max);
+        $clean = trim($str);
+        return self::isAlphaNumeric($clean) && !self::isMaxString($clean, $lg_max);
     }
 
     /**
-     * Renvoi une chaine en majuscule en tenant compte de l'encodage
-     *
-     * @param string $str
-     * @return string
+     * Vérifie si la chaîne est Numérique ET respecte la longueur max.
+     */
+    public static function isNumericClean(string $str, int $lg_max): bool
+    {
+        $clean = trim($str);
+        // Utilisation de MathTool si disponible, sinon is_numeric natif
+        $isNumeric = class_exists(MathTool::class) ? MathTool::isNumeric($clean) : is_numeric($clean);
+
+        return $isNumeric && !self::isMaxString($clean, $lg_max);
+    }
+
+    /**
+     * Convertit en majuscules (Support UTF-8 natif).
      */
     public static function strtoupper(string $str): string
     {
-        if (function_exists('mb_strtoupper') && function_exists('mb_detect_encoding')) {
-            if (mb_detect_encoding($str,"utf-8") == "utf-8") {
-                $str = mb_strtoupper($str,'utf-8');
-            }
-            elseif (mb_detect_encoding($str, "ISO-8859-1")) {
-                $str = mb_strtoupper($str, "ISO-8859-1");
-            }
-            else {
-                $str = strtoupper($str);
-            }
-        }
-        else {
-            $str = strtoupper($str);
-        }
-        return $str;
+        return mb_strtoupper($str, 'UTF-8');
     }
 
     /**
-     * Renvoi une chaine en minuscule en tenant compte de l'encodage
-     *
-     * @param string $str
-     * @return string
+     * Convertit en minuscules (Support UTF-8 natif).
      */
     public static function strtolower(string $str): string
     {
-        if (function_exists('mb_strtolower') && function_exists('mb_detect_encoding')) {
-            if (mb_detect_encoding($str,"UTF-8") == "UTF-8") {
-                $str = mb_strtolower($str,'UTF-8');
-            }
-            elseif(mb_detect_encoding($str, "ISO-8859-1")) {
-                $str = mb_strtolower($str,'ISO-8859-1');
-            }
-            else {
-                $str = strtolower($str);
-            }
-        }
-        else {
-            $str = strtolower($str);
-        }
-        return $str;
+        return mb_strtolower($str, 'UTF-8');
     }
-    
+
     /**
-     * Convert first letters string in Uppercase
-     *
-     * @param string $str
-     * @return string
+     * Met la première lettre en majuscule (Support UTF-8).
      */
     public static function ucFirst(string $str): string
     {
-        return self::strtoupper(substr($str,0,1)).substr($str,1);
+        if ($str === '') return '';
+
+        $firstChar = mb_substr($str, 0, 1, 'UTF-8');
+        $rest = mb_substr($str, 1, null, 'UTF-8');
+
+        return mb_strtoupper($firstChar, 'UTF-8') . $rest;
     }
-    
+
     /**
-     * truncate string with clean delimiter
-     * Tronque une chaîne de caractères sans couper au milieu d'un mot
-     * @param string $str
-     * @param int $lg_max (length max)
-     * @param string $delimiter (delimiter ...)
+     * Tronque une chaîne sans couper les mots.
+     *
+     * @param string $str La chaîne à couper.
+     * @param int $lg_max Longueur maximale désirée.
+     * @param string $delimiter Délimiteur à ajouter (ex: '...').
      * @return string
      */
-    public static function truncate(string $str, int $lg_max, string $delimiter) : string
+    public static function truncate(string $str, int $lg_max, string $delimiter = '...'): string
     {
-        if(self::isMaxString($str,$lg_max)){
-            $str = substr($str, 0, $lg_max);
-            $last_space = strrpos($str, " ");
-            $str = substr($str, 0, $last_space).$delimiter;
+        // Si la chaîne est plus courte que la limite, on la retourne telle quelle
+        if (mb_strlen($str, 'UTF-8') <= $lg_max) {
+            return $str;
         }
-        return $str;
+
+        // On coupe d'abord à la longueur max
+        $cut = mb_substr($str, 0, $lg_max, 'UTF-8');
+
+        // On cherche le dernier espace pour ne pas couper un mot en deux
+        $lastSpace = mb_strrpos($cut, ' ', 0, 'UTF-8');
+
+        // Si on trouve un espace, on coupe là. Sinon on garde la coupure brute.
+        if ($lastSpace !== false) {
+            $cut = mb_substr($cut, 0, $lastSpace, 'UTF-8');
+        }
+
+        return $cut . $delimiter;
     }
 }

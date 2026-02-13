@@ -1,106 +1,141 @@
 <?php
+
+# -- BEGIN LICENSE BLOCK ----------------------------------
+# This file is part of Mage Pattern.
+# Copyright (C) 2012 - 2026 Gerits Aurelien
+# -- END LICENSE BLOCK ------------------------------------
+
 namespace Magepattern\Component\HTTP;
 
+/**
+ * use Magepattern\Component\HTTP\Request;
+ *
+ * if (Request::isMethod('POST')) {
+ *
+ * if (Request::isPost('token_csrf')) {
+ * // Traitement...
+ * }
+ *
+ * // Si c'est de l'Ajax, on répond en JSON
+ * if (Request::isAjax()) {
+ * header('Content-Type: application/json');
+ * echo json_encode(['status' => 'success']);
+ * exit;
+ * }
+ * }
+ */
 class Request
 {
     /**
-     * @param string $method
-     * @return bool
+     * Vérifie la méthode HTTP utilisée (GET, POST, PUT, DELETE...).
+     * Insensible à la casse.
      */
-    public static function isMethod(string $method):bool
+    public static function isMethod(string $method): bool
     {
-        return $_SERVER['REQUEST_METHOD'] === $method;
+        $currentMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        return strtoupper($currentMethod) === strtoupper($method);
     }
 
     /**
-     * @param string $key
-     * @param string $glob
-     * @return bool
+     * Vérifie si la requête est sécurisée (HTTPS).
      */
-    private static function issetGlobalKey(string $key,string $glob):bool
+    public static function isSecure(): bool
     {
-        $input_type = match($glob) {
-            'get' => INPUT_GET,
-            'post' => INPUT_POST,
-            'server' => INPUT_SERVER,
-            'cookie' => INPUT_COOKIE,
-            default => null
-        };
-        if(function_exists('filter_has_var') && $input_type !== null) return filter_has_var($input_type,$key);
-
-        return match($glob) {
-            'get' => isset($_GET[$key]),
-            'post' => isset($_POST[$key]),
-            'request' => isset($_REQUEST[$key]),
-            'session' => isset($_SESSION[$key]),
-            'server' => isset($_SERVER[$key]),
-            'cookie' => isset($_COOKIE[$key])
-        };
+        // Vérification standard HTTPS + Compatibilité Load Balancer (X-Forwarded-Proto)
+        return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || ($_SERVER['SERVER_PORT'] ?? 0) === 443
+            || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
     }
 
     /**
-     * Checks if variable of GET type exists
-     *
-     * @param string $key
-     * @return bool
+     * Vérifie si la requête est une requête AJAX (XMLHttpRequest).
+     * Note: De plus en plus remplacé par Fetch API, mais standard pour jQuery/Axios.
+     */
+    public static function isAjax(): bool
+    {
+        return isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+    }
+
+    /**
+     * Cœur de la vérification.
+     * Utilise array_key_exists pour être sûr que la clé existe même si la valeur est NULL.
+     */
+    private static function hasKey(string $key, string $source): bool
+    {
+        // On utilise match pour sélectionner le bon tableau
+        // Note: $_REQUEST contient GET, POST et COOKIE par défaut
+        $array = match ($source) {
+            'get'     => $_GET,
+            'post'    => $_POST,
+            'request' => $_REQUEST,
+            'server'  => $_SERVER,
+            'cookie'  => $_COOKIE,
+            'session' => $_SESSION ?? [], // Session peut ne pas être démarrée
+            'files'   => $_FILES,
+            default   => []
+        };
+
+        return array_key_exists($key, $array);
+    }
+
+    /**
+     * Vérifie l'existence d'une clé dans $_GET
      */
     public static function isGet(string $key): bool
     {
-        return self::issetGlobalKey($key,'get');
+        return self::hasKey($key, 'get');
     }
 
     /**
-     * Checks if variable of POST type exists
-     *
-     * @param string $key
-     * @return bool
+     * Vérifie l'existence d'une clé dans $_POST
      */
     public static function isPost(string $key): bool
     {
-        return self::issetGlobalKey($key,'post');
+        return self::hasKey($key, 'post');
     }
 
     /**
-     * Checks if variable of REQUEST type exists
-     *
-     * @param string $key
-     * @return bool
+     * Vérifie l'existence d'une clé dans $_REQUEST
      */
     public static function isRequest(string $key): bool
     {
-        return self::issetGlobalKey($key,'request');
+        return self::hasKey($key, 'request');
     }
 
     /**
-     * Checks if variable of SESSION type exists
-     *
-     * @param string $key
-     * @return bool
+     * Vérifie l'existence d'une clé dans $_SESSION
      */
     public static function isSession(string $key): bool
     {
-        return self::issetGlobalKey($key,'session');
+        // Sécurité : on vérifie si la session est active avant de lire
+        if (session_status() === PHP_SESSION_NONE) {
+            return false;
+        }
+        return self::hasKey($key, 'session');
     }
 
     /**
-     * Checks if variable of SERVER type exists
-     *
-     * @param string $key
-     * @return bool
+     * Vérifie l'existence d'une clé dans $_SERVER
      */
     public static function isServer(string $key): bool
     {
-        return self::issetGlobalKey($key,'server');
+        return self::hasKey($key, 'server');
     }
 
     /**
-     * Checks if variable of COOKIE type exists
-     *
-     * @param string $key
-     * @return bool
+     * Vérifie l'existence d'une clé dans $_COOKIE
      */
     public static function isCookie(string $key): bool
     {
-        return self::issetGlobalKey($key,'cookie');
+        return self::hasKey($key, 'cookie');
+    }
+
+    /**
+     * Vérifie l'existence d'un fichier uploadé
+     */
+    public static function isFile(string $key): bool
+    {
+        return self::hasKey($key, 'files');
     }
 }

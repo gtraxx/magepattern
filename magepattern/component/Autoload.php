@@ -2,9 +2,9 @@
 /*
 # -- BEGIN LICENSE BLOCK ----------------------------------
 #
-# This file is part of MAGIX CMS.
-# MAGIX CMS, The content management system optimized for users
-# Copyright (C) 2008 - 2021 magix-cms.com <support@magix-cms.com>
+# This file is part of Mage Pattern.
+# The toolkit PHP for developer
+# Copyright (C) 2008 - 2026 magix-cms.com <support@magix-cms.com>
 #
 # OFFICIAL TEAM :
 #
@@ -158,9 +158,10 @@ class Autoload {
             // replace the namespace prefix with the base directory,
             // replace namespace separators with directory separators
             // in the relative class name, append with .php
-            $file = $base_dir
+            /*$file = $base_dir
                 . str_replace('\\', '/', $relative_class)
-                . '.php';
+                . '.php';*/
+            $file = $base_dir . str_replace('\\', DIRECTORY_SEPARATOR, $relative_class) . '.php';
 
             // if the mapped file exists, require it
             if ($this->requireFile($file)) {
@@ -179,10 +180,19 @@ class Autoload {
      * @param string $file The file to require.
      * @return bool True if the file exists, false if not.
      */
-    protected function requireFile(string $file): bool
+    /*protected function requireFile(string $file): bool
     {
         if (file_exists($file) && !in_array($file, $this->registered)) {
             require $file;
+            return true;
+        }
+        return false;
+    }*/
+    protected function requireFile(string $file): bool
+    {
+        if (file_exists($file) && !isset($this->registered[$file])) {
+            require $file;
+            $this->registered[$file] = true; // Stocker en clé est plus rapide qu'une recherche in_array
             return true;
         }
         return false;
