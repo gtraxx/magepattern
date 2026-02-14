@@ -19,13 +19,17 @@ use Magepattern\Component\HTTP\Request,
     Magepattern\Component\Tool\RSATool,
     Magepattern\Component\File\Finder,
     Magepattern\Component\Debug\Logger,
-    Magepattern\Component\Database\Layer;
+    Magepattern\Component\Database\Layer,
+    Magepattern\Component\XML\XMLReader,
+    Magepattern\Component\Tool\PathTool,
+    Magepattern\Component\Tool\EscapeTool,
+    Magepattern\Component\Tool\LocalizationTool;
 
 //print $_GET['test_get'];
-print Url::getUrl();
+print Url::current();
 $test = '';
 if(Request::isGet('test')) $test = FormTool::simpleClean($_GET['test']);//
-print $test;
+//print $test;
 //if (http_request::isGet('id')) $this->id = form_inputEscape::numeric($_GET['id']);
 print '<br />';
 print_r(Finder::dirFilterIterator('test',['jpeg']));
@@ -120,10 +124,10 @@ if (is_string($json)) {
     echo $json;
 }
 
-//$url = "test avec éàç";
-//$cleanedUrl = URL::clean($url);
+$url = "test avec éàç";
+$cleanedUrl = URL::clean($url);
 
-//echo "URL nettoyée : " . $cleanedUrl;
+echo "URL nettoyée : " . $cleanedUrl;
 print '<br />';
 print URL::clean(
     'truc machin.01&machin=truc',
@@ -164,4 +168,40 @@ $archiveDb = new Layer([
 
 $users = $mainDb->fetchAll("SELECT * FROM users");
 $archiveDb->insert("INSERT INTO logs ...", $users);*/
+print '<br />';
+$xml = '<?xml version="1.0"?>
+        <user>
+            <id>10</id>
+            <name>Aurelien</name>
+            <role>Admin</role>
+        </user>';
+
+$data = XMLReader::toArray($xml);
+echo $data['name']; // Affiche: Aurelien
+
+/*$data = XMLReader::fromFile('flux_actualites.xml');
+foreach ($data['item'] as $item) {
+    echo $item['title'];
+}*/
+print PathTool::basePath();
+print '<br />';
+$input = "C\\'est l\\'été"; // C\'est l\'été
+echo EscapeTool::cleanQuote($input);
+print '<br />';
+$nom = "Hélène & Garçon";
+echo EscapeTool::decode_utf8($nom);
+
+
+
+// Récupérer tous les pays en français
+$mesPaysFr = [
+    "FR" => "France",
+    "BE" => "Belgique",
+    "CA" => "Canada"
+];
+
+// Injection
+LocalizationTool::setCountries($mesPaysFr, 'fr');
+$listeComplete = LocalizationTool::getCountries('fr');
+print_r($listeComplete);
 ?>

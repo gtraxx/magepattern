@@ -1,218 +1,222 @@
 <?php
+
 namespace Magepattern\Component\HTTP;
-use Magepattern\Component\Tool\EscapeTool,
-    Magepattern\Component\Tool\StringTool,
-    Magepattern\Component\Debug\Logger;
+
+use Magepattern\Component\Tool\EscapeTool;
+use Magepattern\Component\Tool\StringTool;
+use Magepattern\Component\Debug\Logger;
+use Transliterator;
+use Throwable;
 
 class Url
 {
     /**
-     * @var array $chararcters
+     * Map de fallback si l'extension Intl n'est pas disponible.
      */
-    private static array $chararcters = ["¥" => "Y", "µ" => "u", "À" => "A", "Á" => "A", "Â" => "A", "Ã" => "A", "Ä" => "A", "Å" => "A",
+    private const TRANSLIT_MAP = [
+        "¥" => "Y", "µ" => "u", "À" => "A", "Á" => "A", "Â" => "A", "Ã" => "A", "Ä" => "A", "Å" => "A",
         "Æ" => "A", "Ç" => "C", "È" => "E", "É" => "E", "Ê" => "E", "Ë" => "E", "Ì" => "I", "Í" => "I",
         "Î" => "I", "Ï" => "I", "Ð" => "D", "Ñ" => "N", "Ò" => "O", "Ó" => "O", "Ô" => "O", "Õ" => "O",
         "Ö" => "O", "Ø" => "O", "Ù" => "U", "Ú" => "U", "Û" => "U", "Ü" => "U", "Ý" => "Y", "ß" => "s",
         "à" => "a", "á" => "a", "â" => "a", "ã" => "a", "ä" => "a", "å" => "a", "æ" => "a", "ç" => "c",
         "è" => "e", "é" => "e", "ê" => "e", "ë" => "e", "ì" => "i", "í" => "i", "î" => "i", "ï" => "i",
         "ð" => "o", "ñ" => "n", "ò" => "o", "ó" => "o", "ô" => "o", "õ" => "o", "ö" => "o", "ø" => "o",
-        "ù" => "u", "ú" => "u", "û" => "u", "ü" => "u", "ý" => "y", "ÿ" => "y"];
+        "ù" => "u", "ú" => "u", "û" => "u", "ü" => "u", "ý" => "y", "ÿ" => "y"
+    ];
 
     /**
-     * Remove host in URL
-     * Removes host part in URL
-     * @param string $url
-     * @internal param string $str URL to transform
-     * @return string
+     * Supprime le protocole et le domaine pour ne garder que le chemin.
+     * Ex: https://site.com/blog/article -> /blog/article
      */
     public static function stripHostURL(string $url): string
     {
-        return preg_replace('|^[a-z]{3,}://.*?(/.*$)|','$1',$url);
+        $path = parse_url($url, PHP_URL_PATH);
+        $query = parse_url($url, PHP_URL_QUERY);
+
+        $result = $path ?? '';
+        if ($query) {
+            $result .= '?' . $query;
+        }
+
+        return $result ?: $url;
     }
 
     /**
-     * @get the full url of page
-     * @param bool $requestUri
-     * @return string
+     * Récupère l'URL complète actuelle.
+     * Gère correctement le HTTPS et les proxies.
+     */
+    public static function current(bool $withQueryString = true): string
+    {
+        // Détection robuste du HTTPS (compatible Load Balancers/Proxies)
+        $isHttps = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+            || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+
+        $protocol = $isHttps ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+        $url = $protocol . '://' . $host;
+
+        if ($withQueryString && isset($_SERVER['REQUEST_URI'])) {
+            $url .= $_SERVER['REQUEST_URI'];
+        } else {
+            $url .= $_SERVER['SCRIPT_NAME'] ?? '';
+        }
+
+        return $url;
+    }
+
+    /**
+     * Alias compatible avec votre ancien code
+     * @deprecated Utiliser Url::current(true)
      */
     public static function getUrl(bool $requestUri = false): string
     {
-        /*** check for https ***/
-        $protocol = isset($_SERVER['HTTPS']) == 'on' ? 'https' : 'http';
-        $source = '://'.$_SERVER['HTTP_HOST'];
-        if($requestUri){
-            /*** return the full address ***/
-            $source .= $_SERVER['REQUEST_URI'];
-        }
-        return $protocol.$source;
+        return self::current($requestUri);
     }
 
     /**
-     * @return string
+     * Récupère uniquement le nom du fichier exécuté (ex: index.php).
      */
-    public static function getFiles(): string
+    public static function getFilename(): string
     {
-        return substr($_SERVER["SCRIPT_NAME"],strrpos($_SERVER["SCRIPT_NAME"],"/")+1);
+        return basename($_SERVER["SCRIPT_NAME"] ?? '');
     }
 
     /**
-     * Converti une chaine en URL valide
-     * @static
-     * @param string $str
-     * @param array $option
-     * @return string
-     * @example:
-    URL::clean(
-    '/public/test/truc-machin01/aussi/version-1.0/',
-    array('dot'=>'display','ampersand'=>'strict','cspec'=>array('[\/]'),'rspec'=>array(''))
-    );
+     * Génère un "Slug" propre pour les URLs.
+     * Nettoie les accents, les caractères spéciaux et les espaces.
+     * * @param string $str La chaîne à nettoyer
+     * @param array $option Options: ['dot' => 'none', 'ampersand' => 'none', 'cspec' => [], 'rspec' => []]
      */
-    public static function clean(string $str, array $option = []) : string
+    public static function clean(string $str, array $option = []): string
     {
-        $default = ['dot' => 'none', 'ampersand' => 'none', 'cspec' => [], 'rspec' => []];
-        $option = array_merge($default, $option);
+        $config = array_merge([
+            'dot'       => 'none',
+            'ampersand' => 'none',
+            'cspec'     => [],
+            'rspec'     => []
+        ], $option);
 
-        // Validation des options
-        /*if (!is_array($option)) {
-            //echo "Validation failed: options is not an array\n";
-            return ''; // Ou lancez une exception
-        }*/
-        if (isset($option['dot']) && !is_bool($option['dot']) && !is_string($option['dot'])) {
-            //echo "Validation failed: dot is not a boolean or string\n";
-            return ''; // Ou lancez une exception
-        }
-        if (isset($option['ampersand']) && !is_string($option['ampersand'])) {
-            //echo "Validation failed: ampersand is not a string\n";
-            return ''; // Ou lancez une exception
-        }
-        if (isset($option['cspec']) && !is_array($option['cspec'])) {
-            //echo "Validation failed: cspec is not an array\n";
-            return ''; // Ou lancez une exception
-        }
-        if (isset($option['rspec']) && !is_array($option['rspec'])) {
-            //echo "Validation failed: rspec is not an array\n";
-            return ''; // Ou lancez une exception
-        }
-        //echo "Après Options: ";
-        //var_dump($str);
-        // Gestion des accents et des caractères non latins
-        if (class_exists('Transliterator')) {
-            try {
-                $transliterator = \Transliterator::createFromRules(':: Any-Latin; :: Latin-ASCII; :: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;', \Transliterator::FORWARD);
-                $str = $transliterator->transliterate($str);
-            } catch (\IntlException $e) {
-                // Gestion spécifique des exceptions IntlException
-                $str = strtr($str, self::$chararcters);
-                Logger::getInstance()->log("Transliterator (IntlException): " . $e->getMessage(), 'php', 'error', Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
-            } catch (\Exception $e) {
-                // Gestion des autres exceptions
-                $str = strtr($str, self::$chararcters);
-                Logger::getInstance()->log("Transliterator (Exception): " . $e->getMessage(), 'php', 'error', Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
-            }
-        } else {
-            $str = strtr($str, self::$chararcters);
-        }
+        // 1. Transliteraion (Accents -> ASCII)
+        $str = self::transliterate($str);
 
-        $str = trim($str);
-
-        if(!empty($option)){
-            if(array_key_exists('dot', $option) && $option['dot'] == 'none') {
-                $str = str_replace('.','',$str);
-            }
-            if (array_key_exists('ampersand', $option) && is_string($option['ampersand'])) {
-                $str = match ($option['ampersand']) {
-                    'strict' => str_replace('&', '&amp;', $str), //htmlspecialchars($str, ENT_QUOTES | ENT_HTML5),// replace & => $amp (w3c convert)
-                    'none' => str_replace('&', '', $str), // replace & => ''
-                    default => str_replace('&', $option['ampersand'], $str) // replace & => $option['ampersand'] value
-                };
-            }
-        }
-        else {
-            // replace & => $amp (w3c convert)
-            $str = str_replace('&','&amp;',$str);
-            $str = str_replace('.','',$str);
-        }
-
-        // Convert special characters
+        // 2. Nettoyage initial technique
         $str = EscapeTool::cleanQuote($str);
 
-        $cSpec = ['@["’|,+\'\\/[:blank:]\s]+@i', '@[?#!:()\\[\\]{}\@$%]+@i'];//['@["’|,+\'\\/[:blank:]\s]+@i', '@[?#!:()\\[\\]{}\@.$%]+@i']
-        $rSpec = ['-', ''];
+        // 3. Définition des Regex de nettoyage (On nettoie AVANT de transformer l'ampersand)
+        $patterns = ['@["’|,+\'\\/[:blank:]\s]+@i', '@[?#!:()\\[\\]{}\@$%]+@i'];
+        $replacements = ['-', ''];
 
-        if (is_array($option)) {
-            if (array_key_exists('cspec', $option) && is_array($option['cspec']) && !empty($option['cspec'])) $cSpec = array_merge($cSpec, $option['cspec']);
-            if (array_key_exists('rspec', $option) && is_array($option['rspec']) && !empty($option['rspec'])) $rSpec = array_merge($rSpec, $option['rspec']);
+        if (!empty($config['cspec'])) {
+            $patterns = array_merge($patterns, $config['cspec']);
+        }
+        if (!empty($config['rspec'])) {
+            $replacements = array_merge($replacements, $config['rspec']);
         }
 
-        if (preg_replace($cSpec, $rSpec, $str) === NULL) {
-            // Gestion de l'erreur
-            Logger::getInstance()->log("preg_replace error: " . preg_last_error(), 'php', 'error', Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
-            $str = ""; // Ou une autre valeur par défaut
+        try {
+            $str = preg_replace($patterns, $replacements, $str);
+        } catch (Throwable $e) {
+            Logger::getInstance()->log($e, 'php', 'error');
+            return '';
         }
-        $str = preg_replace($cSpec, $rSpec, $str);
-        $str = preg_replace("/[-]+/", '-', $str);
-        $str = rtrim($str, "-");
+
+        // 4. Gestion des points (.)
+        if ($config['dot'] === 'none') {
+            $str = str_replace('.', '', $str);
+        }
+
+        // 5. Gestion des esperluettes (&) -> APRES le nettoyage regex
+        $str = match ($config['ampersand']) {
+            'strict' => str_replace('&', '&amp;', $str),
+            'none'   => str_replace('&', '-', $str),
+            default  => str_replace('&', (string)$config['ampersand'], $str)
+        };
+
+        // 6. Nettoyage final des tirets
+        $str = preg_replace('/-{2,}/', '-', $str);
+        $str = trim($str, '-');
+
+        // 7. Sortie
         $str = EscapeTool::decode_utf8($str);
-
         return StringTool::strtolower($str);
     }
 
     /**
-     * Short Clean for tag or special url
-     * @param string $str
-     * @return string
+     * Méthode interne pour gérer la translitération proprement
+     */
+    private static function transliterate(string $str): string
+    {
+        // Essai 1 : Extension PHP Intl (Le plus robuste)
+        if (class_exists('Transliterator')) {
+            try {
+                $trans = Transliterator::createFromRules(
+                    ':: Any-Latin; :: Latin-ASCII; :: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;',
+                    Transliterator::FORWARD
+                );
+                if ($trans) {
+                    return $trans->transliterate($str);
+                }
+            } catch (Throwable $e) {
+                Logger::getInstance()->log($e, 'php', 'warning');
+            }
+        }
+
+        // Essai 2 : Fallback tableau statique (Manuel)
+        return strtr($str, self::TRANSLIT_MAP);
+    }
+
+    /**
+     * Version légère de clean pour des tags simples.
      */
     public static function shortClean(string $str): string
     {
-        $str = strtr("$str", self::$chararcters);
+        $str = self::transliterate($str);
         $str = trim($str);
-        /* stripcslashes backslash */
         $str = EscapeTool::cleanQuote($str);
-        /* replace blank and special caractère */
-        $cSpec = ["@'@i",'[\?]','[\#]','[\@]','[\,]','[\!]','[\:]','[\(]','[\)]'];
-        $rSpec = [" "," "," "," "," "," "," "," "," "];
-        /* Removes the indent if end of string */
-        $str = rtrim(preg_replace($cSpec,$rSpec,$str),"");
-        /* Convert UTF8 encode */
+
+        // Regex simplifiée : remplace les caractères spéciaux par des espaces, puis trim
+        $str = preg_replace("/['?#@,!:()]/", ' ', $str);
+        $str = preg_replace('/\s+/', ' ', $str); // Réduit les espaces multiples
+
         $str = EscapeTool::decode_utf8($str);
-        /* Convert lower case */
-        return StringTool::strtolower($str);
+        return StringTool::strtolower(trim($str));
     }
 
     /**
-     * @deprecated Use getUrl(true) instead
-     * @return string
+     * Résout une URI relative par rapport à l'URL de base actuelle.
+     * Remplace votre ancienne méthode getUri() qui contenait du code mort.
+     * * @param string|null $path Chemin relatif (ex: 'css/style.css' ou '/contact')
+     * @return string URL absolue
      */
-    #[Deprecated] public static function currentUri(): string
+    public static function resolve(?string $path = null): string
     {
-        return self::getUrl(true);
-    }
+        $base = self::current(false); // Récupère http://domain.com/script.php
 
-    /**
-     * @return string
-     */
-    public static function getUri(): string
-    {
-        $baseUri = self::getUrl(true);
-        $uri = trim($baseUri);
-
-        // absolute URL?
-        if (str_starts_with($uri, 'http')) return $uri;
-
-        // empty URI
-        if (!$uri) return $baseUri;
-
-        // only an anchor
-        if ('#' === $uri[0] || '?' === $uri[0]) {
-            // remove the query string from the current uri
-            if (false !== $pos = strpos($baseUri, $uri[0])) $baseUri = substr($baseUri, 0, $pos);
-            return $baseUri.$uri;
+        // Si aucun path, on renvoie l'URL courante complète
+        if ($path === null) {
+            return self::current(true);
         }
 
-        // absolute path
-        if ('/' === $uri[0]) return preg_replace('#^(.*?//[^/]+)(?:/.*)?$#', '$1', $baseUri).$uri;
+        // Si c'est déjà une URL absolue, on la retourne
+        if (str_starts_with($path, 'http')) {
+            return $path;
+        }
 
-        // relative path
-        return substr($baseUri, 0, strrpos($baseUri, '/') + 1).$uri;
+        // Gestion de la racine du domaine
+        $scheme = parse_url($base, PHP_URL_SCHEME) . '://';
+        $host = parse_url($base, PHP_URL_HOST);
+
+        // Si le path commence par /, c'est relatif à la racine du domaine
+        if (str_starts_with($path, '/')) {
+            return $scheme . $host . $path;
+        }
+
+        // Sinon, c'est relatif au dossier courant
+        // On enlève le nom du script (index.php) pour avoir le dossier
+        $folder = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+
+        return $scheme . $host . $folder . '/' . $path;
     }
 }

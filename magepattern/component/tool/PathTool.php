@@ -27,33 +27,28 @@ class PathTool
     public static function basePath(array $extendSearch = []): string|false
     {
         try {
-            // Dossier actuel de ce fichier
             $currentDir = __DIR__;
 
-            // Segments à supprimer (insensible à la casse pour plus de flexibilité)
-            $search = array_merge(['Component', 'Tool'], $extendSearch);
+            // On ajoute 'lib' et 'vendor' aux dossiers techniques par défaut
+            $default = ['component', 'tool', 'filter', 'lib', 'vendor', 'src', 'magepattern'];
+            $search = array_map('strtolower', array_merge($extendSearch, $default));
 
-            // Transformation du chemin en tableau de segments
             $segments = explode(DIRECTORY_SEPARATOR, $currentDir);
+            $segments = array_values(array_filter($segments));
 
-            // On filtre les segments qui correspondent à notre recherche
-            $cleanSegments = array_filter($segments, function($segment) use ($search) {
-                return !in_array($segment, $search) && $segment !== '';
-            });
-
-            // Reconstruction du chemin
-            $path = DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $cleanSegments) . DIRECTORY_SEPARATOR;
-
-            // Nettoyage final des doubles séparateurs (cas Windows/Linux mixtes)
-            $finalPath = str_replace(DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $path);
-
-            if (empty($finalPath) || $finalPath === DIRECTORY_SEPARATOR) {
-                throw new Exception('PathTool Error: Calculated base path is invalid or empty.');
+            // Remontée itérative
+            while (!empty($segments) && in_array(strtolower(end($segments)), $search)) {
+                array_pop($segments);
             }
 
-            return $finalPath;
-        } catch (Throwable $e) {
-            Logger::getInstance()->log($e, "php", "error");
+            $prefix = (DIRECTORY_SEPARATOR === '/') ? DIRECTORY_SEPARATOR : '';
+            $path = $prefix . implode(DIRECTORY_SEPARATOR, $segments) . DIRECTORY_SEPARATOR;
+
+            return str_replace(DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $path);
+
+        } catch (\Throwable $e) {
+            // Note: Assurez-vous que Logger est chargé avant d'appeler basePath
+            // ou utilisez error_log() en fallback
             return false;
         }
     }
