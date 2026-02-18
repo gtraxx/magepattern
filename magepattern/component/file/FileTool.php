@@ -5,15 +5,14 @@
 # Copyright (C) 2012 - 2026 Gerits Aurelien
 # -- END LICENSE BLOCK ------------------------------------
 
-namespace Magepattern\Component\Tool;
+namespace Magepattern\Component\File;
 
-use Magepattern\Component\Debug\Logger;
 use FilesystemIterator;
+use Magepattern\Component\Debug\Logger;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use Throwable;
 use RuntimeException;
-use InvalidArgumentException;
+use Throwable;
 
 /**
  * Class FileTool

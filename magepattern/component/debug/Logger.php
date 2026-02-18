@@ -33,8 +33,8 @@
 
 namespace Magepattern\Component\Debug;
 
+use Magepattern\Component\File\FileTool;
 use Magepattern\Component\Tool\PathTool;
-use Magepattern\Component\Tool\FileTool;
 
 /**
  * Class Logger

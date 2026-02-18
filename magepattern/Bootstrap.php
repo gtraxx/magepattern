@@ -132,7 +132,7 @@ final class Bootstrap
                 'Database' => $baseComponentDir . '/database',
                 'Debug'    => $baseComponentDir . '/debug',
                 'File'     => $baseComponentDir . '/file',
-                'HTTP'     => $baseComponentDir . '/http', 
+                'HTTP'     => $baseComponentDir . '/http',
                 'Tool'     => $baseComponentDir . '/tool',
                 'XML'      => $baseComponentDir . '/xml'
             ]

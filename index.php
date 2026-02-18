@@ -17,7 +17,7 @@ use Magepattern\Component\HTTP\Request,
     Magepattern\Component\HTTP\Url,
     Magepattern\Component\HTTP\JSON,
     Magepattern\Component\Tool\RSATool,
-    Magepattern\Component\File\Finder,
+    Magepattern\Component\File\FinderTool,
     Magepattern\Component\Debug\Logger,
     Magepattern\Component\Database\Layer,
     Magepattern\Component\XML\XMLReader,
@@ -33,8 +33,8 @@ if(Request::isGet('test')) $test = FormTool::simpleClean($_GET['test']);//
 //print $test;
 //if (http_request::isGet('id')) $this->id = form_inputEscape::numeric($_GET['id']);
 print '<br />';
-print_r(Finder::dirFilterIterator('test',['jpeg']));
-print Finder::sizeDirectory(__DIR__.'/test');
+print_r(FinderTool::filterByExtension('test', ['jpeg'], true));
+print FinderTool::getSize(__DIR__.'/test');
 print '<br />';
 $tableau = [
     'a' => 1,
@@ -42,7 +42,7 @@ $tableau = [
     'e' => 3,
 ];
 
-$resultat = Finder::arrayContainsRecursive('recherche_moi', $tableau);
+$resultat = FinderTool::searchInArray('recherche_moi', $tableau);
 
 if ($resultat) {
     echo "'recherche_moi' a été trouvé dans le tableau.\n";
