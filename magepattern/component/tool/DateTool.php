@@ -195,7 +195,8 @@ class DateTool
 
         try {
             return $name !== false ? new DateTimeZone($name) : false;
-        } catch (Throwable) {
+        } catch (Throwable $t) {
+            Logger::getInstance()->log($t,"php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return false;
         }
     }

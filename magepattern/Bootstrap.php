@@ -130,11 +130,9 @@ final class Bootstrap
             'Magepattern\Component',
             [
                 'Database' => $baseComponentDir . '/database',
-                'Date'     => $baseComponentDir . '/date',
                 'Debug'    => $baseComponentDir . '/debug',
                 'File'     => $baseComponentDir . '/file',
-                'HTTP'     => $baseComponentDir . '/http',
-                //'Mail'     => $baseComponentDir . '/mail',
+                'HTTP'     => $baseComponentDir . '/http', 
                 'Tool'     => $baseComponentDir . '/tool',
                 'XML'      => $baseComponentDir . '/xml'
             ]
