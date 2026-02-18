@@ -24,7 +24,7 @@ final class Bootstrap
         'autoloader'   => __DIR__ . '/component/Autoload.php',
         // ATTENTION : SwiftMailer 5 n'est pas compatible PHP 8.
         // Il faudra envisager Symfony Mailer ou PHPMailer.
-        'swift'        => __DIR__ . '/package/Swift-5.2.1/lib/swift_required.php',
+        'mailer'       => __DIR__ . '/package/mailer/vendor/autoload.php',
         'mobiledetect' => __DIR__ . '/package/mobiledetect/Mobile_Detect.php',
         'dompdf'       => __DIR__ . '/package/dompdf/autoload.inc.php',
         'cssinliner'   => __DIR__ . '/package/cssinliner/init.php',
@@ -135,7 +135,7 @@ final class Bootstrap
                 'Debug'    => $baseComponentDir . '/debug',
                 'File'     => $baseComponentDir . '/file',
                 'HTTP'     => $baseComponentDir . '/http',
-                'Mail'     => $baseComponentDir . '/mail',
+                //'Mail'     => $baseComponentDir . '/mail',
                 'Tool'     => $baseComponentDir . '/tool',
                 'XML'      => $baseComponentDir . '/xml'
             ]

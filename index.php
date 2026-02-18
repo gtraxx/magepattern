@@ -23,7 +23,8 @@ use Magepattern\Component\HTTP\Request,
     Magepattern\Component\XML\XMLReader,
     Magepattern\Component\Tool\PathTool,
     Magepattern\Component\Tool\EscapeTool,
-    Magepattern\Component\Tool\LocalizationTool;
+    Magepattern\Component\Tool\LocalizationTool,
+    Magepattern\Component\Tool\MailTool;
 
 //print $_GET['test_get'];
 print Url::current();
@@ -113,7 +114,7 @@ $data = [
 ];
 
 $json = $jsonInstance->encode($data);
-$logger->log($json, "php", "info", Logger::LOG_MONTH, Logger::LOG_LEVEL_INFO);
+//$logger->log($json, "php", "info", Logger::LOG_MONTH, Logger::LOG_LEVEL_INFO);
 
 if (is_string($json)) {
     echo "JSON encoded data:\n";
@@ -204,4 +205,40 @@ $mesPaysFr = [
 LocalizationTool::setCountries($mesPaysFr, 'fr');
 $listeComplete = LocalizationTool::getCountries('fr');
 print_r($listeComplete);
+
+$options = [
+    "setHost" => "localhost",
+    "setPort" => 1025,
+    "setUsername" => "",
+    "setPassword" => "",
+    "setEncryption" => ""
+];
+
+// On passe 'smtp' en premier argument pour déclencher la conversion interne
+$mailTool = new MailTool('smtp', $options);
+
+// 1. Initialisation avec le DSN Mailhog
+//$mailTool = new MailTool('smtp://localhost:1025');
+
+// 2. Création du message de base
+$email = $mailTool->createMessage(
+    "Test de bienvenue",           // Sujet
+    "system@magepattern.local",    // Expéditeur
+    "no-reply@magepattern.local", // Reply-to
+    ["user@test.be" => "Aurelien"], // Destinataires [email => Nom]
+    "<h1>Succès !</h1><p>Mail intercepté par Mailhog.</p>" // HTML
+);
+
+// 3. Ajout d'une pièce jointe (si besoin)
+/*$mailTool->attachFiles($email, [
+    './uploads/docs/notice.pdf'
+]);*/
+
+// 4. Envoi
+if ($mailTool->send($email)) {
+    echo "Mail envoyé (allez voir sur http://localhost:8025)";
+} else {
+    echo "Échec de l'envoi.";
+}
+
 ?>
