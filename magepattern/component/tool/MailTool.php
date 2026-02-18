@@ -106,4 +106,64 @@ class MailTool
             return false;
         }
     }
+
+    /**
+     * Génère un mail via un template Smarty et l'envoie avec options (pièces jointes).
+     *
+     * @param string $context    Contexte Smarty (ex: 'frontend')
+     * @param string $template   Fichier .tpl
+     * @param array  $data       Variables Smarty
+     * @param string $subject    Sujet
+     * @param string $from       Email expéditeur
+     * @param array  $to         Destinataires [email => Nom]
+     * @param array  $files      [Optionnel] Liste des pièces jointes
+     * @return bool
+     *
+     * @Example :
+     *
+     * $mailer = new MailTool('smtp://localhost:1025');
+     *
+     * $mailer->sendTemplate(
+     * 'frontend',
+     * 'emails/ticket.tpl',
+     * ['event_name' => 'Concert 2026'],
+     * "Vos tickets pour le concert",
+     * "billetterie@site.be",
+     * ["client@test.be" => "Aurélien"],
+     * [
+     * '/data/pdf/ticket_A12.pdf', // Pièce jointe simple
+     * ['path' => '/data/docs/plan_acces.pdf', 'name' => 'Plan-Acces.pdf'] // Pièce jointe renommée
+     * ]
+     * );
+     */
+    public function sendTemplate(
+        string $context,
+        string $template,
+        array $data,
+        string $subject,
+        string $from,
+        array $to,
+        array $files = []
+    ): bool {
+        try {
+            // 1. Rendu HTML via Smarty
+            $smarty = SmartyTool::getInstance($context);
+            $smarty->assign($data);
+            $htmlBody = $smarty->fetch($template);
+
+            // 2. Création du message de base
+            $email = $this->createMessage($subject, $from, $from, $to, $htmlBody);
+
+            // 3. Ajout des pièces jointes si présentes
+            if (!empty($files)) {
+                $this->attachFiles($email, $files);
+            }
+
+            // 4. Envoi
+            return $this->send($email);
+
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
 }

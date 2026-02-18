@@ -241,4 +241,5 @@ if ($mailTool->send($email)) {
     echo "Échec de l'envoi.";
 }
 
+
 ?>

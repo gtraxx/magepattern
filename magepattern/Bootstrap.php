@@ -22,11 +22,10 @@ final class Bootstrap
      */
     private static array $libraries = [
         'autoloader'   => __DIR__ . '/component/Autoload.php',
-        // ATTENTION : SwiftMailer 5 n'est pas compatible PHP 8.
-        // Il faudra envisager Symfony Mailer ou PHPMailer.
+        'smarty'       => __DIR__ . '/package/smarty/vendor/autoload.php',
         'mailer'       => __DIR__ . '/package/mailer/vendor/autoload.php',
-        'mobiledetect' => __DIR__ . '/package/mobiledetect/Mobile_Detect.php',
-        'dompdf'       => __DIR__ . '/package/dompdf/autoload.inc.php',
+        'mobiledetect' => __DIR__ . '/package/mobiledetect/vendor/autoload.php',
+        'dompdf'       => __DIR__ . '/package/dompdf/vendor/autoload.php',
         'cssinliner'   => __DIR__ . '/package/cssinliner/init.php',
     ];
 
