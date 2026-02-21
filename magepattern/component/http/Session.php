@@ -91,9 +91,11 @@ class Session
                 'cookie_httponly'        => true,
                 'cookie_samesite'        => 'Lax',
                 'use_strict_mode'        => 1,
-                'use_only_cookies'       => 1,
-                'sid_length'             => 48,
-                'sid_bits_per_character' => 6,
+                'use_only_cookies'       => 1
+
+                // 👇 COMMENTÉ OU SUPPRIMÉ POUR COMPATIBILITÉ PHP 8.4+ 👇
+                // 'sid_length'             => 48,
+                // 'sid_bits_per_character' => 6,
             ];
 
             if (!session_start($options)) {
