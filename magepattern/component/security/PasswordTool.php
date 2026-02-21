@@ -41,6 +41,10 @@ class PasswordTool
     /**
      * Crée un hash sécurisé (BCrypt par défaut).
      */
+    /**
+     * @param string $password
+     * @return string
+     */
     public static function hash(string $password): string
     {
         return password_hash($password, PASSWORD_DEFAULT);
@@ -48,6 +52,11 @@ class PasswordTool
 
     /**
      * Vérifie si le mot de passe correspond au hash stocké.
+     */
+    /**
+     * @param string $password
+     * @param string $hash
+     * @return bool
      */
     public static function verify(string $password, string $hash): bool
     {
@@ -57,6 +66,10 @@ class PasswordTool
     /**
      * Vérifie si le hash doit être mis à jour (ex: changement d'algorithme serveur).
      */
+    /**
+     * @param string $hash
+     * @return bool
+     */
     public static function needsRehash(string $hash): bool
     {
         return password_needs_rehash($hash, PASSWORD_DEFAULT);
@@ -65,6 +78,11 @@ class PasswordTool
     /**
      * Génère un mot de passe aléatoire hautement sécurisé.
      * * @param int $length Longueur souhaitée (défaut: 16)
+     */
+    /**
+     * @param int $length
+     * @return string
+     * @throws \Random\RandomException
      */
     public static function generateRandom(int $length = 16): string
     {
@@ -82,6 +100,11 @@ class PasswordTool
     /**
      * Génère un jeton (token) hexadécimal unique pour les liens de réinitialisation.
      * * @param int $length Longueur de la chaîne retournée (doit être paire, défaut: 64)
+     */
+    /**
+     * @param int $length
+     * @return string
+     * @throws \Random\RandomException
      */
     public static function generateResetToken(int $length = 64): string
     {

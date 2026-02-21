@@ -50,6 +50,10 @@ class FormTool
     /**
      * Nettoyage simple : Trim + Escape HTML basique.
      */
+    /**
+     * @param string $str
+     * @return string
+     */
     public static function simpleClean(string $str): string
     {
         return trim(HTMLTool::escapeHTML($str));
@@ -57,6 +61,10 @@ class FormTool
 
     /**
      * Nettoyage extrême : Trim + Escape HTML complet/agressif.
+     */
+    /**
+     * @param string $str
+     * @return string
      */
     public static function extremeClean(string $str): string
     {
@@ -66,6 +74,10 @@ class FormTool
     /**
      * Nettoyage des balises : Trim + Strip Tags.
      */
+    /**
+     * @param string $str
+     * @return string
+     */
     public static function tagClean(string $str): string
     {
         return trim(EscapeTool::clean($str));
@@ -73,6 +85,10 @@ class FormTool
 
     /**
      * Nettoyage pour URL : Slugify + Trim.
+     */
+    /**
+     * @param string $str
+     * @return string
      */
     public static function rewriteUrl(string $str): string
     {
@@ -82,6 +98,10 @@ class FormTool
     /**
      * Nettoyage des guillemets (Quotes).
      */
+    /**
+     * @param string $str
+     * @return string
+     */
     public static function cleanQuote(string $str): string
     {
         return trim(EscapeTool::cleanQuote($str));
@@ -89,6 +109,10 @@ class FormTool
 
     /**
      * Nettoyage + Conversion en minuscules.
+     */
+    /**
+     * @param string $str
+     * @return string
      */
     public static function cleanStrtolower(string $str): string
     {
@@ -98,6 +122,12 @@ class FormTool
     /**
      * Nettoyage + Troncature de texte.
      */
+    /**
+     * @param string $str
+     * @param int $lg_max
+     * @param string $delimiter
+     * @return string
+     */
     public static function truncateClean(string $str, int $lg_max, string $delimiter): string
     {
         return trim(StringTool::truncate($str, $lg_max, $delimiter));
@@ -106,6 +136,10 @@ class FormTool
     /**
      * Ne garde que les caractères alphanumériques.
      */
+    /**
+     * @param string $str
+     * @return string
+     */
     public static function alphaNumeric(string $str): string
     {
         return trim(StringTool::isAlphaNumeric($str));
@@ -113,6 +147,10 @@ class FormTool
 
     /**
      * Ne garde que les caractères numériques.
+     */
+    /**
+     * @param string $str
+     * @return string
      */
     public static function numeric(string $str): string
     {

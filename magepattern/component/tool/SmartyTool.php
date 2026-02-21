@@ -36,6 +36,7 @@
 
 namespace Magepattern\Component\Tool;
 
+use Smarty\Exception;
 use Smarty\Smarty;
 use Magepattern\Bootstrap;
 
@@ -79,6 +80,12 @@ class SmartyTool
     /**
      * Initialisation interne d'une instance Smarty 5
      */
+    /**
+     * @param string $context
+     * @param array $config
+     * @return Smarty
+     * @throws Exception
+     */
     private static function createInstance(string $context, array $config): Smarty
     {
         // 1. Chargement de la librairie via le Bootstrap
@@ -89,7 +96,6 @@ class SmartyTool
         // Détermination de la racine par défaut (si non fournie dans $config)
         $rootDir = dirname(__DIR__, 3);
 
-        // 2. Configuration des chemins
         $templateDir = $config['template_dir'] ?? $rootDir . DIRECTORY_SEPARATOR . 'themes/default/templates';
         $compileDir  = $config['compile_dir']  ?? $rootDir . DIRECTORY_SEPARATOR . 'var/smarty/compile/' . $context;
         $cacheDir    = $config['cache_dir']    ?? $rootDir . DIRECTORY_SEPARATOR . 'var/smarty/cache/' . $context;
@@ -100,8 +106,7 @@ class SmartyTool
         $smarty->setCacheDir($cacheDir);
         $smarty->setConfigDir($configDir);
 
-        // 3. Gestion dynamique des dossiers de plugins persos (Rétrocompatibilité Smarty 5)
-        // Chargement du dossier global Magepattern en premier
+
         self::loadPluginsFromDir($smarty, $rootDir . DIRECTORY_SEPARATOR . 'magepattern/package/smarty-plugins');
 
         // Chargement des dossiers spécifiques au contexte
@@ -112,11 +117,9 @@ class SmartyTool
             }
         }
 
-        // 4. Paramètres par défaut
         $smarty->setCompileCheck($config['debug'] ?? true);
         $smarty->setEscapeHtml($config['escape_html'] ?? true); // Setter natif Smarty 5
 
-        // 5. Sécurité : Création automatique des dossiers de travail
         self::checkDirectories($compileDir, $cacheDir);
 
         return $smarty;
@@ -125,6 +128,12 @@ class SmartyTool
     /**
      * Charge dynamiquement les anciens plugins Smarty depuis un dossier.
      * Recrée le comportement de addPluginsDir() pour Smarty 5 via registerPlugin().
+     */
+    /**
+     * @param Smarty $smarty
+     * @param string $dir
+     * @return void
+     * @throws \Smarty\Exception
      */
     private static function loadPluginsFromDir(Smarty $smarty, string $dir): void
     {
@@ -159,6 +168,10 @@ class SmartyTool
 
     /**
      * Vérifie et crée les dossiers récursivement si nécessaire
+     */
+    /**
+     * @param string ...$dirs
+     * @return void
      */
     private static function checkDirectories(string ...$dirs): void
     {
