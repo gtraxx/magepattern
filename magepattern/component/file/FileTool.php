@@ -1,9 +1,37 @@
 <?php
-
+/*
 # -- BEGIN LICENSE BLOCK ----------------------------------
+#
 # This file is part of Mage Pattern.
-# Copyright (C) 2012 - 2026 Gerits Aurelien
-# -- END LICENSE BLOCK ------------------------------------
+# The toolkit PHP for developer
+# Copyright (C) 2012 - 2026 Gerits Aurelien contact[at]gerits-aurelien[dot]be
+#
+# OFFICIAL TEAM MAGE PATTERN:
+#
+#   * Gerits Aurelien (Author - Developer) contact[at]gerits-aurelien[dot]be
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Redistributions of source code must retain the above copyright notice,
+# this list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# DISCLAIMER
+*/
 
 namespace Magepattern\Component\File;
 
@@ -322,5 +350,34 @@ class FileTool
     private static function toIterable(string|iterable $input): iterable
     {
         return is_string($input) ? [$input] : $input;
+    }
+
+    /**
+     * Crée un dossier sécurisé (avec .htaccess) s'il n'existe pas.
+     * * @param string $absolutePath Le chemin absolu du dossier à sécuriser
+     * @return string Le chemin formaté
+     */
+    public static function createSecureCacheDir(string $absolutePath): string
+    {
+        $path = rtrim($absolutePath, DIRECTORY_SEPARATOR);
+
+        // 1. Création du dossier s'il n'existe pas
+        if (!is_dir($path)) {
+            mkdir($path, 0775, true);
+        }
+
+        // 2. Chemin du fichier de protection
+        $htaccessPath = $path . DIRECTORY_SEPARATOR . '.htaccess';
+
+        // 3. Création du .htaccess permanent
+        if (!file_exists($htaccessPath)) {
+            $content = "# Fichier généré automatiquement par Magepattern 3 / FileTool\n";
+            $content .= "<IfModule mod_authz_core.c>\n    Require all denied\n</IfModule>\n";
+            $content .= "<IfModule !mod_authz_core.c>\n    Order deny,allow\n    Deny from all\n</IfModule>\n";
+
+            file_put_contents($htaccessPath, $content);
+        }
+
+        return $path;
     }
 }

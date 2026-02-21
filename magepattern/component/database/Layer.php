@@ -1,4 +1,5 @@
 <?php
+/*
 # -- BEGIN LICENSE BLOCK ----------------------------------
 #
 # This file is part of Mage Pattern.
@@ -30,6 +31,7 @@
 # and/or other materials provided with the distribution.
 #
 # DISCLAIMER
+*/
 
 namespace Magepattern\Component\Database;
 
@@ -315,6 +317,17 @@ class Layer
     public function fetch(string $sql, array $execute = [], array $setOption = []): array|false
     {
         return $this->execute('fetch', $sql, $execute, $setOption);
+    }
+
+    /**
+     * @param string $sql
+     * @param array $execute
+     * @param array $setOption
+     * @return mixed
+     */
+    public function fetchColumn(string $sql, array $execute = [], array $setOption = []): mixed
+    {
+        return $this->execute('fetchColumn', $sql, $execute, $setOption);
     }
 
     /**

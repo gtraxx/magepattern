@@ -1,0 +1,147 @@
+1. Le Bannissement (Blacklist)
+Cas : Bloquer des pirates ou des spammeurs.
+// config/blacklist.php
+$banned = ['45.12.34.56', '2001:db8::/32'];
+
+// Dans votre Bootstrap
+if (IPMatcher::isListed($banned)) {
+    // On logue l'IP réelle grâce à la méthode helper
+    Logger::getInstance()->log("Ban hit: " . IPMatcher::getVisitorIp(), "security");
+    die("You are banned.");
+}
+
+
+// 1. Chargement de la liste (peut venir d'une BDD aussi)
+$blacklist = require __DIR__ . '/config/blacklist.php';
+
+// 2. Vérification immédiate
+// Notez qu'on ne passe pas l'IP en 2ème paramètre, la classe la détecte toute seule !
+if (IPMatcher::isListed($blacklist)) {
+
+    // A. On logue la tentative pour vos stats
+    $detectedIp = IPMatcher::getVisitorIp();
+    Logger::getInstance()->log("Tentative d'accès depuis IP bannie : $detectedIp", "security", "warning");
+
+    // B. On renvoie une 403 Forbidden propre
+    Header::setStatus(403);
+
+    // C. On arrête le script pour économiser le serveur
+    die("<h1>403 Forbidden</h1><p>Votre IP ($detectedIp) n'est pas autorisée à accéder à ce serveur.</p>");
+}
+
+2. La Protection Admin (Whitelist)
+Cas : Empêcher tout le monde d'accéder à /admin sauf votre bureau et votre maison.
+
+// config/admin_allowed.php
+$adminIps = [
+    '127.0.0.1',      // Localhost
+    '85.10.20.30',    // IP Fixe Bureau
+    '192.168.1.0/24'  // Réseau VPN Entreprise
+];
+
+// Dans le contrôleur /admin ou le routeur
+if (!IPMatcher::isListed($adminIps)) {
+    // On renvoie une 404 pour cacher l'existence de l'admin
+    // (Une 403 révèle qu'il y a quelque chose ici)
+    Header::setStatus(404);
+    include 'errors/404.php';
+    exit();
+}
+
+3. Le Mode Maintenance
+Cas : Le site est "En travaux" pour les visiteurs, mais visible pour les développeurs.
+
+// config/settings.php
+$maintenanceMode = true;
+$devTeam = ['80.12.34.56', '10.0.0.15'];
+
+// Dans index.php
+if ($maintenanceMode) {
+    // Si ce n'est PAS un développeur, on affiche la page de maintenance
+    if (!IPMatcher::isListed($devTeam)) {
+        Header::setStatus(503); // Service Unavailable
+        include 'views/maintenance.html';
+        exit();
+    }
+    // Sinon, le développeur voit le site normal et peut travailler
+}
+
+
+use Magepattern\Component\HTTP\Request;
+
+if (Request::isMethod('POST')) {
+
+    if (Request::isPost('token_csrf')) {
+        // Traitement...
+    }
+
+    // Si c'est de l'Ajax, on répond en JSON
+    if (Request::isAjax()) {
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'success']);
+        exit;
+    }
+}
+
+Exemples d'Utilisation Concrets
+1. Initialisation dans le Bootstrap (Configuration Flexible)
+Voici comment vous l'intégrez dans votre logique globale, en définissant vos propres noms de clés.
+
+PHP
+// Fichier de configuration ou Bootstrap
+$sessionConfig = [
+    'ip_key'   => 'user_last_ip',    // Clé personnalisée pour la BDD
+    'ua_key'   => 'user_agent_hash', // Clé personnalisée
+    'csrf_key' => 'security_token'   // Clé personnalisée
+];
+
+$session = new \Magepattern\Component\HTTP\Session(true, 'MAGE_SESS', $sessionConfig);
+$session->start(3600); // Session d'une heure
+2. Sécurisation d'un Formulaire (Anti-CSRF)
+Le Token CSRF empêche qu'un site tiers soumette des formulaires à la place de votre utilisateur.
+
+PHP
+// --- Dans votre vue (formulaire) ---
+$token = $session->getToken();
+echo '<form method="POST" action="/save">';
+echo '<input type="hidden" name="csrf_token" value="'.$token.'">';
+echo '<input type="text" name="username">';
+echo '<button type="submit">Sauvegarder</button>';
+echo '</form>';
+
+// --- Dans votre contrôleur (traitement) ---
+if (\Magepattern\Component\HTTP\Request::isMethod('POST')) {
+    $tokenInPost = $_POST['csrf_token'] ?? null;
+
+    if (!$session->validateToken($tokenInPost)) {
+        die("Erreur de sécurité : Token CSRF invalide.");
+    }
+
+    // Traitement sécurisé...
+}
+3. Gestion du Login (Prévention de Fixation)
+Lorsqu'un utilisateur se connecte, l'ID de session doit changer pour éviter qu'un hacker n'utilise un ID qu'il aurait "fixé" auparavant.
+
+PHP
+public function login($user, $password) {
+    if ($this->auth->check($user, $password)) {
+        // 1. On régénère l'ID pour la sécurité
+        $session->regenerate(true);
+
+        // 2. On stocke les données
+        $session->set('is_logged', true);
+        $session->set('user_name', $user->name);
+
+        return true;
+    }
+    return false;
+}
+4. Utilisation Multi-Session (Backend / Frontend)
+Vous pouvez gérer deux espaces totalement isolés sur le même domaine sans conflit de clés.
+
+PHP
+// Session Client
+$frontend = new Session(true, 'FE_SESS', ['csrf_key' => 'fe_token']);
+
+// Session Admin
+$backend = new Session(true, 'BE_SESS', ['csrf_key' => 'be_token']);

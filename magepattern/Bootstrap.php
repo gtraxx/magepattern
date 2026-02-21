@@ -2,10 +2,35 @@
 /*
 # -- BEGIN LICENSE BLOCK ----------------------------------
 #
-# This file is part of MAGIX CMS.
-# Copyright (C) 2008 - 2026 magix-cms.com <support@magix-cms.com>
+# This file is part of Mage Pattern.
+# The toolkit PHP for developer
+# Copyright (C) 2012 - 2026 Gerits Aurelien contact[at]gerits-aurelien[dot]be
 #
-# -- END LICENSE BLOCK ------------------------------------
+# OFFICIAL TEAM MAGE PATTERN:
+#
+#   * Gerits Aurelien (Author - Developer) contact[at]gerits-aurelien[dot]be
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Redistributions of source code must retain the above copyright notice,
+# this list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# DISCLAIMER
 */
 
 namespace Magepattern;
@@ -25,8 +50,7 @@ final class Bootstrap
         'smarty'       => __DIR__ . '/package/smarty/vendor/autoload.php',
         'mailer'       => __DIR__ . '/package/mailer/vendor/autoload.php',
         'mobiledetect' => __DIR__ . '/package/mobiledetect/vendor/autoload.php',
-        'dompdf'       => __DIR__ . '/package/dompdf/vendor/autoload.php',
-        'cssinliner'   => __DIR__ . '/package/cssinliner/init.php',
+        'dompdf'       => __DIR__ . '/package/dompdf/vendor/autoload.php'
     ];
 
     /**
@@ -133,6 +157,7 @@ final class Bootstrap
                 'Debug'    => $baseComponentDir . '/debug',
                 'File'     => $baseComponentDir . '/file',
                 'HTTP'     => $baseComponentDir . '/http',
+                'Security' => $baseComponentDir . '/security',
                 'Tool'     => $baseComponentDir . '/tool',
                 'XML'      => $baseComponentDir . '/xml'
             ]

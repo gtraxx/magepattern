@@ -4,14 +4,12 @@
 #
 # This file is part of Mage Pattern.
 # The toolkit PHP for developer
-# Copyright (C) 2008 - 2026 magix-cms.com <support@magix-cms.com>
+# Copyright (C) 2012 - 2026 Gerits Aurelien contact[at]gerits-aurelien[dot]be
 #
-# OFFICIAL TEAM :
+# OFFICIAL TEAM MAGE PATTERN:
 #
-#   * Aurelien Gerits (Author - Developer) <aurelien@magix-cms.com>
-#   * Salvatore Di Salvo (Author - Developer) <disalvo.infographiste@gmail.com>
+#   * Gerits Aurelien (Author - Developer) contact[at]gerits-aurelien[dot]be
 #
-# Redistributions of files must retain the above copyright notice.
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -21,20 +19,23 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#
+
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# -- END LICENSE BLOCK -----------------------------------
+# Redistributions of source code must retain the above copyright notice,
+# this list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
 #
 # DISCLAIMER
-#
-# Do not edit or add to this file if you wish to upgrade MAGIX CMS to newer
-# versions in the future. If you wish to customize MAGIX CMS for your
-# needs please refer to http://www.magix-cms.com for more information.
 */
 
-namespace Magepattern\Component\Tool;
+
+
+namespace Magepattern\Component\Security;
 
 use Magepattern\Component\Debug\Logger;
 

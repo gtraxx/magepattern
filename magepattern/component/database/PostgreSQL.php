@@ -1,9 +1,10 @@
 <?php
+/*
 # -- BEGIN LICENSE BLOCK ----------------------------------
 #
 # This file is part of Mage Pattern.
 # The toolkit PHP for developer
-# Copyright (C) 2012 - 2025 Gerits Aurelien contact[at]gerits-aurelien[dot]be
+# Copyright (C) 2012 - 2026 Gerits Aurelien contact[at]gerits-aurelien[dot]be
 #
 # OFFICIAL TEAM MAGE PATTERN:
 #
@@ -30,6 +31,8 @@
 # and/or other materials provided with the distribution.
 #
 # DISCLAIMER
+*/
+
 namespace Magepattern\Component\Database;
 
 class PostgreSQL extends Connector

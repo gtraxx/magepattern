@@ -1,4 +1,5 @@
 <?php
+/*
 # -- BEGIN LICENSE BLOCK ----------------------------------
 #
 # This file is part of Mage Pattern.
@@ -30,6 +31,7 @@
 # and/or other materials provided with the distribution.
 #
 # DISCLAIMER
+*/
 
 namespace Magepattern\Component\Debug;
 

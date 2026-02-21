@@ -12,19 +12,21 @@ if (file_exists($bootstrap)){
 }else{
     throw new Exception('Boostrap is not exist');
 }
-use Magepattern\Component\HTTP\Request,
-    Magepattern\Component\Tool\FormTool,
-    Magepattern\Component\HTTP\Url,
-    Magepattern\Component\HTTP\JSON,
-    Magepattern\Component\Tool\RSATool,
-    Magepattern\Component\File\FinderTool,
-    Magepattern\Component\Debug\Logger,
-    Magepattern\Component\Database\Layer,
-    Magepattern\Component\XML\XMLReader,
-    Magepattern\Component\Tool\PathTool,
-    Magepattern\Component\Tool\EscapeTool,
-    Magepattern\Component\Tool\LocalizationTool,
-    Magepattern\Component\Tool\MailTool;
+
+use Magepattern\Component\Database\Layer;
+use Magepattern\Component\Database\QueryBuilder;
+use Magepattern\Component\Debug\Logger;
+use Magepattern\Component\File\FinderTool;
+use Magepattern\Component\HTTP\JSON;
+use Magepattern\Component\HTTP\Request;
+use Magepattern\Component\HTTP\Url;
+use Magepattern\Component\Security\RSATool;
+use Magepattern\Component\Tool\EscapeTool;
+use Magepattern\Component\Tool\FormTool;
+use Magepattern\Component\Tool\LocalizationTool;
+use Magepattern\Component\Tool\MailTool;
+use Magepattern\Component\Tool\PathTool;
+use Magepattern\Component\XML\XMLReader;
 
 //print $_GET['test_get'];
 print Url::current();
@@ -149,9 +151,22 @@ function getmicrotime()
 
 /* AVANT REQUETE */
 $time_start = getmicrotime();
-$db = new Layer();
+// Exemple avec Layer
+/*$db = new Layer();
 $sql =  'SELECT * FROM mc_news_content WHERE id_content =:id';
-$fetch = $db->fetchAll($sql, ['id' => 1]);
+$fetch = $db->fetchAll($sql, ['id' => 1]);*/
+// 1. On initialise le QueryBuilder
+
+$qb = (new QueryBuilder())
+    ->select('*')
+    ->from('mc_news_content')
+    ->where('id_content = :id', ['id' => 1]);
+
+// 2. On utilise le Singleton du Layer (plus besoin de faire "new Layer()")
+$db = Layer::getInstance();
+
+// 3. On récupère le SQL et les Params générés par le QB
+$fetch = $db->fetchAll($qb->getSql(), $qb->getParams());
 
 print_r($fetch);
 /* APRES REQUETE */
