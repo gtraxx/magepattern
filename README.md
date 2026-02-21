@@ -19,14 +19,14 @@ Entièrement réécrite pour tirer parti de PHP 8.2+, cette version abandonne le
 Authors
 -------
 
- * Gerits Aurelien (Author-Developer) contact[at]aurelien-gerits[dot]be
+ * Gerits Aurelien (Author-Developer) contact[at]gerits-aurelien[dot]be
 
 Requirements
 ------------
 
 ### Server
  * APACHE / IIS
- * PHP 8.x.x recommandé (Compatible uniquement à partir de cette version)
+ * PHP 8.2.x + recommandé (Compatible uniquement à partir de cette version)
      * GD activé
      * SPL
      * SimpleXML et XML READER
