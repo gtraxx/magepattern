@@ -5,8 +5,16 @@ Magepattern
 
 Presentation
 ------------
-Magepattern est une boite à outil écrite pour PHP 8 ou plus, 
-elle comprend les fonctionnalités les plus courante pour le développement d'application tel que la création de fichier xml,le routing d'URL, interaction avec la base de données, et bien plus.
+Le Toolkit PHP 8.2+ universel, modulaire et haute performance.
+Magepattern 3 est une bibliothèque de composants indépendants conçue pour offrir une base technique solide, sécurisée et évolutive aux applications PHP modernes (notamment le futur Magix CMS 4).
+Entièrement réécrite pour tirer parti de PHP 8.2+, cette version abandonne les structures de données rigides au profit d'une architecture orientée objet fluide, mettant l'accent sur la sécurité des données et la performance du cache.
+
+## Points Forts
+* Modernité & Typage : Architecture exploitant le typage strict de PHP 8.2+ pour une robustesse accrue.
+* Query Collaboration : Un QueryBuilder fluide couplé à un QueryHelper unique permettant l'injection dynamique de briques SQL par des modules tiers (Plugin-Ready).
+* Sécurité Native : Protection contre les injections SQL via PDO, hachage cryptographique SHA-256 pour le cache, et gestion des mots de passe conforme aux standards de sécurité actuels.
+* Performance Optimisée : Système de cache intelligent avec invalidation par "Tags" pour un contrôle granulaire de la persistance.
+* Zéro Dépendance : Conçu pour être agnostique et s'intégrer dans n'importe quel projet sans surcharge de dépendances externes.
 
 Authors
 -------
@@ -26,7 +34,7 @@ Requirements
      * CURL
  * MYSQL
  * MARIADB
- * Postgresql (coming soon)
+ * Postgresql
 
 ## Licence
 
