@@ -77,7 +77,7 @@ class SmartyTool
     }
 
     /**
-     * Initialisation interne d'une instance Smarty
+     * Initialisation interne d'une instance Smarty 5
      */
     private static function createInstance(string $context, array $config): Smarty
     {
@@ -86,37 +86,75 @@ class SmartyTool
 
         $smarty = new Smarty();
 
-        // Détermination de la racine (remonte de magepattern/component/tool)
+        // Détermination de la racine par défaut (si non fournie dans $config)
         $rootDir = dirname(__DIR__, 3);
 
         // 2. Configuration des chemins
-        $templateDir = $config['template_dir'] ?? $rootDir . '/themes/default/templates';
-        $compileDir  = $config['compile_dir']  ?? $rootDir . '/var/smarty/compile/' . $context;
-        $cacheDir    = $config['cache_dir']    ?? $rootDir . '/var/smarty/cache/' . $context;
-        $configDir   = $config['config_dir']   ?? $rootDir . '/config/smarty';
+        $templateDir = $config['template_dir'] ?? $rootDir . DIRECTORY_SEPARATOR . 'themes/default/templates';
+        $compileDir  = $config['compile_dir']  ?? $rootDir . DIRECTORY_SEPARATOR . 'var/smarty/compile/' . $context;
+        $cacheDir    = $config['cache_dir']    ?? $rootDir . DIRECTORY_SEPARATOR . 'var/smarty/cache/' . $context;
+        $configDir   = $config['config_dir']   ?? $rootDir . DIRECTORY_SEPARATOR . 'config/smarty';
 
         $smarty->setTemplateDir($templateDir);
         $smarty->setCompileDir($compileDir);
         $smarty->setCacheDir($cacheDir);
         $smarty->setConfigDir($configDir);
 
-        // 3. Gestion des Plugins (Dossier global + Dossiers spécifiques)
-        $smarty->addPluginsDir($rootDir . '/magepattern/package/smarty-plugins');
+        // 3. Gestion dynamique des dossiers de plugins persos (Rétrocompatibilité Smarty 5)
+        // Chargement du dossier global Magepattern en premier
+        self::loadPluginsFromDir($smarty, $rootDir . DIRECTORY_SEPARATOR . 'magepattern/package/smarty-plugins');
+
+        // Chargement des dossiers spécifiques au contexte
         if (isset($config['plugins_dir'])) {
-            $plugins = is_array($config['plugins_dir']) ? $config['plugins_dir'] : [$config['plugins_dir']];
-            foreach ($plugins as $dir) {
-                $smarty->addPluginsDir($dir);
+            $pluginsDirs = is_array($config['plugins_dir']) ? $config['plugins_dir'] : [$config['plugins_dir']];
+            foreach ($pluginsDirs as $dir) {
+                self::loadPluginsFromDir($smarty, $dir);
             }
         }
 
         // 4. Paramètres par défaut
         $smarty->setCompileCheck($config['debug'] ?? true);
-        $smarty->escape_html = $config['escape_html'] ?? true;
+        $smarty->setEscapeHtml($config['escape_html'] ?? true); // Setter natif Smarty 5
 
         // 5. Sécurité : Création automatique des dossiers de travail
         self::checkDirectories($compileDir, $cacheDir);
 
         return $smarty;
+    }
+
+    /**
+     * Charge dynamiquement les anciens plugins Smarty depuis un dossier.
+     * Recrée le comportement de addPluginsDir() pour Smarty 5 via registerPlugin().
+     */
+    private static function loadPluginsFromDir(Smarty $smarty, string $dir): void
+    {
+        $dir = rtrim($dir, DIRECTORY_SEPARATOR);
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $files = glob($dir . DIRECTORY_SEPARATOR . '*.php');
+        if (!$files) {
+            return;
+        }
+
+        foreach ($files as $file) {
+            $filename = basename($file);
+
+            // Regex pour capter function.name.php, modifier.name.php, block.name.php
+            if (preg_match('/^(function|modifier|block|compiler)\.(.+)\.php$/', $filename, $matches)) {
+                $type = $matches[1];
+                $tag  = $matches[2];
+
+                require_once $file;
+
+                $functionName = 'smarty_' . $type . '_' . $tag;
+
+                if (is_callable($functionName)) {
+                    $smarty->registerPlugin($type, $tag, $functionName);
+                }
+            }
+        }
     }
 
     /**
