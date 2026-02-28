@@ -93,9 +93,8 @@ class SmartyTool
 
         $smarty = new Smarty();
 
-        // Détermination de la racine par défaut (si non fournie dans $config)
+        // --- CONFIGURATION DES RÉPERTOIRES ---
         $rootDir = dirname(__DIR__, 3);
-
         $templateDir = $config['template_dir'] ?? $rootDir . DIRECTORY_SEPARATOR . 'themes/default/templates';
         $compileDir  = $config['compile_dir']  ?? $rootDir . DIRECTORY_SEPARATOR . 'var/smarty/compile/' . $context;
         $cacheDir    = $config['cache_dir']    ?? $rootDir . DIRECTORY_SEPARATOR . 'var/smarty/cache/' . $context;
@@ -106,10 +105,47 @@ class SmartyTool
         $smarty->setCacheDir($cacheDir);
         $smarty->setConfigDir($configDir);
 
+        // --- LA SOLUTION SMARTY 5 POUR LES FONCTIONS PHP ---
+        // On déclare explicitement les fonctions natives de PHP comme étant des "modifiers" utilisables dans la vue.
+        // Liste des fonctions PHP que tu souhaites autoriser comme modificateurs
+        $allowedFunctions = ['print_r', 'var_dump', 'count', 'json_encode', 'trim', 'ucfirst'];
 
+        foreach ($allowedFunctions as $function) {
+            if (function_exists($function)) {
+                $smarty->registerPlugin('modifier', $function, $function);
+            }
+        }
+
+        $isDebug = $config['debug'] ?? true;
+
+        if ($isDebug) {
+            // 1. Vérifie si le TPL a changé (comparaison des timestamps)
+            $smarty->setCompileCheck(true);
+
+            // 2. Si vraiment le timestamp échoue, force la recompilation
+            // mais SEULEMENT en mode debug.
+            $smarty->setForceCompile(false);
+
+            // 3. Désactive le cache de rendu (différent de la compilation)
+            $smarty->setCaching(\Smarty\Smarty::CACHING_OFF);
+
+            // 4. Désactive les sous-dossiers pour voir tes fichiers compilés en vrac
+            $smarty->setUseSubDirs(true);
+        } else {
+            // Mode Production : On verrouille tout pour la performance
+            //$smarty->setCompileCheck(false);
+            $smarty->setCompileCheck(true);
+            $smarty->setForceCompile(false);
+            $smarty->setUseSubDirs(true);
+        }
+
+        /*if ($isDebug) {
+            $smarty->setDebugging(true);
+        }*/
+
+        // --- CHARGEMENT DE TES PLUGINS CUSTOM ---
         self::loadPluginsFromDir($smarty, $rootDir . DIRECTORY_SEPARATOR . 'magepattern/package/smarty-plugins');
 
-        // Chargement des dossiers spécifiques au contexte
         if (isset($config['plugins_dir'])) {
             $pluginsDirs = is_array($config['plugins_dir']) ? $config['plugins_dir'] : [$config['plugins_dir']];
             foreach ($pluginsDirs as $dir) {
@@ -117,8 +153,8 @@ class SmartyTool
             }
         }
 
-        $smarty->setCompileCheck($config['debug'] ?? true);
-        $smarty->setEscapeHtml($config['escape_html'] ?? true); // Setter natif Smarty 5
+        $smarty->setCompileCheck($isDebug);
+        $smarty->setEscapeHtml($config['escape_html'] ?? true);
 
         self::checkDirectories($compileDir, $cacheDir);
 

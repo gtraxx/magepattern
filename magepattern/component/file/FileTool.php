@@ -380,4 +380,16 @@ class FileTool
 
         return $path;
     }
+
+    /**
+     * @param string $path
+     * @return FilesystemIterator
+     */
+    public static function getDirectories(string $path): \FilesystemIterator
+    {
+        if (!is_dir($path)) {
+            throw new \RuntimeException("Directory not found: $path");
+        }
+        return new \FilesystemIterator($path, \FilesystemIterator::SKIP_DOTS);
+    }
 }
