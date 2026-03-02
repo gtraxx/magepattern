@@ -45,6 +45,11 @@ class Layer
     protected static ?Layer $_instance = null;
 
     /**
+     * @var \PDO|null Instance unique de la connexion PDO
+     */
+    protected ?\PDO $pdo = null;
+
+    /**
      * @var mixed Driver instance (MySQL, SQLite, etc.)
      */
     public $adapter;
@@ -108,9 +113,19 @@ class Layer
      * Charge la connexion via l'adapter.
      * @return \PDO|null
      */
+    /**
+     * Charge la connexion via l'adapter en garantissant une instance unique (Singleton PDO).
+     * @return \PDO|null
+     */
     public function connection(): ?\PDO
     {
         try {
+            // 1. Si la connexion PDO est déjà ouverte et mémorisée, on la retourne immédiatement !
+            if ($this->pdo !== null) {
+                return $this->pdo;
+            }
+
+            // 2. Sinon, on instancie l'adapter si ce n'est pas fait
             if (!$this->adapter) {
                 $this->adapter = match ($this->config['driver']) {
                     'mysql', 'mariadb' => new MySQL(),
@@ -119,7 +134,12 @@ class Layer
                     default            => throw new \InvalidArgumentException("Driver '{$this->config['driver']}' not supported.")
                 };
             }
-            return $this->adapter->connect($this->config);
+
+            // 3. On établit la connexion ET on la sauvegarde dans notre nouvelle propriété $pdo
+            $this->pdo = $this->adapter->connect($this->config);
+
+            return $this->pdo;
+
         } catch (\Throwable $e) {
             Logger::getInstance()->log($e, "php", "error", Logger::LOG_MONTH, Logger::LOG_LEVEL_ERROR);
             return null;
