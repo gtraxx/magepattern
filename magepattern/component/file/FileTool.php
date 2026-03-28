@@ -421,7 +421,7 @@ class FileTool
      * @param string $dst
      * @return void
      */
-    
+
     public static function copyDirectory(string $src, string $dst): void
     {
         $dir = opendir($src);
