@@ -1,23 +1,23 @@
 Version 3.1.0 (2026-11-22)
 
 ### Ajouts
-* Ajout de la classe `Magepattern\Component\Security\CryptTool` (chiffrement réversible AES-256-CBC avec gestion autonome de la clé via `SECRET_KEY` ou fichier `crypt_secret.php` protégé)[cite: 15]
-* Ajout de la classe `Magepattern\Component\Tool\SecurityTool` centralisant les outils de purification et de sécurisation[cite: 15]
-* Intégration de la librairie `HTMLPurifier` dans les packages pour le filtrage XSS des contenus riches[cite: 15]
+* Ajout de la classe `Magepattern\Component\Security\CryptTool` (chiffrement réversible AES-256-CBC avec gestion autonome de la clé via `SECRET_KEY` ou fichier `crypt_secret.php` protégé)
+* Ajout de la classe `Magepattern\Component\Tool\SecurityTool` centralisant les outils de purification et de sécurisation
+* Intégration de la librairie `HTMLPurifier` dans les packages pour le filtrage XSS des contenus riches
 * Ajout de la méthode `removeDirectory()` dans `Magepattern\Component\File\FileTool`
-* Ajout de la classe `Magepattern\Component\Database\QueryHelper` (`applyExtendParams()`) pour convertir dynamiquement les tableaux de paramètres hérités vers `QueryBuilder`[cite: 19]
-* Ajout des clauses `groupBy()`, `having()` et `clearGroupBy()` dans `Magepattern\Component\Database\QueryBuilder`[cite: 18]
-* Gestion des délais d'expiration dans `Magepattern\Component\HTTP\Session` (timeout d'inactivité de 1 heure et durée de vie absolue de 12 heures)[cite: 15]
+* Ajout de la classe `Magepattern\Component\Database\QueryHelper` (`applyExtendParams()`) pour convertir dynamiquement les tableaux de paramètres hérités vers `QueryBuilder`
+* Ajout des clauses `groupBy()`, `having()` et `clearGroupBy()` dans `Magepattern\Component\Database\QueryBuilder`
+* Gestion des délais d'expiration dans `Magepattern\Component\HTTP\Session` (timeout d'inactivité de 1 heure et durée de vie absolue de 12 heures)
 
 ### Améliorations & Sécurité
-* Garantie d'une instance PDO unique (Singleton sur la propriété `$pdo`) dans `Layer::connection()` afin d'éviter les connexions multiples sur une même requête[cite: 17]
-* Renforcement de `Magepattern\Component\Tool\RedirectTool` contre les redirections externes non autorisées (Open Redirect) et les protocoles dangereux (`javascript:`, `data:`)[cite: 15]
-* Relèvement de la politique de robustesse par défaut dans `Magepattern\Component\Security\PasswordTool` (12 caractères minimum avec majuscule, minuscule, chiffre et caractère spécial)[cite: 15]
-* Mise à jour de `Smarty` vers la branche `5.9` dans les packages (si embarqué dans le dépôt)
+* Garantie d'une instance PDO unique (Singleton sur la propriété `$pdo`) dans `Layer::connection()` afin d'éviter les connexions multiples sur une même requête
+* Renforcement de `Magepattern\Component\Tool\RedirectTool` contre les redirections externes non autorisées (Open Redirect) et les protocoles dangereux (`javascript:`, `data:`)
+* Relèvement de la politique de robustesse par défaut dans `Magepattern\Component\Security\PasswordTool` (12 caractères minimum avec majuscule, minuscule, chiffre et caractère spécial)
+* Mise à jour de `Smarty` vers la branche `5.9` dans les packages
 * Mise à jour de `symfony/mailer` de la version `7.4.8` vers `7.4.22` dans `package/mailer` (compatibilité PHP 8.2 maintenue)
 
 ### Corrections
-* Correction des exemples d'utilisation de `CacheTool` et `Layer` dans `cachetool_exemple.php` (remplacement de l'appel privé `Layer::execute()` par `Layer::update()`, exécution effective de `fetchAll()` et suppression du `return` prématuré)[cite: 16, 17]
+* Correction des exemples d'utilisation de `CacheTool` et `Layer` dans `cachetool_exemple.php` (remplacement de l'appel privé `Layer::execute()` par `Layer::update()`, exécution effective de `fetchAll()` et suppression du `return` prématuré)
 
 Version 3.0.0
 * Ajout du système de namespace
